@@ -5,9 +5,39 @@ import android.content.Context
 import android.database.Cursor
 import com.example.climatrack.database.DatabaseHelper
 import com.example.climatrack.models.Orden
+import com.example.climatrack.models.OrdenInfo
 
 class OrdenRepository(context: Context) {
     private val dbHelper = DatabaseHelper(context)
+
+    fun getAllInfoByTecnico(tecnicoId: Int): List<OrdenInfo> {
+        val list = mutableListOf<OrdenInfo>()
+        val db = dbHelper.readableDatabase
+        val query = "SELECT o.${DatabaseHelper.COL_ORDEN_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, o.${DatabaseHelper.COL_ORDEN_FECHA}, " +
+                "c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
+                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO} " +
+                "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
+                "JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
+                "JOIN ${DatabaseHelper.TABLE_EQUIPOS} e ON o.${DatabaseHelper.COL_ORDEN_EQUIPO_ID} = e.${DatabaseHelper.COL_EQUIPO_ID} " +
+                "WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = ?"
+        
+        val cursor = db.rawQuery(query, arrayOf(tecnicoId.toString()))
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(OrdenInfo(
+                    id = cursor.getInt(0),
+                    numero = cursor.getString(1),
+                    fecha = cursor.getString(2),
+                    clienteNombre = cursor.getString(3),
+                    equipoNombre = cursor.getString(4),
+                    tipoServicio = cursor.getString(5),
+                    estado = cursor.getString(6)
+                ))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
 
     fun getAllByTecnico(tecnicoId: Int): List<Orden> {
         val list = mutableListOf<Orden>()

@@ -41,6 +41,16 @@ data class Orden(
     val estado: String
 )
 
+data class OrdenInfo(
+    val id: Int,
+    val numero: String,
+    val fecha: String,
+    val clienteNombre: String,
+    val equipoNombre: String,
+    val tipoServicio: String,
+    val estado: String
+)
+
 data class Mantenimiento(
     val id: Int = 0,
     val ordenId: Int,

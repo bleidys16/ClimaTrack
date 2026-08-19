@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">ClimaTrack</string>
+    <string name="welcome_climatrack">Bienvenido a ClimaTrack</string>
+    <string name="login_title">Inicio de Sesión</string>
+    <string name="username_hint">Usuario</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="login_button">Ingresar</string>
+    <string name="error_empty_fields">Los campos no pueden estar vacíos</string>
+    <string name="error_invalid_credentials">Usuario o contraseña incorrectos</string>
+    <string name="loading">Cargando...</string>
+
+    <string-array name="equipment_status_array">
+        <item>OPERATIVO</item>
+        <item>EN MANTENIMIENTO</item>
+        <item>FUERA DE SERVICIO</item>
+    </string-array>
 </resources>
