@@ -35,9 +35,18 @@ class MaintenanceActivity : AppCompatActivity() {
         }
 
         setupSpinner()
+        loadOrderInfo()
         loadExistingData()
 
         binding.btnSaveMaint.setOnClickListener { saveMaintenance() }
+    }
+
+    private fun loadOrderInfo() {
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        info?.let {
+            binding.tvOrderDetail.text = "OT: ${it.numero} - ${it.clienteNombre}"
+            binding.etServiceType.setText(it.tipoServicio)
+        }
     }
 
     private fun setupSpinner() {

@@ -5,10 +5,13 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.climatrack.R
 import com.example.climatrack.adapters.OrdersAdapter
 import com.example.climatrack.databinding.ActivityOrdersBinding
+import com.example.climatrack.models.OrdenInfo
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.utils.SessionManager
+import com.google.android.material.tabs.TabLayout
 
 class OrdersActivity : AppCompatActivity() {
 
@@ -16,6 +19,7 @@ class OrdersActivity : AppCompatActivity() {
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var sessionManager: SessionManager
     private lateinit var adapter: OrdersAdapter
+    private var allOrders: List<OrdenInfo> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +31,8 @@ class OrdersActivity : AppCompatActivity() {
 
         setupToolbar()
         setupRecyclerView()
+        setupTabs()
+        setupBottomNavigation()
         loadOrders()
     }
 
@@ -34,6 +40,52 @@ class OrdersActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         binding.toolbar.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
+        }
+    }
+
+    private fun setupTabs() {
+        binding.tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                filterOrders(tab?.position ?: 0)
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+    }
+
+    private fun filterOrders(position: Int) {
+        val status = when (position) {
+            0 -> "PENDIENTE"
+            1 -> "EN PROCESO"
+            2 -> "FINALIZADA"
+            else -> "PENDIENTE"
+        }
+        val filtered = allOrders.filter { it.estado == status }
+        updateUI(filtered)
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.menu_orders
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> {
+                    startActivity(Intent(this, DashboardActivity::class.java))
+                    finish()
+                    false
+                }
+                R.id.menu_orders -> true
+                R.id.menu_equipment -> {
+                    startActivity(Intent(this, EquipmentActivity::class.java))
+                    finish()
+                    false
+                }
+                R.id.menu_history -> {
+                    startActivity(Intent(this, HistoryActivity::class.java))
+                    finish()
+                    false
+                }
+                else -> false
+            }
         }
     }
 
@@ -49,13 +101,16 @@ class OrdersActivity : AppCompatActivity() {
 
     private fun loadOrders() {
         val tecnicoId = sessionManager.getUserId()
-        val orders = ordenRepository.getAllInfoByTecnico(tecnicoId)
+        allOrders = ordenRepository.getAllInfoByTecnico(tecnicoId)
+        filterOrders(binding.tabs.selectedTabPosition)
+    }
 
+    private fun updateUI(orders: List<OrdenInfo>) {
         if (orders.isEmpty()) {
-            binding.tvEmpty.visibility = View.VISIBLE
+            binding.llEmpty.visibility = View.VISIBLE
             binding.rvOrders.visibility = View.GONE
         } else {
-            binding.tvEmpty.visibility = View.GONE
+            binding.llEmpty.visibility = View.GONE
             binding.rvOrders.visibility = View.VISIBLE
             adapter.updateList(orders)
         }

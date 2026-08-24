@@ -14,4 +14,35 @@
         <item>EN MANTENIMIENTO</item>
         <item>FUERA DE SERVICIO</item>
     </string-array>
+    <string name="welcome_back">¡Bienvenido de nuevo!</string>
+    <string name="orders_summary">Resumen de órdenes</string>
+    <string name="quick_access">Accesos rápidos</string>
+    <string name="pending">Pendientes</string>
+    <string name="in_progress">En proceso</string>
+    <string name="finished">Finalizadas</string>
+    <string name="canceled">Canceladas</string>
+
+    <string name="menu_home">Inicio</string>
+    <string name="menu_orders">Órdenes</string>
+    <string name="menu_equipment">Equipos</string>
+    <string name="menu_history">Historial</string>
+
+    <string name="search_equipment_hint">Buscar equipo, código o serie...</string>
+    <string name="empty_orders">Sin órdenes disponibles</string>
+    <string name="empty_history">No hay mantenimientos registrados</string>
+
+    <string name="maint_info_section">Información del servicio</string>
+    <string name="diagnosis_section">Diagnóstico</string>
+    <string name="work_done_section">Trabajo realizado</string>
+    <string name="observations_section">Observaciones</string>
+    <string name="equip_status_section">Estado del equipo</string>
+
+    <string name="save_success">Mantenimiento registrado correctamente</string>
+    <string name="save_error">No fue posible guardar la información</string>
+    <string name="load_error">No fue posible cargar la información</string>
+
+    <string name="client_approval">Aprobación del cliente</string>
+    <string name="service_summary">Resumen del servicio</string>
+    <string name="client_name_label">Nombre del cliente *</string>
+    <string name="client_accept_label">Aceptación del servicio</string>
 </resources>

@@ -40,15 +40,15 @@ class OrdersAdapter(
 
             // Color del estado
             val context = binding.root.context
-            val (bg, color) = when (order.estado) {
-                "PENDIENTE" -> R.drawable.bg_status_pending to R.color.white
-                "EN PROCESO" -> R.drawable.bg_status_in_progress to R.color.white
-                "FINALIZADA" -> R.drawable.bg_status_finished to R.color.white
-                "CANCELADA" -> R.drawable.bg_status_canceled to R.color.white
-                else -> R.drawable.bg_status_pending to R.color.white
+            val (containerColor, textColor) = when (order.estado) {
+                "PENDIENTE" -> R.color.status_pending_container to R.color.status_pending
+                "EN PROCESO" -> R.color.status_in_progress_container to R.color.status_in_progress
+                "FINALIZADA" -> R.color.status_finished_container to R.color.status_finished
+                "CANCELADA" -> R.color.status_error_container to R.color.status_error
+                else -> R.color.status_pending_container to R.color.status_pending
             }
-            binding.tvStatus.setBackgroundResource(bg)
-            binding.tvStatus.setTextColor(ContextCompat.getColor(context, color))
+            binding.tvStatus.backgroundTintList = ContextCompat.getColorStateList(context, containerColor)
+            binding.tvStatus.setTextColor(ContextCompat.getColor(context, textColor))
 
             binding.root.setOnClickListener {
                 onItemClick(order)

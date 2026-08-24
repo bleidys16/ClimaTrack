@@ -6,6 +6,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.climatrack.R
 import com.example.climatrack.adapters.EquipmentAdapter
 import com.example.climatrack.databinding.ActivityEquipmentBinding
 import com.example.climatrack.repositories.EquipoRepository
@@ -26,9 +27,35 @@ class EquipmentActivity : AppCompatActivity() {
         setupToolbar()
         setupRecyclerView()
         setupSearch()
+        setupBottomNavigation()
 
         binding.fabAddEquipment.setOnClickListener {
             startActivity(Intent(this, EquipmentFormActivity::class.java))
+        }
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.menu_equipment
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> {
+                    startActivity(Intent(this, DashboardActivity::class.java))
+                    finish()
+                    false
+                }
+                R.id.menu_orders -> {
+                    startActivity(Intent(this, OrdersActivity::class.java))
+                    finish()
+                    false
+                }
+                R.id.menu_equipment -> true
+                R.id.menu_history -> {
+                    startActivity(Intent(this, HistoryActivity::class.java))
+                    finish()
+                    false
+                }
+                else -> false
+            }
         }
     }
 

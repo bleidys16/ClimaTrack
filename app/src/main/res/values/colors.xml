@@ -8,15 +8,43 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- ClimaTrack Palette -->
-    <color name="primary">#0D47A1</color>
-    <color name="primary_variant">#1565C0</color>
+    <!-- ClimaTrack Corporate Palette -->
+    <color name="md_theme_light_primary">#1565C0</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#E3F2FD</color>
+    <color name="md_theme_light_onPrimaryContainer">#001B3D</color>
+
+    <color name="md_theme_light_secondary">#455A64</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+
+    <color name="md_theme_light_error">#E53935</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+
+    <color name="md_theme_light_background">#F5F7FA</color>
+    <color name="md_theme_light_onBackground">#1A1C1E</color>
+    <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_onSurface">#1A1C1E</color>
+    <color name="md_theme_light_surfaceVariant">#E1E2EC</color>
+    <color name="md_theme_light_onSurfaceVariant">#44474E</color>
+
+    <!-- Legacy / Shortcut colors -->
+    <color name="primary">#1565C0</color>
+    <color name="primary_dark">#0D47A1</color>
+    <color name="primary_light">#E3F2FD</color>
     <color name="secondary">#455A64</color>
-    <color name="background">#F5F5F5</color>
+    <color name="background">#F5F7FA</color>
 
     <!-- Status Colors -->
-    <color name="status_pending">#FFB300</color>
-    <color name="status_in_progress">#1976D2</color>
-    <color name="status_finished">#388E3C</color>
-    <color name="status_canceled">#D32F2F</color>
+    <color name="status_pending">#FB8C00</color>
+    <color name="status_pending_container">#FFF3E0</color>
+    <color name="status_in_progress">#1565C0</color>
+    <color name="status_in_progress_container">#E3F2FD</color>
+    <color name="status_finished">#43A047</color>
+    <color name="status_finished_container">#E8F5E9</color>
+    <color name="status_error">#E53935</color>
+    <color name="status_error_container">#FFEBEE</color>
+    <color name="status_canceled">#E53935</color>
+
+    <color name="text_secondary">#6B7280</color>
+    <color name="divider">#E5E7EB</color>
 </resources>

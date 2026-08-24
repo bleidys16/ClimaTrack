@@ -1,8 +1,10 @@
 package com.example.climatrack.activities
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.climatrack.R
 import com.example.climatrack.adapters.HistoryAdapter
 import com.example.climatrack.databinding.ActivityHistoryBinding
 import com.example.climatrack.repositories.MantenimientoRepository
@@ -23,7 +25,33 @@ class HistoryActivity : AppCompatActivity() {
         sessionManager = SessionManager(this)
 
         setupToolbar()
+        setupBottomNavigation()
         loadHistory()
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.menu_history
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> {
+                    startActivity(Intent(this, DashboardActivity::class.java))
+                    finish()
+                    false
+                }
+                R.id.menu_orders -> {
+                    startActivity(Intent(this, OrdersActivity::class.java))
+                    finish()
+                    false
+                }
+                R.id.menu_equipment -> {
+                    startActivity(Intent(this, EquipmentActivity::class.java))
+                    finish()
+                    false
+                }
+                R.id.menu_history -> true
+                else -> false
+            }
+        }
     }
 
     private fun setupToolbar() {

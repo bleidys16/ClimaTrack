@@ -37,13 +37,14 @@ class EquipmentAdapter(
             binding.tvEquipStatus.text = equipment.estado
 
             val context = binding.root.context
-            val color = when (equipment.estado) {
-                "OPERATIVO" -> R.color.status_finished
-                "EN MANTENIMIENTO" -> R.color.status_in_progress
-                "FUERA DE SERVICIO" -> R.color.status_canceled
-                else -> R.color.secondary
+            val (containerColor, textColor) = when (equipment.estado) {
+                "OPERATIVO" -> R.color.status_finished_container to R.color.status_finished
+                "EN MANTENIMIENTO" -> R.color.status_in_progress_container to R.color.status_in_progress
+                "FUERA DE SERVICIO" -> R.color.status_error_container to R.color.status_error
+                else -> R.color.md_theme_light_surfaceVariant to R.color.text_secondary
             }
-            binding.tvEquipStatus.setTextColor(ContextCompat.getColor(context, color))
+            binding.tvEquipStatus.backgroundTintList = ContextCompat.getColorStateList(context, containerColor)
+            binding.tvEquipStatus.setTextColor(ContextCompat.getColor(context, textColor))
 
             binding.root.setOnClickListener {
                 onItemClick(equipment)

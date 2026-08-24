@@ -8,6 +8,7 @@ import com.example.climatrack.databinding.ActivitySparePartsBinding
 import com.example.climatrack.models.DetalleRepuesto
 import com.example.climatrack.models.Repuesto
 import com.example.climatrack.repositories.MantenimientoRepository
+import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.repositories.RepuestoRepository
 import com.example.climatrack.repositories.ServicioRepository
 
@@ -36,7 +37,16 @@ class SparePartsActivity : AppCompatActivity() {
         }
 
         loadSpareParts()
+        loadOrderInfo()
         binding.btnAddSparePart.setOnClickListener { saveSparePart() }
+    }
+
+    private fun loadOrderInfo() {
+        val ordenRepository = OrdenRepository(this)
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        info?.let {
+            binding.tvOrderNum.text = "OT: ${it.numero}"
+        }
     }
 
     private fun loadSpareParts() {

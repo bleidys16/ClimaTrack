@@ -3,6 +3,7 @@ package com.example.climatrack.activities
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityDashboardBinding
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.utils.SessionManager
@@ -23,6 +24,7 @@ class DashboardActivity : AppCompatActivity() {
 
         setupUI()
         loadStats()
+        setupBottomNavigation()
     }
 
     private fun setupUI() {
@@ -44,6 +46,28 @@ class DashboardActivity : AppCompatActivity() {
             sessionManager.logout()
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
+        }
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.menu_home
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> true
+                R.id.menu_orders -> {
+                    startActivity(Intent(this, OrdersActivity::class.java))
+                    false
+                }
+                R.id.menu_equipment -> {
+                    startActivity(Intent(this, EquipmentActivity::class.java))
+                    false
+                }
+                R.id.menu_history -> {
+                    startActivity(Intent(this, HistoryActivity::class.java))
+                    false
+                }
+                else -> false
+            }
         }
     }
 
