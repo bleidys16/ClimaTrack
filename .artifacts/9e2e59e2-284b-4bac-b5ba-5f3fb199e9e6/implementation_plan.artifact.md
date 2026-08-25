@@ -1,29 +1,61 @@
-# Plan de Corrección: Crash en Captura de Evidencias
+# Plan de Mejora: Pantalla de Geolocalización (Estilo Empresarial)
 
-Este plan aborda el error "ClimaTrack continua fallando" que ocurre al intentar tomar una fotografía. El problema parece estar relacionado con la gestión de permisos de cámara y la robustez en la creación de archivos para `FileProvider`.
+Este plan detalla las modificaciones necesarias para que la pantalla de **Geolocalización** muestre información técnica detallada (dirección, fecha, hora) y un soporte visual de mapa, siguiendo el estilo profesional de la aplicación.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> Aunque el contrato `TakePicture` no siempre requiere el permiso de `CAMERA` de forma estricta, el hecho de tenerlo declarado en el `AndroidManifest.xml` obliga a solicitarlo explícitamente en tiempo de ejecución en muchas versiones de Android para evitar bloqueos de seguridad.
+> Para cumplir con el requerimiento de mostrar la "Dirección aproximada", se utilizará la API `Geocoder` de Android. Esta funcionalidad requiere conexión a Internet en el momento de la captura. Una vez guardada, la dirección será accesible offline.
+
+> [!CAUTION]
+> Se realizará una modificación ligera en la base de datos (SQLite) y en el modelo `Ubicacion` para persistir la dirección obtenida, asegurando que se visualice correctamente al consultar registros antiguos.
 
 ## Proposed Changes
 
-### [Robustez en Captura]
+### [Capa de Datos y Modelos]
 
-#### [MODIFY] [EvidenceActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/EvidenceActivity.kt)
-- **Gestión de Permisos**: Implementar la solicitud del permiso `CAMERA` antes de intentar abrir la cámara.
-- **Seguridad en I/O**: Añadir bloques `try-catch` alrededor de la creación del archivo temporal y la generación de la URI para capturar excepciones de almacenamiento o de `FileProvider`.
-- **Validación de Directorio**: Asegurar que el directorio de imágenes exista antes de intentar crear el archivo.
-- **Feedback al Usuario**: Mostrar mensajes de error específicos en lugar de permitir que la aplicación se cierre.
+#### [MODIFY] [Models.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/models/Models.kt)
+- Añadir el campo `direccion: String?` a la data class `Ubicacion`.
 
-#### [MODIFY] [file_paths.xml](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/xml/file_paths.xml)
-- **Ampliación de Rutas**: Cambiar el mapeo de `Pictures` a `.` (raíz de archivos externos) para mayor flexibilidad y evitar errores de mapeo en `FileProvider`.
+#### [MODIFY] [DatabaseHelper.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/database/DatabaseHelper.kt)
+- Añadir la constante `COL_UBI_DIR = "direccion"`.
+- Actualizar la sentencia `CREATE TABLE` de ubicaciones para incluir la nueva columna.
+
+#### [MODIFY] [ServicioRepository.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/repositories/ServicioRepository.kt)
+- Actualizar `addUbicacion` para guardar el campo `direccion`.
+- Actualizar `getUbicacionByOrden` para recuperar la dirección de la base de datos.
+
+---
+
+### [Interfaz de Usuario (UI)]
+
+#### [MODIFY] [activity_location.xml](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/layout/activity_location.xml)
+- **Mapa**: Mejorar el placeholder del mapa con un gradiente o una imagen base más profesional y un icono de marcador central.
+- **Card de Detalles**: Reorganizar el contenido para mostrar en filas claras:
+    - **Dirección** (con icono de casa/puntero).
+    - **Coordenadas** (Latitud y Longitud en la misma sección).
+    - **Fecha** (con icono de calendario).
+    - **Hora** (con icono de reloj).
+
+---
+
+### [Lógica de Negocio]
+
+#### [MODIFY] [LocationActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/LocationActivity.kt)
+- **Geocodificación**: Implementar `getAddressFromLocation(lat, lon)` usando `Geocoder`.
+- **Formateo**: Separar la cadena de fecha/hora actual en dos campos distintos para la interfaz.
+- **Persistencia**: Pasar la dirección obtenida al objeto `Ubicacion` antes de llamar al repositorio.
 
 ## Verification Plan
 
 ### Manual Verification
-1. **Flujo de Permisos**: Denegar el permiso de cámara y verificar que la app informe al usuario sin cerrarse.
-2. **Captura Exitosa**: Conceder el permiso y verificar que la cámara abra correctamente.
-3. **Persistencia**: Tomar una foto, verificar que se guarde en SQLite y se muestre en el grid.
-4. **Cancelación**: Abrir la cámara y regresar sin tomar la foto; verificar que no ocurra ningún crash.
+1.  **Captura Nueva**:
+    *   Presionar "Actualizar Ubicación".
+    *   Verificar que aparezcan Latitud, Longitud, Dirección (si hay internet), Fecha y Hora.
+    *   Presionar "Guardar Coordenadas".
+2.  **Consulta Offline**:
+    *   Cerrar la aplicación.
+    *   Abrir la misma orden y entrar a Geolocalización.
+    *   Verificar que todos los datos (incluyendo dirección) se carguen desde SQLite.
+3.  **Visual**:
+    *   Confirmar que el diseño sea coherente con la paleta de colores `chinese_black` y `american_blue`.

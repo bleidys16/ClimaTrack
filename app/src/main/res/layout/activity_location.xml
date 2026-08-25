@@ -100,17 +100,6 @@
                             android:textSize="13sp" />
                     </LinearLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_status_chip"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="4dp"
-                        android:text="EN PROCESO"
-                        android:textColor="@color/status_in_progress"
-                        android:textSize="10sp"
-                        android:fontFamily="@font/geist_bold" />
-
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -135,110 +124,208 @@
                         android:layout_height="20dp"
                         android:src="@android:drawable/checkbox_on_background"
                         app:tint="@color/status_finished" />
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tvStatusLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Ubicación obtenida correctamente"
-                            android:textColor="@color/status_finished"
-                            android:textSize="13sp"
-                            android:fontFamily="@font/geist_bold" />
-                        <TextView
-                            android:id="@+id/tvTimeDisplay"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="---"
-                            android:textColor="@color/status_finished"
-                            android:alpha="0.8"
-                            android:textSize="11sp" />
-                    </LinearLayout>
+                        android:text="Ubicación obtenida correctamente"
+                        android:textColor="@color/status_finished"
+                        android:textSize="13sp"
+                        android:fontFamily="@font/geist_bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Map Placeholder -->
+            <!-- Map View Visualization -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:layout_marginTop="20dp"
                 app:cardBackgroundColor="@color/american_blue"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:strokeWidth="0.5dp"
                 app:strokeColor="@color/cadet_grey">
-                <ImageView
+
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_mapmode"
-                    android:alpha="0.1" />
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="center"
-                    android:src="@android:drawable/ic_menu_mylocation"
-                    app:tint="@color/ube" />
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@android:drawable/ic_menu_mapmode"
+                        android:alpha="0.2" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_bottom_nav_floating"
+                        android:alpha="0.3" />
+
+                    <ImageView
+                        android:id="@+id/ivMarker"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:src="@android:drawable/ic_menu_mylocation"
+                        app:tint="@color/status_finished"
+                        android:visibility="invisible"/>
+                </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Details Box -->
+            <!-- Details Card -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Detalles de la ubicación"
                 android:textColor="@color/white"
-                android:fontFamily="@font/geist_bold" />
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 app:cardBackgroundColor="@color/american_blue"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:strokeColor="@color/cadet_grey"
                 app:strokeWidth="0.5dp">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
+
+                    <!-- Address Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@android:drawable/ic_menu_directions"
+                            app:tint="@color/ube" />
+                        <TextView
+                            android:id="@+id/tvAddress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Obteniendo dirección..."
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="12dp"
+                        android:background="@color/cadet_grey"
+                        android:alpha="0.2" />
+
+                    <!-- Coordinates Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Latitud"
-                            android:textColor="@color/cadet_grey" />
-                        <TextView
-                            android:id="@+id/tvLat"
-                            android:layout_width="wrap_content"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Latitud"
+                                android:textColor="@color/cadet_grey"
+                                android:textSize="12sp" />
+                            <TextView
+                                android:id="@+id/tvLat"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="---"
+                                android:textColor="@color/white"
+                                android:fontFamily="@font/geist_medium" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="---"
-                            android:textColor="@color/white" />
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Longitud"
+                                android:textColor="@color/cadet_grey"
+                                android:textSize="12sp" />
+                            <TextView
+                                android:id="@+id/tvLon"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="---"
+                                android:textColor="@color/white"
+                                android:fontFamily="@font/geist_medium" />
+                        </LinearLayout>
                     </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="12dp"
+                        android:background="@color/cadet_grey"
+                        android:alpha="0.2" />
+
+                    <!-- Date and Time Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
                         android:orientation="horizontal">
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Longitud"
-                            android:textColor="@color/cadet_grey" />
-                        <TextView
-                            android:id="@+id/tvLon"
-                            android:layout_width="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@android:drawable/ic_menu_my_calendar"
+                                app:tint="@color/cadet_grey" />
+                            <TextView
+                                android:id="@+id/tvDate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="--/--/----"
+                                android:textColor="@color/white"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="---"
-                            android:textColor="@color/white" />
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@android:drawable/ic_menu_recent_history"
+                                app:tint="@color/cadet_grey" />
+                            <TextView
+                                android:id="@+id/tvTime"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="--:--"
+                                android:textColor="@color/white"
+                                android:textSize="13sp" />
+                        </LinearLayout>
                     </LinearLayout>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

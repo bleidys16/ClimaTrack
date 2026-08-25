@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
@@ -19,6 +20,7 @@ import com.example.climatrack.repositories.ServicioRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -31,6 +33,7 @@ class LocationActivity : BaseActivity() {
     private var orderId: Int = -1
     private var currentLat: Double = 0.0
     private var currentLon: Double = 0.0
+    private var currentAddress: String? = null
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -88,10 +91,27 @@ class LocationActivity : BaseActivity() {
         ubicacion?.let {
             currentLat = it.latitud
             currentLon = it.longitud
+            currentAddress = it.direccion
+            
             binding.tvLat.text = "${it.latitud}"
             binding.tvLon.text = "${it.longitud}"
-            binding.tvTimeDisplay.text = "Registrado el: ${it.fecha}"
+            binding.tvAddress.text = it.direccion ?: "Dirección no disponible"
+            
+            // Parse date
+            try {
+                val fullDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(it.fecha)
+                fullDate?.let { date ->
+                    binding.tvDate.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(date)
+                    binding.tvTime.text = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(date)
+                }
+            } catch (e: Exception) {
+                binding.tvDate.text = it.fecha
+            }
+
             binding.cardLocationStatus.visibility = View.VISIBLE
+            binding.tvStatusLabel.text = "Ubicación registrada anteriormente"
+            binding.ivMarker.visibility = View.VISIBLE
+            
             binding.btnSaveLocation.isEnabled = false
             binding.btnSaveLocation.text = "UBICACIÓN YA REGISTRADA"
         }
@@ -133,9 +153,10 @@ class LocationActivity : BaseActivity() {
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation() {
-        binding.tvTimeDisplay.text = "Obteniendo ubicación..."
+        binding.tvStatusLabel.text = "Obteniendo ubicación..."
         binding.cardLocationStatus.visibility = View.VISIBLE
         binding.btnGetLocation.isEnabled = false
+        binding.ivMarker.visibility = View.INVISIBLE
 
         fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
             .addOnSuccessListener { location ->
@@ -143,21 +164,49 @@ class LocationActivity : BaseActivity() {
                 if (location != null) {
                     currentLat = location.latitude
                     currentLon = location.longitude
+                    
                     binding.tvLat.text = "$currentLat"
                     binding.tvLon.text = "$currentLon"
-                    binding.tvTimeDisplay.text = "Capturado: ${SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())}"
+                    
+                    val now = Date()
+                    binding.tvDate.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(now)
+                    binding.tvTime.text = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(now)
+                    
+                    binding.tvStatusLabel.text = "Ubicación obtenida correctamente"
+                    binding.ivMarker.visibility = View.VISIBLE
                     binding.btnSaveLocation.isEnabled = true
                     binding.btnSaveLocation.text = "GUARDAR COORDENADAS"
+                    
+                    getAddress(currentLat, currentLon)
                 } else {
-                    binding.tvTimeDisplay.text = "No se pudo obtener la ubicación. Intente de nuevo."
+                    binding.tvStatusLabel.text = "No se pudo obtener la ubicación. Intente de nuevo."
                     Toast.makeText(this, "Error al obtener ubicación. Asegúrese de estar en un lugar abierto.", Toast.LENGTH_LONG).show()
                 }
             }
             .addOnFailureListener { e ->
                 binding.btnGetLocation.isEnabled = true
-                binding.tvTimeDisplay.text = "Error: ${e.message}"
+                binding.tvStatusLabel.text = "Error: ${e.message}"
                 Toast.makeText(this, "Fallo en el sensor de ubicación", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun getAddress(lat: Double, lon: Double) {
+        binding.tvAddress.text = "Obteniendo dirección..."
+        val geocoder = Geocoder(this, Locale.getDefault())
+        try {
+            val addresses = geocoder.getFromLocation(lat, lon, 1)
+            if (!addresses.isNullOrEmpty()) {
+                val address = addresses[0].getAddressLine(0)
+                currentAddress = address
+                binding.tvAddress.text = address
+            } else {
+                currentAddress = "Sin dirección disponible"
+                binding.tvAddress.text = currentAddress
+            }
+        } catch (e: IOException) {
+            currentAddress = "Error al obtener dirección"
+            binding.tvAddress.text = currentAddress
+        }
     }
 
     private fun saveLocation() {
@@ -171,6 +220,7 @@ class LocationActivity : BaseActivity() {
             ordenId = orderId,
             latitud = currentLat,
             longitud = currentLon,
+            direccion = currentAddress,
             fecha = date
         )
         
