@@ -53,4 +53,40 @@ class ServicioRepository(context: Context) {
         }
         return db.insert(DatabaseHelper.TABLE_APROBACIONES, null, values)
     }
+
+    fun getEvidenciasByOrden(ordenId: Int): List<Evidencia> {
+        val evidencias = mutableListOf<Evidencia>()
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(
+            DatabaseHelper.TABLE_EVIDENCIAS,
+            null,
+            "${DatabaseHelper.COL_EVI_ORDEN_ID}=?",
+            arrayOf(ordenId.toString()),
+            null, null, "${DatabaseHelper.COL_EVI_FECHA} DESC"
+        )
+
+        if (cursor.moveToFirst()) {
+            do {
+                evidencias.add(
+                    Evidencia(
+                        id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ID)),
+                        ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ORDEN_ID)),
+                        rutaFoto = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_RUTA)),
+                        fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_FECHA))
+                    )
+                )
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return evidencias
+    }
+
+    fun deleteEvidencia(id: Int): Int {
+        val db = dbHelper.writableDatabase
+        return db.delete(
+            DatabaseHelper.TABLE_EVIDENCIAS,
+            "${DatabaseHelper.COL_EVI_ID}=?",
+            arrayOf(id.toString())
+        )
+    }
 }
