@@ -1,5 +1,6 @@
 package com.example.climatrack.adapters
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.climatrack.R
 import com.example.climatrack.databinding.ItemEquipmentBinding
 import com.example.climatrack.models.Equipo
+import java.io.File
 
 class EquipmentAdapter(
     private var equipmentList: List<Equipo>,
@@ -36,6 +38,20 @@ class EquipmentAdapter(
             binding.tvEquipBrandModel.text = "${equipment.marca} ${equipment.modelo}"
             binding.tvEquipStatus.text = equipment.estado
 
+            // Photo loading
+            if (equipment.imagenPath != null) {
+                val file = File(equipment.imagenPath)
+                if (file.exists()) {
+                    binding.ivEquipmentPhoto.setImageURI(Uri.fromFile(file))
+                    binding.ivEquipmentPhoto.clearColorFilter()
+                    binding.ivEquipmentPhoto.alpha = 1.0f
+                } else {
+                    setDefaultIcon()
+                }
+            } else {
+                setDefaultIcon()
+            }
+
             val context = binding.root.context
             val (containerColor, textColor) = when (equipment.estado) {
                 "OPERATIVO" -> R.color.status_finished_container to R.color.status_finished
@@ -49,6 +65,12 @@ class EquipmentAdapter(
             binding.root.setOnClickListener {
                 onItemClick(equipment)
             }
+        }
+
+        private fun setDefaultIcon() {
+            binding.ivEquipmentPhoto.setImageResource(R.drawable.ic_nav_equipment)
+            binding.ivEquipmentPhoto.setColorFilter(ContextCompat.getColor(binding.root.context, R.color.ube))
+            binding.ivEquipmentPhoto.alpha = 0.5f
         }
     }
 }

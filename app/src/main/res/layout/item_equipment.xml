@@ -14,13 +14,16 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="12dp">
 
-        <ImageView
-            android:id="@+id/imgEquipment"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivEquipmentPhoto"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_nav_equipment"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize12dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/ube" />
@@ -29,13 +32,13 @@
             android:id="@+id/tvEquipCode"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="16dp"
             android:fontFamily="@font/geist_bold"
             android:text="EQ-001"
             android:textColor="@color/white"
-            android:textSize="18sp"
+            android:textSize="17sp"
             app:layout_constraintEnd_toStartOf="@id/tvEquipStatus"
-            app:layout_constraintStart_toEndOf="@id/imgEquipment"
+            app:layout_constraintStart_toEndOf="@id/ivEquipmentPhoto"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -43,11 +46,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_status_chip"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="4dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="3dp"
             android:text="OPERATIVO"
             android:textColor="@color/status_finished"
-            android:textSize="10sp"
+            android:textSize="9sp"
             android:fontFamily="@font/geist_bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -56,11 +59,11 @@
             android:id="@+id/tvEquipType"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
             android:fontFamily="@font/geist_medium"
             android:text="Aire Acondicionado Central"
             android:textColor="@color/white"
-            android:textSize="15sp"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvEquipCode"
             app:layout_constraintTop_toBottomOf="@id/tvEquipCode" />
@@ -72,7 +75,7 @@
             android:fontFamily="@font/geist"
             android:text="York YXC-48"
             android:textColor="@color/cadet_grey"
-            android:textSize="13sp"
+            android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvEquipCode"
             app:layout_constraintTop_toBottomOf="@id/tvEquipType" />

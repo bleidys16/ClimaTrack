@@ -21,6 +21,7 @@ class EquipoRepository(context: Context) {
             put(DatabaseHelper.COL_EQUIPO_UBICACION, equipo.ubicacion)
             put(DatabaseHelper.COL_EQUIPO_CLIENTE_ID, equipo.clienteId)
             put(DatabaseHelper.COL_EQUIPO_ESTADO, equipo.estado)
+            put(DatabaseHelper.COL_EQUIPO_IMAGEN, equipo.imagenPath)
         }
         return db.insert(DatabaseHelper.TABLE_EQUIPOS, null, values)
     }
@@ -61,6 +62,7 @@ class EquipoRepository(context: Context) {
             put(DatabaseHelper.COL_EQUIPO_UBICACION, equipo.ubicacion)
             put(DatabaseHelper.COL_EQUIPO_CLIENTE_ID, equipo.clienteId)
             put(DatabaseHelper.COL_EQUIPO_ESTADO, equipo.estado)
+            put(DatabaseHelper.COL_EQUIPO_IMAGEN, equipo.imagenPath)
         }
         return db.update(DatabaseHelper.TABLE_EQUIPOS, values, "${DatabaseHelper.COL_EQUIPO_ID}=?", arrayOf(equipo.id.toString()))
     }
@@ -81,7 +83,8 @@ class EquipoRepository(context: Context) {
             capacidad = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_CAPACIDAD)),
             ubicacion = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_UBICACION)),
             clienteId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_CLIENTE_ID)),
-            estado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_ESTADO))
+            estado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_ESTADO)),
+            imagenPath = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_IMAGEN))
         )
     }
 }

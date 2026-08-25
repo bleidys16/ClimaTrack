@@ -39,6 +39,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_EQUIPO_UBICACION = "ubicacion"
         const val COL_EQUIPO_CLIENTE_ID = "cliente_id"
         const val COL_EQUIPO_ESTADO = "estado"
+        const val COL_EQUIPO_IMAGEN = "imagen_path"
 
         // Tabla Ordenes
         const val TABLE_ORDENES = "ordenes"
@@ -132,6 +133,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_EQUIPO_UBICACION TEXT, " +
                 "$COL_EQUIPO_CLIENTE_ID INTEGER, " +
                 "$COL_EQUIPO_ESTADO TEXT, " +
+                "$COL_EQUIPO_IMAGEN TEXT, " +
                 "FOREIGN KEY($COL_EQUIPO_CLIENTE_ID) REFERENCES $TABLE_CLIENTES($COL_CLIENTE_ID))"
 
         val createOrdenes = "CREATE TABLE $TABLE_ORDENES (" +

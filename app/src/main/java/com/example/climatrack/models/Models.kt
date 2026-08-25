@@ -26,7 +26,8 @@ data class Equipo(
     val capacidad: String?,
     val ubicacion: String?,
     val clienteId: Int,
-    val estado: String
+    val estado: String,
+    val imagenPath: String? = null
 )
 
 data class Orden(

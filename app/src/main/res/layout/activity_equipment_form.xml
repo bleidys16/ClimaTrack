@@ -34,10 +34,55 @@
             android:orientation="vertical"
             android:padding="24dp">
 
+            <!-- Photo Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fotografía del Equipo"
+                android:textColor="@color/ube"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="18sp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/cadet_grey">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:id="@+id/ivEquipmentPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_nav_equipment"
+                        android:alpha="0.3"
+                        app:tint="@color/cadet_grey" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCapturePhoto"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="TOMAR FOTO"
+                        app:icon="@android:drawable/ic_menu_camera"
+                        app:backgroundTint="@color/ube"
+                        android:textColor="@color/white" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <TextView
                 android:id="@+id/tvFormTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
                 android:text="Información Técnica"
                 android:textColor="@color/ube"
                 android:fontFamily="@font/geist_bold"
@@ -46,7 +91,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:hint="Código del equipo *">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etCode"

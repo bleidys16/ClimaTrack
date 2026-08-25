@@ -1,14 +1,15 @@
-# Tareas de Mejora: Geolocalización Profesional
+# Tareas: Integración de Imágenes en Equipos
 
 - [x] **Persistencia y Modelos**
-    - [x] Actualizar data class `Ubicacion` en `Models.kt`
-    - [x] Agregar columna `direccion` en `DatabaseHelper.kt`
-    - [x] Actualizar repositorio `ServicioRepository.kt`
-- [x] **Interfaz de Usuario**
-    - [x] Rediseñar `activity_location.xml` (Card de detalles y visual de mapa)
-- [x] **Lógica de Actividad**
-    - [x] Implementar obtención de dirección (Geocoder) en `LocationActivity.kt`
-    - [x] Separar visualización de fecha y hora
-    - [x] Gestionar carga de datos existentes (incluyendo dirección)
+    - [x] Actualizar data class `Equipo` en `Models.kt`
+    - [x] Actualizar esquema y versión en `DatabaseHelper.kt`
+    - [x] Actualizar repositorio `EquipoRepository.kt`
+- [x] **Diseño de Interfaz**
+    - [x] Rediseñar `item_equipment.xml` para incluir miniatura
+    - [x] Actualizar `activity_equipment_form.xml` con previsualización de foto
+- [x] **Lógica de Aplicación**
+    - [x] Implementar carga de imágenes en `EquipmentAdapter.kt`
+    - [x] Implementar captura de foto en `EquipmentFormActivity.kt`
 - [x] **Verificación**
-    - [x] Probar flujo completo de captura y persistencia offline
+    - [x] Probar creación de equipo con foto
+    - [x] Probar visualización de placeholder (equipo sin foto)
