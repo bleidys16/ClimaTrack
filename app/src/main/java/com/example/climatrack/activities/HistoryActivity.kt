@@ -58,7 +58,7 @@ class HistoryActivity : BaseActivity() {
 
     private fun loadHistory() {
         val tecnicoId = sessionManager.getUserId()
-        val history = mantenimientoRepository.getHistorial(tecnicoId)
+        val history = mantenimientoRepository.getHistorialInfo(tecnicoId)
         
         val adapter = HistoryAdapter(history)
         binding.rvHistory.layoutManager = LinearLayoutManager(this)

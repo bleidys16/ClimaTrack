@@ -41,6 +41,35 @@ class MantenimientoRepository(context: Context) {
         return mant
     }
 
+    fun getHistorialInfo(tecnicoId: Int): List<com.example.climatrack.models.MantenimientoInfo> {
+        val list = mutableListOf<com.example.climatrack.models.MantenimientoInfo>()
+        val db = dbHelper.readableDatabase
+        val query = "SELECT m.${DatabaseHelper.COL_MANT_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, " +
+                "m.${DatabaseHelper.COL_MANT_FECHA}, m.${DatabaseHelper.COL_MANT_DIAG}, " +
+                "m.${DatabaseHelper.COL_MANT_TRABAJO}, o.${DatabaseHelper.COL_ORDEN_TIPO}, u.${DatabaseHelper.COL_USUARIO_NOMBRE} " +
+                "FROM ${DatabaseHelper.TABLE_MANTENIMIENTOS} m " +
+                "JOIN ${DatabaseHelper.TABLE_ORDENES} o ON m.${DatabaseHelper.COL_MANT_ORDEN_ID} = o.${DatabaseHelper.COL_ORDEN_ID} " +
+                "JOIN ${DatabaseHelper.TABLE_USUARIOS} u ON o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} " +
+                "WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = ?"
+        
+        val cursor = db.rawQuery(query, arrayOf(tecnicoId.toString()))
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(com.example.climatrack.models.MantenimientoInfo(
+                    id = cursor.getInt(0),
+                    ordenNumero = cursor.getString(1),
+                    fecha = cursor.getString(2),
+                    diagnostico = cursor.getString(3),
+                    trabajoRealizado = cursor.getString(4),
+                    tipoServicio = cursor.getString(5),
+                    tecnicoNombre = cursor.getString(6)
+                ))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
+
     fun getHistorial(tecnicoId: Int): List<Mantenimiento> {
         val list = mutableListOf<Mantenimiento>()
         val db = dbHelper.readableDatabase

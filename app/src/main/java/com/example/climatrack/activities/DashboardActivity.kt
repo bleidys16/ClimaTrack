@@ -24,8 +24,12 @@ class DashboardActivity : BaseActivity() {
 
         setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
         setupUI()
-        loadStats()
         setupBottomNavigation()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadStats()
     }
 
     private fun setupUI() {

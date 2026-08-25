@@ -63,6 +63,16 @@ data class Mantenimiento(
     val tiempoEmpleado: String
 )
 
+data class MantenimientoInfo(
+    val id: Int,
+    val ordenNumero: String,
+    val fecha: String,
+    val diagnostico: String,
+    val trabajoRealizado: String,
+    val tipoServicio: String,
+    val tecnicoNombre: String
+)
+
 data class Repuesto(
     val id: Int = 0,
     val nombre: String,

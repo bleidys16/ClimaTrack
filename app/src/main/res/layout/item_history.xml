@@ -7,7 +7,9 @@
     android:layout_marginVertical="8dp"
     app:cardCornerRadius="16dp"
     app:cardElevation="2dp"
-    app:cardBackgroundColor="@color/white">
+    app:cardBackgroundColor="@color/american_blue"
+    app:strokeWidth="0.5dp"
+    app:strokeColor="@color/cadet_grey">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -18,10 +20,10 @@
             android:id="@+id/imgHistory"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@android:drawable/ic_menu_recent_history"
+            android:src="@drawable/ic_nav_history"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/md_theme_light_primary" />
+            app:tint="@color/ube" />
 
         <TextView
             android:id="@+id/tvHistDate"
@@ -29,9 +31,9 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="2026-08-19"
-            android:textColor="@color/md_theme_light_primary"
+            android:textColor="@color/white"
             android:textSize="16sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/geist_bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/imgHistory"
             app:layout_constraintTop_toTopOf="parent" />
@@ -42,8 +44,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Diagnóstico: Equipo con filtros obstruidos."
-            android:textColor="@color/md_theme_light_onBackground"
+            android:textColor="@color/white"
             android:textSize="14sp"
+            android:fontFamily="@font/geist"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvHistDate"
             app:layout_constraintTop_toBottomOf="@id/tvHistDate" />
@@ -54,19 +57,26 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Trabajo: Limpieza general y cambio de filtros."
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/cadet_grey"
             android:textSize="13sp"
+            android:fontFamily="@font/geist"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvHistDate"
             app:layout_constraintTop_toBottomOf="@id/tvHistDiagnosis" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="4dp"
-            android:layout_marginTop="12dp"
-            android:background="@color/status_finished"
+        <TextView
+            android:id="@+id/tvHistType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_status_chip"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="2dp"
+            android:text="PREVENTIVO"
+            android:textColor="@color/status_finished"
+            android:textSize="10sp"
+            android:fontFamily="@font/geist_bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/tvHistDate"
             app:layout_constraintTop_toBottomOf="@id/tvHistWork" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
