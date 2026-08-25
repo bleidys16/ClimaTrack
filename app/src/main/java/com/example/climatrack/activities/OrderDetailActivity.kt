@@ -64,7 +64,8 @@ class OrderDetailActivity : BaseActivity() {
             
             if (it.estado == "FINALIZADA") {
                 binding.btnFinishOrder.isEnabled = false
-                binding.btnFinishOrder.text = "ORDEN FINALIZADA"
+                binding.tvFinishLabel.text = "ORDEN FINALIZADA"
+                binding.llFinishContainer.alpha = 0.5f
             }
         }
     }
