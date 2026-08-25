@@ -39,16 +39,20 @@ class EquipmentAdapter(
             binding.tvEquipStatus.text = equipment.estado
 
             // Photo loading
-            if (equipment.imagenPath != null) {
-                val file = File(equipment.imagenPath)
-                if (file.exists()) {
-                    binding.ivEquipmentPhoto.setImageURI(Uri.fromFile(file))
-                    binding.ivEquipmentPhoto.clearColorFilter()
-                    binding.ivEquipmentPhoto.alpha = 1.0f
+            try {
+                if (equipment.imagenPath != null) {
+                    val file = File(equipment.imagenPath)
+                    if (file.exists()) {
+                        binding.ivEquipmentPhoto.setImageURI(Uri.fromFile(file))
+                        binding.ivEquipmentPhoto.clearColorFilter()
+                        binding.ivEquipmentPhoto.alpha = 1.0f
+                    } else {
+                        setDefaultIcon()
+                    }
                 } else {
                     setDefaultIcon()
                 }
-            } else {
+            } catch (e: Exception) {
                 setDefaultIcon()
             }
 

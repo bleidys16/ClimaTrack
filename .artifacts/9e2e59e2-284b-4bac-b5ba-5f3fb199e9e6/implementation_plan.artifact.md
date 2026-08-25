@@ -1,63 +1,44 @@
-# Plan de Mejora: Sección de Equipos con Imágenes
+# Plan de Corrección: Crash en Equipos y Visibilidad de Órdenes
 
-Este plan detalla los cambios necesarios para agregar una imagen representativa a cada equipo en la sección de **Gestión de Equipos**, permitiendo capturar fotografías reales de las unidades y visualizarlas en la lista principal.
+Este plan aborda el cierre inesperado al entrar en la sección de Equipos y asegura que las órdenes de prueba sean visibles para el técnico en todos los dispositivos.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> Se añadirá la capacidad de capturar fotos de los equipos. Si un equipo no tiene foto, se mostrará un icono predeterminado estilizado.
+> El crash en la sección de Equipos probablemente se debe a una inconsistencia en la base de datos local o a una falla al recuperar la columna de imagen. Se implementará un manejo seguro de columnas.
 
 > [!NOTE]
-> Se incrementará la versión de la base de datos para incluir la columna de imagen. Esto es necesario para la persistencia de las rutas de las fotos.
+> Para asegurar que las órdenes de prueba se vean siempre, se ajustará la lógica de inserción inicial para asociar las órdenes al ID real del usuario `tecnico01`, independientemente de cuál sea su ID incremental en SQLite.
 
 ## Proposed Changes
 
-### [Capa de Datos]
-
-#### [MODIFY] [Models.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/models/Models.kt)
-- Añadir el campo `imagenPath: String? = null` a la clase `Equipo`.
+### [Robustez de Datos]
 
 #### [MODIFY] [DatabaseHelper.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/database/DatabaseHelper.kt)
-- Definir `COL_EQUIPO_IMAGEN = "imagen"`.
-- Actualizar la sentencia `CREATE TABLE equipos` para incluir la columna de imagen.
-- Incrementar `DATABASE_VERSION`.
+- Refactorizar `insertInitialData` para que busque el ID real del técnico tras insertarlo (o si ya existe) antes de crear las órdenes.
+- Asegurar que las órdenes y equipos se asocien correctamente mediante consultas de verificación.
 
 #### [MODIFY] [EquipoRepository.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/repositories/EquipoRepository.kt)
-- Actualizar los métodos `create`, `update` y `cursorToEquipo` para manejar la persistencia del campo `imagen`.
+- Reemplazar `getColumnIndexOrThrow` por una verificación segura con `getColumnIndex`. Si la columna no existe (por una migración fallida), se asignará `null` en lugar de provocar un crash.
 
 ---
 
-### [Interfaz de Usuario (UI)]
-
-#### [MODIFY] [item_equipment.xml](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/layout/item_equipment.xml)
-- Rediseñar el elemento de la lista para incluir una vista de imagen (miniatura) más prominente a la izquierda o arriba de la información.
-- Aplicar bordes redondeados a la imagen para mantener la estética moderna.
-
-#### [MODIFY] [activity_equipment_form.xml](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/layout/activity_equipment_form.xml)
-- Añadir una sección de "Fotografía del Equipo" con un `ImageView` de previsualización y un botón para abrir la cámara.
-
----
-
-### [Lógica de Actividades]
+### [Estabilidad de Interfaz]
 
 #### [MODIFY] [EquipmentAdapter.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/adapters/EquipmentAdapter.kt)
-- Lógica para cargar la imagen desde el almacenamiento local si existe, o mostrar un placeholder si no hay ruta guardada.
+- Añadir bloques `try-catch` en la carga de imágenes para evitar cierres por archivos corruptos o URIs inválidas.
+- Validar la existencia de `ivEquipmentPhoto` antes de manipularla.
 
-#### [MODIFY] [EquipmentFormActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/EquipmentFormActivity.kt)
-- Implementar la funcionalidad de captura de fotografía similar a la de `EvidenceActivity`, permitiendo asociar la imagen al equipo antes de guardar.
+---
+
+### [Sincronización de Cambios]
+
+- Realizar un commit y push de las correcciones para que todos los dispositivos que descarguen la versión de GitHub vean las órdenes de prueba y no experimenten el crash.
 
 ## Verification Plan
 
 ### Manual Verification
-1. **Creación de Equipo**:
-   - Abrir el formulario de equipos.
-   - Tomar una fotografía del equipo.
-   - Completar los datos y guardar.
-   - Verificar que el equipo aparezca en la lista con su foto.
-2. **Edición de Equipo**:
-   - Abrir un equipo existente.
-   - Cambiar la foto y guardar.
-   - Verificar la actualización en la lista.
-3. **Estado sin imagen**:
-   - Crear un equipo sin tomar foto.
-   - Verificar que se muestre el icono predeterminado.
+1.  **Borrar datos de la app** (para forzar `onCreate` y la nueva carga de datos).
+2.  **Iniciar sesión** con `tecnico01` / `123456`.
+3.  **Entrar a Equipos**: Verificar que no se cierre y se listen los equipos iniciales.
+4.  **Entrar a Órdenes**: Verificar que aparezcan las 5 órdenes de prueba (OT-00001, OT-00025, etc.).

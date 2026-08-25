@@ -73,18 +73,30 @@ class EquipoRepository(context: Context) {
     }
 
     private fun cursorToEquipo(cursor: Cursor): Equipo {
+        val idIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_ID)
+        val codIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_COD)
+        val tipoIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_TIPO)
+        val marcaIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_MARCA)
+        val modelIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_MODELO)
+        val serialIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_SERIAL)
+        val capIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_CAPACIDAD)
+        val ubiIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_UBICACION)
+        val clientIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_CLIENTE_ID)
+        val statusIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_ESTADO)
+        val imgIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_IMAGEN)
+
         return Equipo(
-            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_ID)),
-            codigo = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_COD)),
-            tipo = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_TIPO)),
-            marca = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_MARCA)),
-            modelo = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_MODELO)),
-            serial = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_SERIAL)),
-            capacidad = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_CAPACIDAD)),
-            ubicacion = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_UBICACION)),
-            clienteId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_CLIENTE_ID)),
-            estado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_ESTADO)),
-            imagenPath = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EQUIPO_IMAGEN))
+            id = if (idIdx != -1) cursor.getInt(idIdx) else 0,
+            codigo = if (codIdx != -1) cursor.getString(codIdx) else "",
+            tipo = if (tipoIdx != -1) cursor.getString(tipoIdx) else "",
+            marca = if (marcaIdx != -1) cursor.getString(marcaIdx) else "",
+            modelo = if (modelIdx != -1) cursor.getString(modelIdx) else "",
+            serial = if (serialIdx != -1) cursor.getString(serialIdx) else null,
+            capacidad = if (capIdx != -1) cursor.getString(capIdx) else null,
+            ubicacion = if (ubiIdx != -1) cursor.getString(ubiIdx) else null,
+            clienteId = if (clientIdx != -1) cursor.getInt(clientIdx) else 0,
+            estado = if (statusIdx != -1) cursor.getString(statusIdx) else "",
+            imagenPath = if (imgIdx != -1) cursor.getString(imgIdx) else null
         )
     }
 }

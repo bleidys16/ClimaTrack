@@ -1,15 +1,12 @@
-# Tareas: Integración de Imágenes en Equipos
+# Tareas de Corrección Final: Estabilidad y Datos
 
-- [x] **Persistencia y Modelos**
-    - [x] Actualizar data class `Equipo` en `Models.kt`
-    - [x] Actualizar esquema y versión en `DatabaseHelper.kt`
-    - [x] Actualizar repositorio `EquipoRepository.kt`
-- [x] **Diseño de Interfaz**
-    - [x] Rediseñar `item_equipment.xml` para incluir miniatura
-    - [x] Actualizar `activity_equipment_form.xml` con previsualización de foto
-- [x] **Lógica de Aplicación**
-    - [x] Implementar carga de imágenes en `EquipmentAdapter.kt`
-    - [x] Implementar captura de foto en `EquipmentFormActivity.kt`
-- [x] **Verificación**
-    - [x] Probar creación de equipo con foto
-    - [x] Probar visualización de placeholder (equipo sin foto)
+- [ ] **Robustez de Base de Datos**
+    - [ ] Mejorar `insertInitialData` en `DatabaseHelper.kt` para vincular órdenes por ID real
+    - [ ] Implementar `cursorToEquipo` seguro en `EquipoRepository.kt`
+- [ ] **Estabilidad del Adaptador**
+    - [ ] Añadir null-safety y try-catch en `EquipmentAdapter.kt`
+- [ ] **Sincronización**
+    - [ ] Subir cambios corregidos a GitHub
+- [ ] **Verificación**
+    - [ ] Confirmar visibilidad de órdenes
+    - [ ] Confirmar estabilidad en sección Equipos

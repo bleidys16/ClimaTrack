@@ -239,7 +239,15 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COL_USUARIO_NOMBRE, "Técnico 01")
             put(COL_USUARIO_ROL, "Técnico")
         }
-        val idUser1 = db?.insert(TABLE_USUARIOS, null, tecnico1) ?: 1
+        db?.insert(TABLE_USUARIOS, null, tecnico1)
+        
+        // Obtener el ID real del técnico (indispensable para vincular órdenes)
+        val cursorUser = db?.query(TABLE_USUARIOS, arrayOf(COL_USUARIO_ID), "$COL_USUARIO_USER=?", arrayOf("tecnico01"), null, null, null)
+        var idUser1: Long = 1
+        if (cursorUser?.moveToFirst() == true) {
+            idUser1 = cursorUser.getLong(0)
+        }
+        cursorUser?.close()
 
         val tecnico2 = ContentValues().apply {
             put(COL_USUARIO_USER, "tecnico02")
