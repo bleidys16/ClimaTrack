@@ -77,6 +77,30 @@ class ServicioRepository(context: Context) {
         return db.insert(DatabaseHelper.TABLE_UBICACIONES, null, values)
     }
 
+    fun getUbicacionByOrden(ordenId: Int): Ubicacion? {
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(
+            DatabaseHelper.TABLE_UBICACIONES,
+            null,
+            "${DatabaseHelper.COL_UBI_ORDEN_ID}=?",
+            arrayOf(ordenId.toString()),
+            null, null, "${DatabaseHelper.COL_UBI_FECHA} DESC", "1"
+        )
+
+        var ubicacion: Ubicacion? = null
+        if (cursor.moveToFirst()) {
+            ubicacion = Ubicacion(
+                id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_ID)),
+                ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_ORDEN_ID)),
+                latitud = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_LAT)),
+                longitud = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_LON)),
+                fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_FECHA))
+            )
+        }
+        cursor.close()
+        return ubicacion
+    }
+
     fun addAprobacion(aprobacion: Aprobacion): Long {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {

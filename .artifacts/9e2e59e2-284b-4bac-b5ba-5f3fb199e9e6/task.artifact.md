@@ -1,25 +1,10 @@
-# Tareas de Rediseño ClimaTrack
+# Tareas de Corrección de Estabilidad
 
-- [x] **Fase 1: Identidad Visual y Recursos Base**
-    - [x] Actualizar `colors.xml` con paleta corporativa
-    - [x] Actualizar `themes.xml` a Material 3 y definir estilos globales
-    - [x] Actualizar `strings.xml` con nuevas etiquetas
-    - [x] Crear drawables para estados (chips/badges) y formas
-- [x] **Fase 2: Pantallas de Acceso y Dashboard**
-    - [x] Rediseñar `activity_splash.xml`
-    - [x] Rediseñar `activity_login.xml`
-    - [x] Rediseñar `activity_dashboard.xml` (Cards de resumen y accesos)
-- [x] **Fase 3: Navegación y Listados**
-    - [x] Crear menú de navegación inferior
-    - [x] Rediseñar `activity_orders.xml` e `item_order.xml` (Tabs y Chips)
-    - [x] Rediseñar `activity_equipment.xml` e `item_equipment.xml` (Búsqueda y Cards)
-    - [x] Rediseñar `activity_history.xml` e `item_history.xml`
-- [x] **Fase 4: Formularios y Flujos Técnicos**
-    - [x] Rediseñar `activity_maintenance.xml` (Secciones y Resumen)
-    - [x] Rediseñar `activity_spare_parts.xml` e `item_spare_part`
-    - [x] Rediseñar `activity_evidence.xml` (Grid de fotos)
-    - [x] Rediseñar `activity_location.xml`
-    - [x] Rediseñar `activity_approval.xml` (Resumen y Firma)
-- [/] **Fase 5: Estados Globales y Verificación**
-    - [ ] Implementar layouts de carga y estados vacíos
-    - [x] Verificación final de consistencia y responsividad
+- [x] **Robustez de Animaciones (SplashActivity)**
+    - [x] Implementar animaciones con `repeatCount = INFINITE`
+    - [x] Gestionar la limpieza de animadores en `onDestroy`
+- [x] **Seguridad en BaseActivity**
+    - [x] Agregar null-checks en la navegación personalizada
+    - [x] Validar tipos de LayoutParams para Edge-to-Edge
+- [x] **Verificación de Inicio**
+    - [x] Confirmar transiciones correctas

@@ -1,27 +1,40 @@
-# Walkthrough de Rediseño y Corrección ClimaTrack
+# Walkthrough de Correcciones: Geolocalización y Evidencias
 
-Se ha completado la modernización visual de la aplicación **ClimaTrack** y se han corregido los errores de compilación introducidos durante el proceso. La aplicación ahora es visualmente coherente y compila correctamente.
+Se han corregido y robustecido las funcionalidades de captura de ubicación GPS y evidencias fotográficas, asegurando que los datos se guarden correctamente en SQLite y se asocien a la orden de trabajo activa.
 
-## Cambios y Correcciones Realizadas
+## Cambios Realizados
 
-### Corrección de Errores de Consola (Build)
-- **Recursos Faltantes**: Se restauraron los colores `background`, `secondary` y `status_canceled` en `colors.xml` para asegurar la compatibilidad con los layouts existentes.
-- **Iconos Privados**: Se reemplazó el recurso privado `android:drawable/ic_menu_back` por el recurso público `@android:drawable/ic_menu_revert` en 8 archivos de layout diferentes.
-- **Vinculación de Recursos**: Se verificó que todos los recursos XML se vinculen correctamente, logrando un build exitoso.
+### Repositorio y Datos
+- **[ServicioRepository.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/repositories/ServicioRepository.kt)**: Se implementó `getUbicacionByOrden` para recuperar coordenadas guardadas previamente.
 
-### Identidad y Estilo Global (Material 3)
-- **Paleta Corporativa**: Implementación de azules empresariales (`#1565C0`, `#0D47A1`) y estados semafóricos consistentes.
-- **Componentes M3**: Migración de temas y componentes a Material 3, con bordes redondeados de 16dp y elevación optimizada.
-- **Dashboard y Navegación**: Rediseño del Dashboard con tarjetas de resumen y adición de una barra de navegación inferior funcional.
+### Geolocalización (LocationActivity)
+- **Carga de Persistencia**: Al abrir la pantalla, la aplicación ahora verifica si ya existe una ubicación para la orden y la muestra, desactivando el botón de guardado si ya está registrada.
+- **Robustez de GPS**: Se reemplazó `lastLocation` por `getCurrentLocation` para forzar una lectura fresca del sensor.
+- **Validación de Sensor**: Se añadió una alerta que guía al usuario a los ajustes del sistema si el GPS está desactivado.
+- **Mensajería**: Se mejoraron los mensajes de estado ("Obteniendo ubicación...", "Capturado el...", etc.).
 
-## Verificación Final
+### Evidencias Fotográficas (EvidenceActivity)
+- **Persistencia de Estado**: Se implementó `onSaveInstanceState` para evitar que la aplicación pierda el ID de la orden o la ruta de la foto si el sistema destruye la actividad mientras la cámara está abierta.
+- **Refresco de UI**: Se aseguró que tras confirmar la captura de una foto, esta aparezca inmediatamente en la cuadrícula de evidencias.
+- **Manejo de Archivos**: Se verificó la integración con `FileProvider` y se añadió lógica para evitar registros huérfanos si la captura se cancela.
 
-> [!IMPORTANT]
-> El proyecto compila satisfactoriamente mediante Gradle y no se detectaron crashes en el arranque inicial.
+## Guía de Prueba
 
-### Resultados de la Verificación
-- **Build**: `app:assembleDebug` finalizado exitosamente.
-- **Consistencia Visual**: Los layouts de Aprobación, Equipos, Evidencias, Historial, Ubicación, Mantenimiento y Órdenes mantienen el nuevo estilo visual sin errores de recursos.
-- **Funcionalidad**: Se mantiene la integridad de la base de datos y la lógica de negocio.
+### Geolocalización
+1. Seleccione una **Orden** desde el Dashboard.
+2. Presione el botón **Ubicación**.
+3. Si los permisos no han sido otorgados, acéptelos.
+4. Si el GPS está apagado, siga las instrucciones del diálogo para activarlo.
+5. Presione **ACTUALIZAR UBICACIÓN**.
+6. Una vez obtenidas las coordenadas, presione **GUARDAR COORDENADAS**.
+7. Salga de la pantalla y vuelva a entrar; verá que la ubicación aparece como "YA REGISTRADA".
 
-La aplicación está lista para su despliegue y uso.
+### Evidencias
+1. En el detalle de la orden, presione **Evidencias**.
+2. Presione **TOMAR NUEVA FOTO**.
+3. Capture la fotografía y acéptela.
+4. Verifique que la imagen aparezca en la lista con su fecha de captura.
+5. (Opcional) Mantenga presionada o use el botón de eliminar (si el adaptador lo permite) para borrar una evidencia.
+
+> [!TIP]
+> Para pruebas en emulador, asegúrese de configurar una ubicación manual en los "Extended Controls" del emulador para que el sensor GPS retorne datos válidos.

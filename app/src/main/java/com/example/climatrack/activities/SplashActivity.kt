@@ -2,6 +2,7 @@ package com.example.climatrack.activities
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
@@ -9,8 +10,6 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
-import androidx.appcompat.app.AppCompatActivity
-import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivitySplashBinding
 import com.example.climatrack.utils.SessionManager
 
@@ -18,6 +17,7 @@ import com.example.climatrack.utils.SessionManager
 class SplashActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySplashBinding
+    private val animators = mutableListOf<AnimatorSet>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,14 +28,16 @@ class SplashActivity : BaseActivity() {
         startAnimations()
 
         Handler(Looper.getMainLooper()).postDelayed({
-            val sessionManager = SessionManager(this)
-            if (sessionManager.isLoggedIn()) {
-                startActivity(Intent(this, DashboardActivity::class.java))
-            } else {
-                startActivity(Intent(this, LoginActivity::class.java))
+            if (!isFinishing) {
+                val sessionManager = SessionManager(this)
+                if (sessionManager.isLoggedIn()) {
+                    startActivity(Intent(this, DashboardActivity::class.java))
+                } else {
+                    startActivity(Intent(this, LoginActivity::class.java))
+                }
+                finish()
             }
-            finish()
-        }, 4000)
+        }, 2500)
     }
 
     private fun startAnimations() {
@@ -52,21 +54,31 @@ class SplashActivity : BaseActivity() {
     }
 
     private fun animateSquare(view: View, delay: Long) {
-        val scaleX = ObjectAnimator.ofFloat(view, "scaleX", 0.5f, 1.2f, 0.5f)
-        val scaleY = ObjectAnimator.ofFloat(view, "scaleY", 0.5f, 1.2f, 0.5f)
-        val alpha = ObjectAnimator.ofFloat(view, "alpha", 0.6f, 1f, 0.6f)
+        val scaleX = ObjectAnimator.ofFloat(view, "scaleX", 0.5f, 1.2f, 0.5f).apply {
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.RESTART
+        }
+        val scaleY = ObjectAnimator.ofFloat(view, "scaleY", 0.5f, 1.2f, 0.5f).apply {
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.RESTART
+        }
+        val alpha = ObjectAnimator.ofFloat(view, "alpha", 0.6f, 1f, 0.6f).apply {
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.RESTART
+        }
 
         AnimatorSet().apply {
             playTogether(scaleX, scaleY, alpha)
             duration = 1200
             startDelay = delay
             interpolator = AccelerateDecelerateInterpolator()
-            addListener(object : android.animation.AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: android.animation.Animator) {
-                    start()
-                }
-            })
             start()
+            animators.add(this)
         }
+    }
+
+    override fun onDestroy() {
+        animators.forEach { it.cancel() }
+        super.onDestroy()
     }
 }

@@ -36,19 +36,23 @@ open class BaseActivity : AppCompatActivity() {
 
         items.forEach { (layoutId, menuId) ->
             val layout = container.findViewById<LinearLayout>(layoutId)
-            layout.setOnClickListener {
-                if (selectedId != menuId) {
-                    onItemSelected(menuId)
+            layout?.let {
+                it.setOnClickListener {
+                    if (selectedId != menuId) {
+                        onItemSelected(menuId)
+                    }
                 }
+                updateNavItemStyle(it, menuId == selectedId)
             }
-            updateNavItemStyle(layout, menuId == selectedId)
         }
     }
 
     private fun updateNavItemStyle(layout: LinearLayout, isSelected: Boolean) {
-        TransitionManager.beginDelayedTransition(layout.parent as ViewGroup)
-        val icon = layout.getChildAt(0) as ImageView
-        val text = layout.getChildAt(1) as TextView
+        val parent = layout.parent as? ViewGroup ?: return
+        TransitionManager.beginDelayedTransition(parent)
+        
+        val icon = layout.getChildAt(0) as? ImageView ?: return
+        val text = layout.getChildAt(1) as? TextView ?: return
 
         val params = layout.layoutParams as LinearLayout.LayoutParams
         if (isSelected) {
@@ -76,8 +80,13 @@ open class BaseActivity : AppCompatActivity() {
             }
             
             if (bottomNavContainer != null) {
-                bottomNavContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    bottomMargin = systemBars.bottom + 16
+                val params = bottomNavContainer.layoutParams
+                if (params is ViewGroup.MarginLayoutParams) {
+                    bottomNavContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                        bottomMargin = systemBars.bottom + 16
+                    }
+                } else {
+                    bottomNavContainer.updatePadding(bottom = systemBars.bottom)
                 }
             } else {
                 v.updatePadding(bottom = systemBars.bottom)

@@ -35,6 +35,12 @@ class EvidenceActivity : BaseActivity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("ORDER_ID", orderId)
+        photoFile?.let { outState.putString("PHOTO_PATH", it.absolutePath) }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEvidenceBinding.inflate(layoutInflater)
@@ -42,9 +48,13 @@ class EvidenceActivity : BaseActivity() {
         setupEdgeToEdge(binding.root, binding.toolbar)
 
         servicioRepository = ServicioRepository(this)
-        orderId = intent.getIntExtra("ORDER_ID", -1)
+        
+        orderId = savedInstanceState?.getInt("ORDER_ID", -1) ?: intent.getIntExtra("ORDER_ID", -1)
+        val savedPath = savedInstanceState?.getString("PHOTO_PATH")
+        if (savedPath != null) photoFile = File(savedPath)
 
         if (orderId == -1) {
+            Toast.makeText(this, "Error: Orden no identificada", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
