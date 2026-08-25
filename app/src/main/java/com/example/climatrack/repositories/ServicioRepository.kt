@@ -72,6 +72,7 @@ class ServicioRepository(context: Context) {
             put(DatabaseHelper.COL_UBI_ORDEN_ID, ubicacion.ordenId)
             put(DatabaseHelper.COL_UBI_LAT, ubicacion.latitud)
             put(DatabaseHelper.COL_UBI_LON, ubicacion.longitud)
+            put(DatabaseHelper.COL_UBI_DIR, ubicacion.direccion)
             put(DatabaseHelper.COL_UBI_FECHA, ubicacion.fecha)
         }
         return db.insert(DatabaseHelper.TABLE_UBICACIONES, null, values)
@@ -94,6 +95,7 @@ class ServicioRepository(context: Context) {
                 ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_ORDEN_ID)),
                 latitud = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_LAT)),
                 longitud = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_LON)),
+                direccion = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_DIR)),
                 fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_FECHA))
             )
         }

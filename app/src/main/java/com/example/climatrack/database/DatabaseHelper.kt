@@ -102,6 +102,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_UBI_ORDEN_ID = "orden_id"
         const val COL_UBI_LAT = "latitud"
         const val COL_UBI_LON = "longitud"
+        const val COL_UBI_DIR = "direccion"
         const val COL_UBI_FECHA = "fecha"
     }
 
@@ -196,6 +197,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_UBI_ORDEN_ID INTEGER, " +
                 "$COL_UBI_LAT REAL, " +
                 "$COL_UBI_LON REAL, " +
+                "$COL_UBI_DIR TEXT, " +
                 "$COL_UBI_FECHA TEXT, " +
                 "FOREIGN KEY($COL_UBI_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
 

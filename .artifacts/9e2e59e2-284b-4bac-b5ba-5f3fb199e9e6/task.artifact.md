@@ -1,12 +1,14 @@
-# Tareas de Corrección de Crash en Evidencias
+# Tareas de Mejora: Geolocalización Profesional
 
-- [x] **Configuración de Rutas (FileProvider)**
-    - [x] Actualizar `file_paths.xml` para cubrir la raíz de archivos externos
-- [x] **Gestión de Permisos y Robustez (EvidenceActivity)**
-    - [x] Implementar `requestCameraPermissionLauncher`
-    - [x] Añadir chequeo de permisos en `prepareAndTakePhoto`
-    - [x] Envolver creación de archivo y URI en `try-catch`
-    - [x] Validar disponibilidad de almacenamiento externo
+- [x] **Persistencia y Modelos**
+    - [x] Actualizar data class `Ubicacion` en `Models.kt`
+    - [x] Agregar columna `direccion` en `DatabaseHelper.kt`
+    - [x] Actualizar repositorio `ServicioRepository.kt`
+- [x] **Interfaz de Usuario**
+    - [x] Rediseñar `activity_location.xml` (Card de detalles y visual de mapa)
+- [x] **Lógica de Actividad**
+    - [x] Implementar obtención de dirección (Geocoder) en `LocationActivity.kt`
+    - [x] Separar visualización de fecha y hora
+    - [x] Gestionar carga de datos existentes (incluyendo dirección)
 - [x] **Verificación**
-    - [x] Probar denegación de permisos
-    - [x] Probar flujo completo de captura
+    - [x] Probar flujo completo de captura y persistencia offline

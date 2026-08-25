@@ -110,5 +110,6 @@ data class Ubicacion(
     val ordenId: Int,
     val latitud: Double,
     val longitud: Double,
+    val direccion: String? = null,
     val fecha: String
 )
