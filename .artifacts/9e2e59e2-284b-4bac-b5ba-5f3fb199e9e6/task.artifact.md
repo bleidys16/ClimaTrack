@@ -1,10 +1,12 @@
-# Tareas de Corrección de Estabilidad
+# Tareas de Corrección de Crash en Evidencias
 
-- [x] **Robustez de Animaciones (SplashActivity)**
-    - [x] Implementar animaciones con `repeatCount = INFINITE`
-    - [x] Gestionar la limpieza de animadores en `onDestroy`
-- [x] **Seguridad en BaseActivity**
-    - [x] Agregar null-checks en la navegación personalizada
-    - [x] Validar tipos de LayoutParams para Edge-to-Edge
-- [x] **Verificación de Inicio**
-    - [x] Confirmar transiciones correctas
+- [x] **Configuración de Rutas (FileProvider)**
+    - [x] Actualizar `file_paths.xml` para cubrir la raíz de archivos externos
+- [x] **Gestión de Permisos y Robustez (EvidenceActivity)**
+    - [x] Implementar `requestCameraPermissionLauncher`
+    - [x] Añadir chequeo de permisos en `prepareAndTakePhoto`
+    - [x] Envolver creación de archivo y URI en `try-catch`
+    - [x] Validar disponibilidad de almacenamiento externo
+- [x] **Verificación**
+    - [x] Probar denegación de permisos
+    - [x] Probar flujo completo de captura

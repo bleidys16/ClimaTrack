@@ -1,28 +1,29 @@
-# Plan de Corrección: Estabilidad de Inicio (App Crash/Hang)
+# Plan de Corrección: Crash en Captura de Evidencias
 
-Este plan aborda el problema reportado de que la aplicación no puede iniciar, centrándose en la robustez de la pantalla de bienvenida (`SplashActivity`) y la clase base de actividades (`BaseActivity`).
+Este plan aborda el error "ClimaTrack continua fallando" que ocurre al intentar tomar una fotografía. El problema parece estar relacionado con la gestión de permisos de cámara y la robustez en la creación de archivos para `FileProvider`.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> Se ha detectado una posible recursión infinita en las animaciones de la Splash Screen que podría estar bloqueando el hilo principal o causando un desbordamiento de pila en algunos dispositivos.
+> Aunque el contrato `TakePicture` no siempre requiere el permiso de `CAMERA` de forma estricta, el hecho de tenerlo declarado en el `AndroidManifest.xml` obliga a solicitarlo explícitamente en tiempo de ejecución en muchas versiones de Android para evitar bloqueos de seguridad.
 
 ## Proposed Changes
 
-### [Robustez en Inicio]
+### [Robustez en Captura]
 
-#### [MODIFY] [SplashActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/SplashActivity.kt)
-- **Animaciones Seguras**: Reemplazar la recursión manual en `onAnimationEnd` por el uso de `repeatCount = INFINITE` en los animadores individuales.
-- **Control de Ciclo de Vida**: Asegurar que las animaciones se detengan si la actividad es destruida.
-- **Reducción de Tiempo**: Ajustar el tiempo de espera de 4s a 2.5s para una mejor percepción de rendimiento.
+#### [MODIFY] [EvidenceActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/EvidenceActivity.kt)
+- **Gestión de Permisos**: Implementar la solicitud del permiso `CAMERA` antes de intentar abrir la cámara.
+- **Seguridad en I/O**: Añadir bloques `try-catch` alrededor de la creación del archivo temporal y la generación de la URI para capturar excepciones de almacenamiento o de `FileProvider`.
+- **Validación de Directorio**: Asegurar que el directorio de imágenes exista antes de intentar crear el archivo.
+- **Feedback al Usuario**: Mostrar mensajes de error específicos en lugar de permitir que la aplicación se cierre.
 
-#### [MODIFY] [BaseActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/BaseActivity.kt)
-- **Null Safety**: Agregar verificaciones para evitar crashes en `findViewById` o `getChildAt`.
-- **Validación de ViewGroup**: Asegurar que `TransitionManager` solo actúe sobre contenedores válidos.
+#### [MODIFY] [file_paths.xml](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/xml/file_paths.xml)
+- **Ampliación de Rutas**: Cambiar el mapeo de `Pictures` a `.` (raíz de archivos externos) para mayor flexibilidad y evitar errores de mapeo en `FileProvider`.
 
 ## Verification Plan
 
 ### Manual Verification
-- Iniciar la aplicación y verificar que la Splash Screen se muestre y transicione correctamente al Login o Dashboard.
-- Probar el inicio en modo "Dark Theme" y "Light Theme".
-- Verificar que no haya bloqueos en el Dashboard tras la navegación.
+1. **Flujo de Permisos**: Denegar el permiso de cámara y verificar que la app informe al usuario sin cerrarse.
+2. **Captura Exitosa**: Conceder el permiso y verificar que la cámara abra correctamente.
+3. **Persistencia**: Tomar una foto, verificar que se guarde en SQLite y se muestre en el grid.
+4. **Cancelación**: Abrir la cámara y regresar sin tomar la foto; verificar que no ocurra ningún crash.

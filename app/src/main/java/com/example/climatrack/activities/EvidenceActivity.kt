@@ -1,12 +1,14 @@
 package com.example.climatrack.activities
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.climatrack.adapters.EvidenceAdapter
@@ -14,6 +16,7 @@ import com.example.climatrack.databinding.ActivityEvidenceBinding
 import com.example.climatrack.models.Evidencia
 import com.example.climatrack.repositories.ServicioRepository
 import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -31,7 +34,19 @@ class EvidenceActivity : BaseActivity() {
         if (success) {
             saveEvidenceToDb()
         } else {
-            Toast.makeText(this, "Error al capturar fotografía", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Captura cancelada", Toast.LENGTH_SHORT).show()
+            // Limpiar archivo temporal si existe
+            photoFile?.let { if (it.exists()) it.delete() }
+        }
+    }
+
+    private val requestCameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            prepareAndTakePhoto()
+        } else {
+            Toast.makeText(this, "Permiso de cámara denegado. No se puede tomar la foto.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -65,10 +80,51 @@ class EvidenceActivity : BaseActivity() {
         loadEvidences()
 
         binding.btnTakePhoto.setOnClickListener {
-            prepareAndTakePhoto()
+            checkPermissionsAndTake()
         }
         binding.ivAddEvidence.setOnClickListener {
+            checkPermissionsAndTake()
+        }
+    }
+
+    private fun checkPermissionsAndTake() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             prepareAndTakePhoto()
+        } else {
+            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun prepareAndTakePhoto() {
+        try {
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            
+            if (storageDir == null) {
+                Toast.makeText(this, "Error: No se pudo acceder al almacenamiento", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            if (!storageDir.exists() && !storageDir.mkdirs()) {
+                Toast.makeText(this, "Error: No se pudo crear el directorio de fotos", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            photoFile = File.createTempFile("CT_${timeStamp}_", ".jpg", storageDir)
+            
+            photoUri = FileProvider.getUriForFile(
+                this,
+                "com.example.climatrack.fileprovider",
+                photoFile!!
+            )
+            
+            photoUri?.let {
+                takePictureLauncher.launch(it)
+            }
+        } catch (e: IOException) {
+            Toast.makeText(this, "Error al crear archivo de imagen: ${e.message}", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error inesperado: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -118,22 +174,6 @@ class EvidenceActivity : BaseActivity() {
             }
             .setNegativeButton("Cancelar", null)
             .show()
-    }
-
-    private fun prepareAndTakePhoto() {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        photoFile = File.createTempFile("CT_${timeStamp}_", ".jpg", storageDir)
-        
-        photoUri = FileProvider.getUriForFile(
-            this,
-            "com.example.climatrack.fileprovider",
-            photoFile!!
-        )
-        
-        photoUri?.let {
-            takePictureLauncher.launch(it)
-        }
     }
 
     private fun saveEvidenceToDb() {
