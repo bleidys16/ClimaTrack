@@ -33,7 +33,7 @@ class DashboardActivity : BaseActivity() {
     }
 
     private fun setupUI() {
-        binding.tvWelcome.text = "Hola, ${sessionManager.getUserName()}"
+        binding.tvWelcome.text = "Hola Técnico"
 
         binding.btnOrders.setOnClickListener {
             startActivity(Intent(this, OrdersActivity::class.java))
