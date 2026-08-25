@@ -29,6 +29,7 @@
                 android:textSize="18sp" />
 
             <ImageView
+                android:id="@+id/ivToolbarSave"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="end"
@@ -57,6 +58,7 @@
                 android:layout_height="wrap_content"
                 app:cardBackgroundColor="@color/american_blue"
                 app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
                 app:strokeWidth="0.5dp"
                 app:strokeColor="@color/cadet_grey">
 
@@ -98,9 +100,18 @@
                             android:text="Cliente: ACME S.A.S"
                             android:textColor="@color/white"
                             android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvEquipDisplay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Equipo: Split Inverter 24K"
+                            android:textColor="@color/cadet_grey"
+                            android:textSize="12sp" />
                     </LinearLayout>
 
                     <TextView
+                        android:id="@+id/tvStatusDisplay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_status_chip"
@@ -114,14 +125,15 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Service Summary Box -->
+            <!-- Resumen del servicio -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Resumen del servicio"
                 android:textColor="@color/white"
-                android:fontFamily="@font/geist_bold" />
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -138,16 +150,19 @@
                     android:padding="16dp"
                     android:text="Cargando detalles..."
                     android:textColor="@color/white"
-                    android:textSize="14sp"
-                    android:lineSpacingExtra="4dp" />
+                    android:textSize="13sp"
+                    android:lineSpacingExtra="4dp"
+                    android:fontFamily="@font/geist" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Observations -->
+            <!-- Observaciones del cliente -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:hint="Observaciones del cliente">
+                android:layout_marginTop="24dp"
+                android:hint="Observaciones del cliente"
+                app:counterEnabled="true"
+                app:counterMaxLength="250">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etObservations"
                     android:layout_width="match_parent"
@@ -155,10 +170,12 @@
                     android:gravity="top"
                     android:inputType="textMultiLine"
                     android:lines="3"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/geist"
+                    android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Client Name -->
+            <!-- Nombre del cliente -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -168,14 +185,25 @@
                     android:id="@+id/etClientName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/geist"
+                    android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Acceptance Box -->
+            <!-- Aceptación del servicio -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Aceptación del servicio *"
+                android:textColor="@color/cadet_grey"
+                android:textSize="12sp"
+                android:fontFamily="@font/geist_medium" />
+
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="8dp"
                 app:cardBackgroundColor="@color/status_finished_container"
                 app:cardCornerRadius="12dp"
                 app:strokeWidth="0dp">
@@ -184,49 +212,60 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="12dp"
+                    android:paddingVertical="8dp"
                     android:text="El cliente acepta el servicio realizado"
                     android:textColor="@color/status_finished"
                     android:fontFamily="@font/geist_bold"
-                    android:textSize="13sp" />
+                    android:textSize="13sp"
+                    app:thumbTint="@color/status_finished"
+                    app:trackTint="@color/status_finished" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Signature Area -->
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Firma del cliente -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Firma del cliente"
-                android:textColor="@color/cadet_grey"
-                android:textSize="12sp" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:layout_marginTop="8dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="12dp"
-                app:strokeWidth="0.5dp"
-                app:strokeColor="@color/cadet_grey">
-                <!-- Placeholder for actual drawing surface -->
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="[ Superficie de Firma ]"
-                    android:textColor="@color/black"
-                    android:alpha="0.3" />
-
+                    android:layout_weight="1"
+                    android:text="Firma del cliente"
+                    android:textColor="@color/cadet_grey"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/geist_medium" />
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnClearSignature"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
                     android:text="LIMPIAR"
-                    android:textColor="@color/status_in_progress"
-                    android:textSize="11sp" />
+                    android:textColor="@color/ube"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/geist_bold"
+                    app:icon="@android:drawable/ic_menu_edit"
+                    app:iconSize="14dp"
+                    app:iconTint="@color/ube" />
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginTop="4dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="@color/cadet_grey"
+                app:strokeWidth="0.5dp">
+
+                <com.example.climatrack.utils.SignatureView
+                    android:id="@+id/signatureView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Botón Guardar -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSaveApproval"
                 android:layout_width="match_parent"
@@ -235,6 +274,7 @@
                 android:layout_marginBottom="100dp"
                 android:text="✓ GUARDAR APROBACIÓN"
                 android:fontFamily="@font/geist_bold"
+                android:textSize="15sp"
                 app:backgroundTint="@color/status_finished"
                 android:textColor="@color/white" />
 

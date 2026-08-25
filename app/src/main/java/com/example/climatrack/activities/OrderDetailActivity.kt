@@ -31,7 +31,15 @@ class OrderDetailActivity : BaseActivity() {
         }
 
         loadOrderData()
+        setupToolbar()
         setupButtons()
+    }
+
+    private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
+        binding.toolbar.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
     }
 
     private fun loadOrderData() {

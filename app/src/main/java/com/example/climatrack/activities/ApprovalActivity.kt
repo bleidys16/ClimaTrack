@@ -1,16 +1,18 @@
 package com.example.climatrack.activities
 
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.os.Environment
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.example.climatrack.databinding.ActivityApprovalBinding
 import com.example.climatrack.models.Aprobacion
 import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.repositories.ServicioRepository
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 class ApprovalActivity : BaseActivity() {
 
@@ -18,6 +20,7 @@ class ApprovalActivity : BaseActivity() {
     private lateinit var servicioRepository: ServicioRepository
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private lateinit var ordenRepository: OrdenRepository
+    private lateinit var sessionManager: com.example.climatrack.utils.SessionManager
     private var orderId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,6 +32,8 @@ class ApprovalActivity : BaseActivity() {
         servicioRepository = ServicioRepository(this)
         mantenimientoRepository = MantenimientoRepository(this)
         ordenRepository = OrdenRepository(this)
+        sessionManager = com.example.climatrack.utils.SessionManager(this)
+        
         orderId = intent.getIntExtra("ORDER_ID", -1)
 
         if (orderId == -1) {
@@ -36,9 +41,19 @@ class ApprovalActivity : BaseActivity() {
             return
         }
 
+        setupToolbar()
         loadOrderInfo()
         loadSummary()
+        
+        binding.btnClearSignature.setOnClickListener { binding.signatureView.clear() }
         binding.btnSaveApproval.setOnClickListener { saveApproval() }
+        binding.ivToolbarSave.setOnClickListener { saveApproval() }
+    }
+
+    private fun setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
     }
 
     private fun loadOrderInfo() {
@@ -46,6 +61,8 @@ class ApprovalActivity : BaseActivity() {
         info?.let {
             binding.tvOrderNumDisplay.text = "Orden: ${it.numero}"
             binding.tvClientDisplay.text = "Cliente: ${it.clienteNombre}"
+            binding.tvEquipDisplay.text = "Equipo: ${it.equipoNombre}"
+            binding.tvStatusDisplay.text = it.estado
         }
     }
 
@@ -54,10 +71,10 @@ class ApprovalActivity : BaseActivity() {
         val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
         
         if (mant != null && info != null) {
-            val summary = "Tipo de servicio: ${info.tipoServicio}\n" +
-                    "Fecha del mantenimiento: ${mant.fecha}\n" +
-                    "Trabajo realizado: ${mant.trabajoRealizado}\n" +
-                    "Diagnóstico: ${mant.diagnostico}"
+            val summary = "• Tipo de servicio: ${info.tipoServicio}\n" +
+                    "• Fecha del mantenimiento: ${mant.fecha}\n" +
+                    "• Técnico: ${sessionManager.getUserName()}\n" +
+                    "• Trabajo realizado: ${mant.trabajoRealizado}"
             binding.tvSummary.text = summary
         }
     }
@@ -71,12 +88,17 @@ class ApprovalActivity : BaseActivity() {
             return
         }
 
+        // Save signature as file
+        val signatureBitmap = binding.signatureView.getSignatureBitmap()
+        val signaturePath = saveSignatureToFile(signatureBitmap)
+
         val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
         val aprobacion = Aprobacion(
             ordenId = orderId,
             cliente = clientName,
             aceptado = accepted,
             fecha = date
+            // Note: We could add signaturePath to Aprobacion model if needed
         )
 
         val result = servicioRepository.addAprobacion(aprobacion)
@@ -86,5 +108,22 @@ class ApprovalActivity : BaseActivity() {
         } else {
             Toast.makeText(this, "Error al registrar aprobación", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun saveSignatureToFile(bitmap: Bitmap): String {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val fileName = "SIG_${orderId}_${timeStamp}.png"
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val file = File(storageDir, fileName)
+        
+        try {
+            val out = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            out.flush()
+            out.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return file.absolutePath
     }
 }

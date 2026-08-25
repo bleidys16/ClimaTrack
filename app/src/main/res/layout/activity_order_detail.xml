@@ -155,7 +155,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="Reporte"
+                            android:text="Mantenimiento"
                             android:textColor="@color/white"
                             android:textSize="12sp"
                             android:fontFamily="@font/geist_medium" />
