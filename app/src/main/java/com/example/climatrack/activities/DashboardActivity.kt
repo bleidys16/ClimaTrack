@@ -8,7 +8,7 @@ import com.example.climatrack.databinding.ActivityDashboardBinding
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.utils.SessionManager
 
-class DashboardActivity : AppCompatActivity() {
+class DashboardActivity : BaseActivity() {
 
     private lateinit var binding: ActivityDashboardBinding
     private lateinit var sessionManager: SessionManager
@@ -22,6 +22,7 @@ class DashboardActivity : AppCompatActivity() {
         sessionManager = SessionManager(this)
         ordenRepository = OrdenRepository(this)
 
+        setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
         setupUI()
         loadStats()
         setupBottomNavigation()
@@ -50,23 +51,11 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
-        binding.bottomNavigation.selectedItemId = R.id.menu_home
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.menu_home -> true
-                R.id.menu_orders -> {
-                    startActivity(Intent(this, OrdersActivity::class.java))
-                    false
-                }
-                R.id.menu_equipment -> {
-                    startActivity(Intent(this, EquipmentActivity::class.java))
-                    false
-                }
-                R.id.menu_history -> {
-                    startActivity(Intent(this, HistoryActivity::class.java))
-                    false
-                }
-                else -> false
+        setupCustomNavigation(binding.customNav.root, R.id.menu_home) { menuId ->
+            when (menuId) {
+                R.id.menu_orders -> startActivity(Intent(this, OrdersActivity::class.java))
+                R.id.menu_equipment -> startActivity(Intent(this, EquipmentActivity::class.java))
+                R.id.menu_history -> startActivity(Intent(this, HistoryActivity::class.java))
             }
         }
     }

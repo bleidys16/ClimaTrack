@@ -11,7 +11,7 @@ import com.example.climatrack.adapters.EquipmentAdapter
 import com.example.climatrack.databinding.ActivityEquipmentBinding
 import com.example.climatrack.repositories.EquipoRepository
 
-class EquipmentActivity : AppCompatActivity() {
+class EquipmentActivity : BaseActivity() {
 
     private lateinit var binding: ActivityEquipmentBinding
     private lateinit var equipoRepository: EquipoRepository
@@ -24,6 +24,7 @@ class EquipmentActivity : AppCompatActivity() {
 
         equipoRepository = EquipoRepository(this)
 
+        setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
         setupToolbar()
         setupRecyclerView()
         setupSearch()
@@ -35,26 +36,20 @@ class EquipmentActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
-        binding.bottomNavigation.selectedItemId = R.id.menu_equipment
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
+        setupCustomNavigation(binding.customNav.root, R.id.menu_equipment) { menuId ->
+            when (menuId) {
                 R.id.menu_home -> {
                     startActivity(Intent(this, DashboardActivity::class.java))
                     finish()
-                    false
                 }
                 R.id.menu_orders -> {
                     startActivity(Intent(this, OrdersActivity::class.java))
                     finish()
-                    false
                 }
-                R.id.menu_equipment -> true
                 R.id.menu_history -> {
                     startActivity(Intent(this, HistoryActivity::class.java))
                     finish()
-                    false
                 }
-                else -> false
             }
         }
     }

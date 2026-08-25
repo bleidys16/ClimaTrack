@@ -1,28 +1,38 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.ClimaTrack" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/md_theme_light_primary</item>
-        <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
-        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
-        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimaryContainer</item>
+        <!-- Official Colors -->
+        <item name="colorPrimary">@color/american_blue</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/american_blue</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
 
-        <item name="colorSecondary">@color/md_theme_light_secondary</item>
-        <item name="colorOnSecondary">@color/md_theme_light_onSecondary</item>
+        <item name="colorSecondary">@color/cadet_grey</item>
+        <item name="colorOnSecondary">@color/white</item>
 
-        <item name="android:windowBackground">@color/md_theme_light_background</item>
-        <item name="colorSurface">@color/md_theme_light_surface</item>
-        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="android:windowBackground">@color/chinese_black</item>
+        <item name="colorSurface">@color/chinese_black</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="colorSurfaceVariant">@color/american_blue</item>
+        <item name="colorOnSurfaceVariant">@color/cadet_grey</item>
+
+        <!-- Official Typography -->
+        <item name="fontFamily">@font/geist</item>
+        <item name="android:fontFamily">@font/geist</item>
 
         <!-- Component Styles -->
         <item name="materialCardViewStyle">@style/Widget.ClimaTrack.CardView</item>
         <item name="materialButtonStyle">@style/Widget.ClimaTrack.Button</item>
         <item name="textInputStyle">@style/Widget.ClimaTrack.TextInputLayout</item>
+        <item name="bottomNavigationStyle">@style/Widget.ClimaTrack.BottomNavigationView</item>
     </style>
 
     <style name="Widget.ClimaTrack.CardView" parent="Widget.Material3.CardView.Elevated">
-        <item name="cardCornerRadius">16dp</item>
-        <item name="cardElevation">2dp</item>
+        <item name="cardCornerRadius">14dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/cadet_grey</item>
+        <item name="strokeWidth">0.5dp</item>
+        <item name="cardBackgroundColor">@color/american_blue</item>
         <item name="android:layout_margin">8dp</item>
     </style>
 
@@ -30,6 +40,16 @@
         <item name="cornerRadius">12dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
+        <item name="backgroundTint">@color/american_blue</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="rippleColor">@color/ube</item>
+    </style>
+
+    <style name="Widget.ClimaTrack.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">12dp</item>
+        <item name="strokeColor">@color/ube</item>
+        <item name="android:textColor">@color/ube</item>
+        <item name="rippleColor">@color/american_blue</item>
     </style>
 
     <style name="Widget.ClimaTrack.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
@@ -37,10 +57,31 @@
         <item name="boxCornerRadiusTopEnd">12dp</item>
         <item name="boxCornerRadiusBottomStart">12dp</item>
         <item name="boxCornerRadiusBottomEnd">12dp</item>
-        <item name="boxStrokeColor">@color/md_theme_light_primary</item>
+        <item name="boxStrokeColor">@color/selector_input_stroke</item>
+        <item name="hintTextColor">@color/cool_grey</item>
+        <item name="android:textColorHint">@color/cool_grey</item>
+        <item name="boxBackgroundColor">@color/chinese_black</item>
+    </style>
+
+    <style name="Widget.ClimaTrack.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">@drawable/bg_bottom_nav_pill</item>
+        <item name="backgroundTint">@null</item>
+        <item name="itemIconTint">@color/selector_nav_icon_v2</item>
+        <item name="itemTextColor">@color/selector_nav_text_v2</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.ClimaTrack.BottomNav.Indicator</item>
+        <item name="labelVisibilityMode">labeled</item>
+    </style>
+
+    <style name="Widget.ClimaTrack.BottomNav.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/white</item>
+        <item name="marginHorizontal">12dp</item>
     </style>
 
     <style name="Theme.ClimaTrack" parent="Base.Theme.ClimaTrack" />
+
+    <style name="Theme.ClimaTrack.Splash" parent="Theme.ClimaTrack">
+        <item name="android:windowBackground">@color/chinese_black</item>
+    </style>
 
     <style name="ShapeAppearanceOverlay.App.CornerSize50Percent" parent="">
         <item name="cornerSize">50%</item>

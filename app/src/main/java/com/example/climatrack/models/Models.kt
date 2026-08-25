@@ -67,7 +67,8 @@ data class Repuesto(
     val id: Int = 0,
     val nombre: String,
     val codigo: String,
-    val unidad: String?
+    val unidad: String?,
+    val precio: Double = 0.0
 )
 
 data class DetalleRepuesto(
@@ -75,6 +76,17 @@ data class DetalleRepuesto(
     val mantenimientoId: Int,
     val repuestoId: Int,
     val cantidad: Int,
+    val observacion: String?,
+    val precioHistorico: Double = 0.0
+)
+
+data class DetalleRepuestoInfo(
+    val id: Int,
+    val repuestoNombre: String,
+    val repuestoCodigo: String,
+    val repuestoUnidad: String?,
+    val cantidad: Int,
+    val precio: Double,
     val observacion: String?
 )
 

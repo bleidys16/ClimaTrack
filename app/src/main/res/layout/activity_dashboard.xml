@@ -3,22 +3,42 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_theme_light_background">
+    android:background="@color/chinese_black">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/md_theme_light_primary"
+        android:background="@color/chinese_black"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="Dashboard"
-            app:titleTextColor="@color/white"
-            app:navigationIcon="@android:drawable/ic_menu_sort_by_size"
-            app:navigationIconTint="@color/white" />
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            app:titleTextColor="@color/white">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Clima"
+                    android:textColor="@color/ube"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/geist_bold"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Track"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/geist_bold"/>
+            </LinearLayout>
+
+        </com.google.android.material.appbar.MaterialToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -31,7 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="24dp">
 
             <!-- Header Section -->
             <LinearLayout
@@ -39,17 +59,18 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingBottom="16dp">
+                android:paddingBottom="24dp">
 
                 <com.google.android.material.imageview.ShapeableImageView
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:padding="2dp"
-                    android:src="@android:drawable/ic_menu_myplaces"
+                    android:id="@+id/ivUserAvatar"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_user_modern"
                     app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
-                    app:strokeColor="@color/md_theme_light_primary"
+                    app:strokeColor="@color/ube"
                     app:strokeWidth="2dp"
-                    app:tint="@color/md_theme_light_primary" />
+                    app:tint="@color/ube" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -62,15 +83,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Hola, Técnico"
-                        android:textColor="@color/md_theme_light_onBackground"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textColor="@color/white"
+                        android:textSize="22sp"
+                        android:fontFamily="@font/geist_bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/welcome_back"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/cadet_grey"
                         android:textSize="14sp" />
                 </LinearLayout>
 
@@ -82,34 +103,30 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/orders_summary"
-                android:textColor="@color/md_theme_light_onBackground"
+                android:textColor="@color/white"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:fontFamily="@font/geist_bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="16dp"
                 android:orientation="horizontal">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="@color/white">
+                    android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/american_blue"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="12dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@android:drawable/ic_menu_info_details"
-                            app:tint="@color/status_pending" />
+                        android:padding="16dp">
 
                         <TextView
                             android:id="@+id/tvPendingCount"
@@ -117,13 +134,14 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textColor="@color/status_pending"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
+                            android:textSize="28sp"
+                            android:fontFamily="@font/geist_bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/pending"
+                            android:textColor="@color/cadet_grey"
                             android:textSize="12sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -132,20 +150,16 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="@color/white">
+                    android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/american_blue"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="12dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@android:drawable/ic_menu_rotate"
-                            app:tint="@color/status_in_progress" />
+                        android:padding="16dp">
 
                         <TextView
                             android:id="@+id/tvInProgressCount"
@@ -153,13 +167,14 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textColor="@color/status_in_progress"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
+                            android:textSize="28sp"
+                            android:fontFamily="@font/geist_bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/in_progress"
+                            android:textColor="@color/cadet_grey"
                             android:textSize="12sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -168,20 +183,16 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="@color/white">
+                    android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/american_blue"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="12dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@android:drawable/ic_menu_save"
-                            app:tint="@color/status_finished" />
+                        android:padding="16dp">
 
                         <TextView
                             android:id="@+id/tvFinishedCount"
@@ -189,13 +200,14 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textColor="@color/status_finished"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
+                            android:textSize="28sp"
+                            android:fontFamily="@font/geist_bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/finished"
+                            android:textColor="@color/cadet_grey"
                             android:textSize="12sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -206,16 +218,16 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="32dp"
                 android:text="@string/quick_access"
-                android:textColor="@color/md_theme_light_onBackground"
+                android:textColor="@color/white"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:fontFamily="@font/geist_bold" />
 
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="16dp"
                 android:columnCount="2">
 
                 <com.google.android.material.card.MaterialCardView
@@ -223,7 +235,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
-                    app:cardBackgroundColor="@color/white">
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/american_blue"
+                    app:strokeWidth="0.5dp"
+                    app:strokeColor="@color/cadet_grey">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -235,15 +250,16 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@android:drawable/ic_menu_agenda"
-                            app:tint="@color/md_theme_light_primary" />
+                            android:src="@drawable/ic_nav_orders"
+                            app:tint="@color/ube" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="12dp"
                             android:text="Órdenes"
-                            android:textStyle="bold" />
+                            android:textColor="@color/white"
+                            android:fontFamily="@font/geist_medium" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -252,7 +268,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
-                    app:cardBackgroundColor="@color/white">
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/american_blue"
+                    app:strokeWidth="0.5dp"
+                    app:strokeColor="@color/cadet_grey">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -264,15 +283,16 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@android:drawable/ic_menu_manage"
-                            app:tint="@color/md_theme_light_primary" />
+                            android:src="@drawable/ic_nav_equipment"
+                            app:tint="@color/ube" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="12dp"
                             android:text="Equipos"
-                            android:textStyle="bold" />
+                            android:textColor="@color/white"
+                            android:fontFamily="@font/geist_medium" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -281,7 +301,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
-                    app:cardBackgroundColor="@color/white">
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/american_blue"
+                    app:strokeWidth="0.5dp"
+                    app:strokeColor="@color/cadet_grey">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -293,15 +316,16 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@android:drawable/ic_menu_recent_history"
-                            app:tint="@color/md_theme_light_primary" />
+                            android:src="@drawable/ic_nav_history"
+                            app:tint="@color/ube" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="12dp"
                             android:text="Historial"
-                            android:textStyle="bold" />
+                            android:textColor="@color/white"
+                            android:fontFamily="@font/geist_medium" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -310,7 +334,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
-                    app:cardBackgroundColor="@color/white">
+                    android:layout_margin="8dp"
+                    app:cardBackgroundColor="@color/american_blue"
+                    app:strokeWidth="0.5dp"
+                    app:strokeColor="@color/cadet_grey">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -322,16 +349,16 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@android:drawable/ic_lock_power_off"
-                            app:tint="@color/status_error" />
+                            android:src="@drawable/ic_nav_logout"
+                            app:tint="@color/status_canceled" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="12dp"
                             android:text="Salir"
-                            android:textColor="@color/status_error"
-                            android:textStyle="bold" />
+                            android:textColor="@color/status_canceled"
+                            android:fontFamily="@font/geist_medium" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -340,19 +367,23 @@
             <!-- Spacer for Bottom Nav -->
             <View
                 android:layout_width="match_parent"
-                android:layout_height="80dp" />
+                android:layout_height="100dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
+    <FrameLayout
+        android:id="@+id/navContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        app:menu="@menu/bottom_nav_menu"
-        app:backgroundTint="@color/white"
-        app:itemIconTint="@color/md_theme_light_primary"
-        app:itemTextColor="@color/md_theme_light_primary" />
+        android:paddingHorizontal="24dp"
+        android:paddingBottom="16dp">
+
+        <include
+            android:id="@+id/customNav"
+            layout="@layout/layout_custom_navigation" />
+
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

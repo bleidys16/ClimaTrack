@@ -12,7 +12,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class ApprovalActivity : AppCompatActivity() {
+class ApprovalActivity : BaseActivity() {
 
     private lateinit var binding: ActivityApprovalBinding
     private lateinit var servicioRepository: ServicioRepository
@@ -24,6 +24,7 @@ class ApprovalActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityApprovalBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupEdgeToEdge(binding.root, binding.toolbar)
 
         servicioRepository = ServicioRepository(this)
         mantenimientoRepository = MantenimientoRepository(this)
@@ -35,8 +36,17 @@ class ApprovalActivity : AppCompatActivity() {
             return
         }
 
+        loadOrderInfo()
         loadSummary()
         binding.btnSaveApproval.setOnClickListener { saveApproval() }
+    }
+
+    private fun loadOrderInfo() {
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        info?.let {
+            binding.tvOrderNumDisplay.text = "Orden: ${it.numero}"
+            binding.tvClientDisplay.text = "Cliente: ${it.clienteNombre}"
+        }
     }
 
     private fun loadSummary() {
@@ -44,9 +54,9 @@ class ApprovalActivity : AppCompatActivity() {
         val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
         
         if (mant != null && info != null) {
-            val summary = "Orden: ${info.numero}\n" +
-                    "Equipo: ${info.equipoNombre}\n" +
-                    "Trabajo: ${mant.trabajoRealizado}\n" +
+            val summary = "Tipo de servicio: ${info.tipoServicio}\n" +
+                    "Fecha del mantenimiento: ${mant.fecha}\n" +
+                    "Trabajo realizado: ${mant.trabajoRealizado}\n" +
                     "Diagnóstico: ${mant.diagnostico}"
             binding.tvSummary.text = summary
         }

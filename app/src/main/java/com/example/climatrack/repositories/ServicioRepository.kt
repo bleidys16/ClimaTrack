@@ -18,8 +18,42 @@ class ServicioRepository(context: Context) {
             put(DatabaseHelper.COL_DET_REP_ID, detalle.repuestoId)
             put(DatabaseHelper.COL_DET_CANT, detalle.cantidad)
             put(DatabaseHelper.COL_DET_OBS, detalle.observacion)
+            put(DatabaseHelper.COL_DET_PRECIO, detalle.precioHistorico)
         }
         return db.insert(DatabaseHelper.TABLE_DETALLE_REPUESTOS, null, values)
+    }
+
+    fun getRepuestosByMantenimiento(mantenimientoId: Int): List<com.example.climatrack.models.DetalleRepuestoInfo> {
+        val list = mutableListOf<com.example.climatrack.models.DetalleRepuestoInfo>()
+        val db = dbHelper.readableDatabase
+        val query = "SELECT d.${DatabaseHelper.COL_DET_ID}, r.${DatabaseHelper.COL_REP_NOMBRE}, " +
+                "r.${DatabaseHelper.COL_REP_COD}, r.${DatabaseHelper.COL_REP_UNIDAD}, " +
+                "d.${DatabaseHelper.COL_DET_CANT}, d.${DatabaseHelper.COL_DET_PRECIO}, d.${DatabaseHelper.COL_DET_OBS} " +
+                "FROM ${DatabaseHelper.TABLE_DETALLE_REPUESTOS} d " +
+                "JOIN ${DatabaseHelper.TABLE_REPUESTOS} r ON d.${DatabaseHelper.COL_DET_REP_ID} = r.${DatabaseHelper.COL_REP_ID} " +
+                "WHERE d.${DatabaseHelper.COL_DET_MANT_ID} = ?"
+        
+        val cursor = db.rawQuery(query, arrayOf(mantenimientoId.toString()))
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(com.example.climatrack.models.DetalleRepuestoInfo(
+                    id = cursor.getInt(0),
+                    repuestoNombre = cursor.getString(1),
+                    repuestoCodigo = cursor.getString(2),
+                    repuestoUnidad = cursor.getString(3),
+                    cantidad = cursor.getInt(4),
+                    precio = cursor.getDouble(5),
+                    observacion = cursor.getString(6)
+                ))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
+
+    fun deleteRepuesto(detalleId: Int): Int {
+        val db = dbHelper.writableDatabase
+        return db.delete(DatabaseHelper.TABLE_DETALLE_REPUESTOS, "${DatabaseHelper.COL_DET_ID}=?", arrayOf(detalleId.toString()))
     }
 
     fun addEvidencia(evidencia: Evidencia): Long {

@@ -26,7 +26,8 @@ class RepuestoRepository(context: Context) {
             id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_ID)),
             nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_NOMBRE)),
             codigo = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_COD)),
-            unidad = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_UNIDAD))
+            unidad = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_UNIDAD)),
+            precio = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_PRECIO))
         )
     }
 }

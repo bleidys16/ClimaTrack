@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityOrderDetailBinding
 import com.example.climatrack.repositories.OrdenRepository
 
-class OrderDetailActivity : AppCompatActivity() {
+class OrderDetailActivity : BaseActivity() {
 
     private lateinit var binding: ActivityOrderDetailBinding
     private lateinit var ordenRepository: OrdenRepository
@@ -18,6 +20,7 @@ class OrderDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityOrderDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupEdgeToEdge(binding.root)
 
         ordenRepository = OrdenRepository(this)
         orderId = intent.getIntExtra("ORDER_ID", -1)
@@ -35,10 +38,21 @@ class OrderDetailActivity : AppCompatActivity() {
         val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
         info?.let {
             binding.tvOrderNum.text = "Orden: ${it.numero}"
-            binding.tvStatus.text = "Estado: ${it.estado}"
+            binding.tvStatus.text = it.estado
             binding.tvClientInfo.text = "Cliente: ${it.clienteNombre}"
             binding.tvEquipInfo.text = "Equipo: ${it.equipoNombre}"
             binding.tvServiceType.text = "Servicio: ${it.tipoServicio}"
+
+            // Status color
+            val (containerColor, textColor) = when (it.estado) {
+                "PENDIENTE" -> R.color.status_pending_container to R.color.status_pending
+                "EN PROCESO" -> R.color.status_in_progress_container to R.color.status_in_progress
+                "FINALIZADA" -> R.color.status_finished_container to R.color.status_finished
+                "CANCELADA" -> R.color.status_error_container to R.color.status_error
+                else -> R.color.status_pending_container to R.color.status_pending
+            }
+            binding.tvStatus.backgroundTintList = ContextCompat.getColorStateList(this, containerColor)
+            binding.tvStatus.setTextColor(ContextCompat.getColor(this, textColor))
             
             if (it.estado == "FINALIZADA") {
                 binding.btnFinishOrder.isEnabled = false

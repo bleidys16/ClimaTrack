@@ -41,7 +41,7 @@ class EquipmentAdapter(
                 "OPERATIVO" -> R.color.status_finished_container to R.color.status_finished
                 "EN MANTENIMIENTO" -> R.color.status_in_progress_container to R.color.status_in_progress
                 "FUERA DE SERVICIO" -> R.color.status_error_container to R.color.status_error
-                else -> R.color.md_theme_light_surfaceVariant to R.color.text_secondary
+                else -> R.color.status_pending_container to R.color.status_pending
             }
             binding.tvEquipStatus.backgroundTintList = ContextCompat.getColorStateList(context, containerColor)
             binding.tvEquipStatus.setTextColor(ContextCompat.getColor(context, textColor))

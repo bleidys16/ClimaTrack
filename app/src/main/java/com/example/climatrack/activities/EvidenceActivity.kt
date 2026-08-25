@@ -18,7 +18,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class EvidenceActivity : AppCompatActivity() {
+class EvidenceActivity : BaseActivity() {
 
     private lateinit var binding: ActivityEvidenceBinding
     private lateinit var servicioRepository: ServicioRepository
@@ -39,6 +39,7 @@ class EvidenceActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityEvidenceBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupEdgeToEdge(binding.root, binding.toolbar)
 
         servicioRepository = ServicioRepository(this)
         orderId = intent.getIntExtra("ORDER_ID", -1)
@@ -50,10 +51,23 @@ class EvidenceActivity : AppCompatActivity() {
 
         setupToolbar()
         setupRecyclerView()
+        loadOrderInfo()
         loadEvidences()
 
         binding.btnTakePhoto.setOnClickListener {
             prepareAndTakePhoto()
+        }
+        binding.ivAddEvidence.setOnClickListener {
+            prepareAndTakePhoto()
+        }
+    }
+
+    private fun loadOrderInfo() {
+        val ordenRepository = com.example.climatrack.repositories.OrdenRepository(this)
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        info?.let {
+            binding.tvOrderNumDisplay.text = "Orden: ${it.numero}"
+            binding.tvClientDisplay.text = "Cliente: ${it.clienteNombre}"
         }
     }
 

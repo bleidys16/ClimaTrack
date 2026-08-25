@@ -9,7 +9,7 @@ import com.example.climatrack.databinding.ActivityLoginBinding
 import com.example.climatrack.repositories.UsuarioRepository
 import com.example.climatrack.utils.SessionManager
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var usuarioRepository: UsuarioRepository
@@ -19,6 +19,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupEdgeToEdge(binding.root)
 
         usuarioRepository = UsuarioRepository(this)
         sessionManager = SessionManager(this)

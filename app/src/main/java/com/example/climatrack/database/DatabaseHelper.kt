@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
 
         // Tabla Usuarios
         const val TABLE_USUARIOS = "usuarios"
@@ -70,6 +70,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_REP_NOMBRE = "nombre"
         const val COL_REP_COD = "codigo"
         const val COL_REP_UNIDAD = "unidad"
+        const val COL_REP_PRECIO = "precio"
 
         // Tabla Detalle Repuestos
         const val TABLE_DETALLE_REPUESTOS = "detalle_repuestos"
@@ -78,6 +79,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_DET_REP_ID = "repuesto_id"
         const val COL_DET_CANT = "cantidad"
         const val COL_DET_OBS = "observacion"
+        const val COL_DET_PRECIO = "precio_historico"
 
         // Tabla Evidencias
         const val TABLE_EVIDENCIAS = "evidencias"
@@ -161,7 +163,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_REP_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_REP_NOMBRE TEXT NOT NULL, " +
                 "$COL_REP_COD TEXT NOT NULL UNIQUE, " +
-                "$COL_REP_UNIDAD TEXT)"
+                "$COL_REP_UNIDAD TEXT, " +
+                "$COL_REP_PRECIO REAL DEFAULT 0)"
 
         val createDetalleRepuestos = "CREATE TABLE $TABLE_DETALLE_REPUESTOS (" +
                 "$COL_DET_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -169,6 +172,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_DET_REP_ID INTEGER, " +
                 "$COL_DET_CANT INTEGER, " +
                 "$COL_DET_OBS TEXT, " +
+                "$COL_DET_PRECIO REAL DEFAULT 0, " +
                 "FOREIGN KEY($COL_DET_MANT_ID) REFERENCES $TABLE_MANTENIMIENTOS($COL_MANT_ID), " +
                 "FOREIGN KEY($COL_DET_REP_ID) REFERENCES $TABLE_REPUESTOS($COL_REP_ID))"
 
@@ -272,9 +276,18 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         // Repuestos iniciales
         val rep1 = ContentValues().apply {
             put(COL_REP_NOMBRE, "Filtro de Aire G4")
-            put(COL_REP_COD, "RP-001")
+            put(COL_REP_COD, "RPT-0007")
             put(COL_REP_UNIDAD, "Unidad")
+            put(COL_REP_PRECIO, 25000.0)
         }
         db?.insert(TABLE_REPUESTOS, null, rep1)
+
+        val rep2 = ContentValues().apply {
+            put(COL_REP_NOMBRE, "Capacitor 35 + 5 uF")
+            put(COL_REP_COD, "RPT-0012")
+            put(COL_REP_UNIDAD, "Unidad")
+            put(COL_REP_PRECIO, 18000.0)
+        }
+        db?.insert(TABLE_REPUESTOS, null, rep2)
     }
 }

@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class LocationActivity : AppCompatActivity() {
+class LocationActivity : BaseActivity() {
 
     private lateinit var binding: ActivityLocationBinding
     private lateinit var servicioRepository: ServicioRepository
@@ -41,6 +41,7 @@ class LocationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLocationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupEdgeToEdge(binding.root, binding.toolbar)
 
         servicioRepository = ServicioRepository(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -51,8 +52,18 @@ class LocationActivity : AppCompatActivity() {
             return
         }
 
+        loadOrderInfo()
         binding.btnGetLocation.setOnClickListener { checkPermissions() }
         binding.btnSaveLocation.setOnClickListener { saveLocation() }
+    }
+
+    private fun loadOrderInfo() {
+        val ordenRepository = com.example.climatrack.repositories.OrdenRepository(this)
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        info?.let {
+            binding.tvOrderNumDisplay.text = "Orden: ${it.numero}"
+            binding.tvClientDisplay.text = "Cliente: ${it.clienteNombre}"
+        }
     }
 
     private fun checkPermissions() {
@@ -75,9 +86,10 @@ class LocationActivity : AppCompatActivity() {
             if (location != null) {
                 currentLat = location.latitude
                 currentLon = location.longitude
-                binding.tvLat.text = "Latitud: $currentLat"
-                binding.tvLon.text = "Longitud: $currentLon"
-                binding.tvTime.text = "Capturado: ${SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())}"
+                binding.tvLat.text = "$currentLat"
+                binding.tvLon.text = "$currentLon"
+                binding.tvTimeDisplay.text = SimpleDateFormat("dd/MM/yyyy HH:mm a", Locale.getDefault()).format(Date())
+                binding.cardLocationStatus.visibility = android.view.View.VISIBLE
                 binding.btnSaveLocation.isEnabled = true
             } else {
                 Toast.makeText(this, "No se pudo obtener la ubicación. Active el GPS.", Toast.LENGTH_LONG).show()

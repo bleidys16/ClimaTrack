@@ -10,7 +10,7 @@ import com.example.climatrack.databinding.ActivityHistoryBinding
 import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.utils.SessionManager
 
-class HistoryActivity : AppCompatActivity() {
+class HistoryActivity : BaseActivity() {
 
     private lateinit var binding: ActivityHistoryBinding
     private lateinit var mantenimientoRepository: MantenimientoRepository
@@ -24,32 +24,27 @@ class HistoryActivity : AppCompatActivity() {
         mantenimientoRepository = MantenimientoRepository(this)
         sessionManager = SessionManager(this)
 
+        setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
         setupToolbar()
         setupBottomNavigation()
         loadHistory()
     }
 
     private fun setupBottomNavigation() {
-        binding.bottomNavigation.selectedItemId = R.id.menu_history
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
+        setupCustomNavigation(binding.customNav.root, R.id.menu_history) { menuId ->
+            when (menuId) {
                 R.id.menu_home -> {
                     startActivity(Intent(this, DashboardActivity::class.java))
                     finish()
-                    false
                 }
                 R.id.menu_orders -> {
                     startActivity(Intent(this, OrdersActivity::class.java))
                     finish()
-                    false
                 }
                 R.id.menu_equipment -> {
                     startActivity(Intent(this, EquipmentActivity::class.java))
                     finish()
-                    false
                 }
-                R.id.menu_history -> true
-                else -> false
             }
         }
     }

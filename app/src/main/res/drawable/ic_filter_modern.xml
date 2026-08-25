@@ -1,0 +1,20 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Three horizontal sliders as in the image -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M3,6h18v2H3V6z M3,11h18v2H3V11z M3,16h18v2H3V16z"
+        android:visibility="gone" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M3,7h12v2H3V7z M18,7h3v2h-3V7z M16,5a2,2 0,0 1,2 2v2a2,2 0,0 1,-2 2a2,2 0,0 1,-2 -2V7a2,2 0,0 1,2 -2z"/>
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M3,12h3v2H3v-2z M9,12h12v2H9v-2z M7,10a2,2 0,0 1,2 2v2a2,2 0,0 1,-2 2a2,2 0,0 1,-2 -2v-2a2,2 0,0 1,2 -2z"/>
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M3,17h12v2H3v-2z M18,17h3v2h-3v-2z M16,15a2,2 0,0 1,2 2v2a2,2 0,0 1,-2 2a2,2 0,0 1,-2 -2v-2a2,2 0,0 1,2 -2z"/>
+</vector>

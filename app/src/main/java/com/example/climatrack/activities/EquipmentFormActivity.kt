@@ -11,7 +11,7 @@ import com.example.climatrack.databinding.ActivityEquipmentFormBinding
 import com.example.climatrack.models.Equipo
 import com.example.climatrack.repositories.EquipoRepository
 
-class EquipmentFormActivity : AppCompatActivity() {
+class EquipmentFormActivity : BaseActivity() {
 
     private lateinit var binding: ActivityEquipmentFormBinding
     private lateinit var equipoRepository: EquipoRepository
@@ -21,20 +21,29 @@ class EquipmentFormActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityEquipmentFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupEdgeToEdge(binding.root, binding.toolbar)
 
         equipoRepository = EquipoRepository(this)
         equipmentId = intent.getIntExtra("EQUIPMENT_ID", -1)
 
+        setupToolbar()
         setupSpinner()
         
         if (equipmentId != -1) {
             loadEquipmentData()
-            binding.tvFormTitle.text = "Editar Equipo"
+            binding.toolbar.title = "Editar Equipo"
             binding.btnDelete.visibility = View.VISIBLE
         }
 
         binding.btnSave.setOnClickListener { saveEquipment() }
         binding.btnDelete.setOnClickListener { confirmDelete() }
+    }
+
+    private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
+        binding.toolbar.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
     }
 
     private fun setupSpinner() {

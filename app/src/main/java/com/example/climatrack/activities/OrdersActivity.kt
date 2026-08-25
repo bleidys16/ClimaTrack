@@ -13,7 +13,7 @@ import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.utils.SessionManager
 import com.google.android.material.tabs.TabLayout
 
-class OrdersActivity : AppCompatActivity() {
+class OrdersActivity : BaseActivity() {
 
     private lateinit var binding: ActivityOrdersBinding
     private lateinit var ordenRepository: OrdenRepository
@@ -29,6 +29,7 @@ class OrdersActivity : AppCompatActivity() {
         ordenRepository = OrdenRepository(this)
         sessionManager = SessionManager(this)
 
+        setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
         setupToolbar()
         setupRecyclerView()
         setupTabs()
@@ -65,26 +66,20 @@ class OrdersActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
-        binding.bottomNavigation.selectedItemId = R.id.menu_orders
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
+        setupCustomNavigation(binding.customNav.root, R.id.menu_orders) { menuId ->
+            when (menuId) {
                 R.id.menu_home -> {
                     startActivity(Intent(this, DashboardActivity::class.java))
                     finish()
-                    false
                 }
-                R.id.menu_orders -> true
                 R.id.menu_equipment -> {
                     startActivity(Intent(this, EquipmentActivity::class.java))
                     finish()
-                    false
                 }
                 R.id.menu_history -> {
                     startActivity(Intent(this, HistoryActivity::class.java))
                     finish()
-                    false
                 }
-                else -> false
             }
         }
     }

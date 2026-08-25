@@ -1,50 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- ClimaTrack Official Palette -->
+    <color name="chinese_black">#0A1123</color>
+    <color name="american_blue">#3A3E6C</color>
+    <color name="ube">#8387C3</color>
+    <color name="cadet_grey">#959BB5</color>
+    <color name="cool_grey">#8A8CAC</color>
 
-    <!-- ClimaTrack Corporate Palette -->
-    <color name="md_theme_light_primary">#1565C0</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- Colors for Theme compatibility -->
+    <color name="md_theme_light_primary">#3A3E6C</color>
     <color name="md_theme_light_onPrimary">#FFFFFF</color>
-    <color name="md_theme_light_primaryContainer">#E3F2FD</color>
-    <color name="md_theme_light_onPrimaryContainer">#001B3D</color>
+    <color name="md_theme_light_primaryContainer">#8387C3</color>
+    <color name="md_theme_light_onPrimaryContainer">#0A1123</color>
 
-    <color name="md_theme_light_secondary">#455A64</color>
+    <color name="md_theme_light_secondary">#959BB5</color>
     <color name="md_theme_light_onSecondary">#FFFFFF</color>
 
-    <color name="md_theme_light_error">#E53935</color>
-    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_background">#0A1123</color>
+    <color name="md_theme_light_onBackground">#FFFFFF</color>
+    <color name="md_theme_light_surface">#3A3E6C</color>
+    <color name="md_theme_light_onSurface">#FFFFFF</color>
+    <color name="md_theme_light_surfaceVariant">#959BB5</color>
+    <color name="md_theme_light_onSurfaceVariant">#0A1123</color>
 
-    <color name="md_theme_light_background">#F5F7FA</color>
-    <color name="md_theme_light_onBackground">#1A1C1E</color>
-    <color name="md_theme_light_surface">#FFFFFF</color>
-    <color name="md_theme_light_onSurface">#1A1C1E</color>
-    <color name="md_theme_light_surfaceVariant">#E1E2EC</color>
-    <color name="md_theme_light_onSurfaceVariant">#44474E</color>
+    <!-- Semantic Colors -->
+    <color name="status_pending">#F59E0B</color>
+    <color name="status_pending_container">#33F59E0B</color>
+    <color name="status_in_progress">#3B82F6</color>
+    <color name="status_in_progress_container">#333B82F6</color>
+    <color name="status_finished">#10B981</color>
+    <color name="status_finished_container">#3310B981</color>
+    <color name="status_canceled">#EF4444</color>
+    <color name="status_canceled_container">#33EF4444</color>
+    <color name="status_error">#EF4444</color>
+    <color name="status_error_container">#33EF4444</color>
 
-    <!-- Legacy / Shortcut colors -->
-    <color name="primary">#1565C0</color>
-    <color name="primary_dark">#0D47A1</color>
-    <color name="primary_light">#E3F2FD</color>
-    <color name="secondary">#455A64</color>
-    <color name="background">#F5F7FA</color>
-
-    <!-- Status Colors -->
-    <color name="status_pending">#FB8C00</color>
-    <color name="status_pending_container">#FFF3E0</color>
-    <color name="status_in_progress">#1565C0</color>
-    <color name="status_in_progress_container">#E3F2FD</color>
-    <color name="status_finished">#43A047</color>
-    <color name="status_finished_container">#E8F5E9</color>
-    <color name="status_error">#E53935</color>
-    <color name="status_error_container">#FFEBEE</color>
-    <color name="status_canceled">#E53935</color>
-
-    <color name="text_secondary">#6B7280</color>
-    <color name="divider">#E5E7EB</color>
+    <!-- Legacy / Shortcut aliases -->
+    <color name="primary">#3A3E6C</color>
+    <color name="secondary">#959BB5</color>
+    <color name="primary_accent">#8387C3</color>
+    <color name="background">#0A1123</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#959BB5</color>
+    <color name="text_auxiliary">#8A8CAC</color>
+    <color name="divider">#959BB5</color>
 </resources>
