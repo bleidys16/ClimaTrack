@@ -37,9 +37,14 @@ class HistoryAdapter(private var list: List<MantenimientoInfo>) : RecyclerView.A
             val color = when (m.tipoServicio.uppercase()) {
                 "PREVENTIVO" -> R.color.status_finished
                 "CORRECTIVO" -> R.color.status_pending
+                "INSPECCION" -> R.color.status_in_progress
                 else -> R.color.status_in_progress
             }
+            
             binding.tvHistType.setTextColor(ContextCompat.getColor(context, color))
+            binding.imgHistory.clearColorFilter()
+            binding.imgHistory.setColorFilter(ContextCompat.getColor(context, R.color.ube))
+            binding.imgHistory.setImageResource(R.drawable.ic_nav_history)
         }
     }
 }

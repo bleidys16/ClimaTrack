@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 4
+        private const val DATABASE_VERSION = 5
 
         // Tabla Usuarios
         const val TABLE_USUARIOS = "usuarios"
@@ -353,7 +353,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val historial = listOf(
             listOf("OT-00007", "2026-05-05", "EQ-00018", "CORRECTIVO", "Fuga de refrigerante, sellado y carga.", "Técnico 03"),
             listOf("OT-00012", "2026-06-10", "EQ-00015", "PREVENTIVO", "Mantenimiento preventivo general.", "Técnico 01"),
-            listOf("OT-00018", "2026-07-12", "EQ-00016", "CORRECTIVO", "Cambio de capacitor y limpieza de serpentín.", "Técnico 02")
+            listOf("OT-00018", "2026-07-12", "EQ-00016", "CORRECTIVO", "Cambio de capacitor y limpieza de serpentín.", "Técnico 02"),
+            listOf("OT-00030", "2026-08-20", "EQ-00015", "INSPECCION", "Inspección de rutina y validación de parámetros.", "Técnico 01")
         )
         historial.forEach { data ->
             // Primero creamos la orden como FINALIZADA

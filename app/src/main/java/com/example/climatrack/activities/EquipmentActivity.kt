@@ -29,10 +29,37 @@ class EquipmentActivity : BaseActivity() {
         setupRecyclerView()
         setupSearch()
         setupBottomNavigation()
+        setupFilterButton()
 
         binding.fabAddEquipment.setOnClickListener {
             startActivity(Intent(this, EquipmentFormActivity::class.java))
         }
+    }
+
+    private fun setupFilterButton() {
+        binding.ivFilter.setOnClickListener { view ->
+            val popup = android.widget.PopupMenu(this, view)
+            popup.menu.add("Todos")
+            popup.menu.add("OPERATIVO")
+            popup.menu.add("EN MANTENIMIENTO")
+            popup.menu.add("FUERA DE SERVICIO")
+
+            popup.setOnMenuItemClickListener { item ->
+                if (item.title == "Todos") {
+                    loadEquipment()
+                } else {
+                    filterByStatus(item.title.toString())
+                }
+                true
+            }
+            popup.show()
+        }
+    }
+
+    private fun filterByStatus(status: String) {
+        val fullList = equipoRepository.getAll()
+        val filtered = fullList.filter { it.estado == status }
+        adapter.updateList(filtered)
     }
 
     private fun setupBottomNavigation() {

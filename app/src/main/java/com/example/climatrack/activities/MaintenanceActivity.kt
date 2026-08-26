@@ -148,7 +148,13 @@ class MaintenanceActivity : BaseActivity() {
             tiempoEmpleado = time
         )
 
-        val result = mantenimientoRepository.create(maintenance)
+        // Verificamos si ya existe para actualizar o crear
+        val existing = mantenimientoRepository.getByOrdenId(orderId)
+        val result = if (existing != null) {
+            mantenimientoRepository.update(maintenance).toLong()
+        } else {
+            mantenimientoRepository.create(maintenance)
+        }
 
         if (result > 0) {
             ordenRepository.updateEstado(orderId, "EN PROCESO")

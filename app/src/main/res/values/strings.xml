@@ -26,6 +26,10 @@
     <string name="menu_orders">Órdenes</string>
     <string name="menu_equipment">Equipos</string>
     <string name="menu_history">Historial</string>
+    <string name="chip_todos">TODOS</string>
+    <string name="chip_preventivos">PREVENTIVOS</string>
+    <string name="chip_correctivos">CORRECTIVOS</string>
+    <string name="chip_inspecciones">INSPECCIONES</string>
 
     <string name="search_equipment_hint">Buscar equipo, código o serie...</string>
     <string name="empty_orders">Sin órdenes disponibles</string>

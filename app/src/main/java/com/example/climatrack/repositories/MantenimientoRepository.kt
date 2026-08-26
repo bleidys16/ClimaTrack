@@ -24,6 +24,21 @@ class MantenimientoRepository(context: Context) {
         return db.insert(DatabaseHelper.TABLE_MANTENIMIENTOS, null, values)
     }
 
+    fun update(mantenimiento: Mantenimiento): Int {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DatabaseHelper.COL_MANT_ORDEN_ID, mantenimiento.ordenId)
+            put(DatabaseHelper.COL_MANT_FECHA, mantenimiento.fecha)
+            put(DatabaseHelper.COL_MANT_DIAG, mantenimiento.diagnostico)
+            put(DatabaseHelper.COL_MANT_TRABAJO, mantenimiento.trabajoRealizado)
+            put(DatabaseHelper.COL_MANT_OBS, mantenimiento.observaciones)
+            put(DatabaseHelper.COL_MANT_RECOM, mantenimiento.recomendaciones)
+            put(DatabaseHelper.COL_MANT_ESTADO_EQ, mantenimiento.estadoEquipo)
+            put(DatabaseHelper.COL_MANT_TIEMPO, mantenimiento.tiempoEmpleado)
+        }
+        return db.update(DatabaseHelper.TABLE_MANTENIMIENTOS, values, "${DatabaseHelper.COL_MANT_ORDEN_ID}=?", arrayOf(mantenimiento.ordenId.toString()))
+    }
+
     fun getByOrdenId(ordenId: Int): Mantenimiento? {
         val db = dbHelper.readableDatabase
         val cursor = db.query(

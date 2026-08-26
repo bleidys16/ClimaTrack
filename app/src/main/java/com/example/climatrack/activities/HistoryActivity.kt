@@ -32,13 +32,26 @@ class HistoryActivity : BaseActivity() {
     }
 
     private fun setupFilters() {
-        binding.chipGroupFilters.setOnCheckedStateChangeListener { _, checkedIds ->
+        binding.chipGroupFilters.setOnCheckedStateChangeListener { group, checkedIds ->
+            // Actualizar estilo visual de los chips para que coincida con el diseño
+            for (i in 0 until group.childCount) {
+                val chip = group.getChildAt(i) as com.google.android.material.chip.Chip
+                if (chip.id == checkedIds.firstOrNull()) {
+                    chip.setChipBackgroundColorResource(R.color.white)
+                    chip.setTextColor(getColor(R.color.chinese_black))
+                } else {
+                    chip.setChipBackgroundColorResource(R.color.american_blue)
+                    chip.setTextColor(getColor(R.color.white))
+                }
+            }
+
             val tecnicoId = sessionManager.getUserId()
             val fullHistory = mantenimientoRepository.getHistorialInfo(tecnicoId)
             
             val filtered = when (checkedIds.firstOrNull()) {
                 R.id.chipPrev -> fullHistory.filter { it.tipoServicio.uppercase() == "PREVENTIVO" }
                 R.id.chipCorr -> fullHistory.filter { it.tipoServicio.uppercase() == "CORRECTIVO" }
+                R.id.chipInsp -> fullHistory.filter { it.tipoServicio.uppercase() == "INSPECCION" }
                 else -> fullHistory
             }
             
