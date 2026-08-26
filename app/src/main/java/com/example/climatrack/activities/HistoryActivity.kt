@@ -28,6 +28,22 @@ class HistoryActivity : BaseActivity() {
         setupToolbar()
         setupBottomNavigation()
         loadHistory()
+        setupFilters()
+    }
+
+    private fun setupFilters() {
+        binding.chipGroupFilters.setOnCheckedStateChangeListener { _, checkedIds ->
+            val tecnicoId = sessionManager.getUserId()
+            val fullHistory = mantenimientoRepository.getHistorialInfo(tecnicoId)
+            
+            val filtered = when (checkedIds.firstOrNull()) {
+                R.id.chipPrev -> fullHistory.filter { it.tipoServicio.uppercase() == "PREVENTIVO" }
+                R.id.chipCorr -> fullHistory.filter { it.tipoServicio.uppercase() == "CORRECTIVO" }
+                else -> fullHistory
+            }
+            
+            (binding.rvHistory.adapter as? HistoryAdapter)?.updateList(filtered)
+        }
     }
 
     private fun setupBottomNavigation() {

@@ -41,7 +41,8 @@
                     android:layout_height="wrap_content"
                     android:checked="true"
                     android:text="Todos"
-                    app:chipBackgroundColor="@color/white" />
+                    app:chipBackgroundColor="@color/white"
+                    android:textColor="@color/chinese_black" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipPrev"
@@ -49,7 +50,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Preventivos"
-                    app:chipBackgroundColor="@color/white" />
+                    app:chipBackgroundColor="@color/american_blue"
+                    android:textColor="@color/white"
+                    app:chipStrokeWidth="0dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipCorr"
@@ -57,7 +60,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Correctivos"
-                    app:chipBackgroundColor="@color/white" />
+                    app:chipBackgroundColor="@color/american_blue"
+                    android:textColor="@color/white"
+                    app:chipStrokeWidth="0dp" />
 
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>

@@ -286,17 +286,32 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.button.MaterialButton
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnFinishOrder"
                     android:layout_width="0dp"
                     android:layout_height="100dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="6dp"
-                    android:text="Finalizar"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/geist_bold"
-                    app:backgroundTint="@color/status_finished"
-                    android:textColor="@color/white" />
+                    app:cardBackgroundColor="@android:color/transparent"
+                    app:cardCornerRadius="12dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout
+                        android:id="@+id/llFinishContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_btn_finalizar_modern"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/tvFinishLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Finalizar"
+                            android:textColor="@color/status_finished"
+                            android:textSize="14sp"
+                            android:fontFamily="@font/geist_bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
             </GridLayout>
 
