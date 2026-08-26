@@ -95,7 +95,7 @@ class EquipoRepository(context: Context) {
             capacidad = if (capIdx != -1) cursor.getString(capIdx) else null,
             ubicacion = if (ubiIdx != -1) cursor.getString(ubiIdx) else null,
             clienteId = if (clientIdx != -1) cursor.getInt(clientIdx) else 0,
-            estado = if (statusIdx != -1) cursor.getString(statusIdx) else "",
+            estado = if (statusIdx != -1) cursor.getString(statusIdx) ?: "PENDIENTE" else "PENDIENTE",
             imagenPath = if (imgIdx != -1) cursor.getString(imgIdx) else null
         )
     }

@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 4
 
         // Tabla Usuarios
         const val TABLE_USUARIOS = "usuarios"
@@ -132,7 +132,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_EQUIPO_CAPACIDAD TEXT, " +
                 "$COL_EQUIPO_UBICACION TEXT, " +
                 "$COL_EQUIPO_CLIENTE_ID INTEGER, " +
-                "$COL_EQUIPO_ESTADO TEXT, " +
+                "$COL_EQUIPO_ESTADO TEXT NOT NULL DEFAULT 'PENDIENTE', " +
                 "$COL_EQUIPO_IMAGEN TEXT, " +
                 "FOREIGN KEY($COL_EQUIPO_CLIENTE_ID) REFERENCES $TABLE_CLIENTES($COL_CLIENTE_ID))"
 
@@ -306,7 +306,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             listOf("OT-00025", "2026-08-18", "ACME S.A.S", "EQ-00015", "PREVENTIVO", "PENDIENTE"),
             listOf("OT-00026", "2026-08-18", "Frio Total Ltda.", "EQ-00016", "PREVENTIVO", "PENDIENTE"),
             listOf("OT-00027", "2026-08-19", "Hotel Caribe", "EQ-00017", "PREVENTIVO", "PENDIENTE"),
-            listOf("OT-00029", "2026-08-20", "Clinica del Norte", "EQ-00018", "PREVENTIVO", "PENDIENTE")
+            listOf("OT-00029", "2026-08-20", "Clinica del Norte", "EQ-00018", "PREVENTIVO", "PENDIENTE"),
+            listOf("TEST-001", "2026-08-26", "Hotel del Mar", "EQ-001", "PREVENTIVO", "PENDIENTE"),
+            listOf("TEST-002", "2026-08-26", "ACME S.A.S", "EQ-00015", "CORRECTIVO", "PENDIENTE")
         )
         val orderIds = mutableMapOf<String, Long>()
         ordenes.forEach { data ->
@@ -320,6 +322,31 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 put(COL_ORDEN_ESTADO, data[5])
             }
             orderIds[data[0]] = db?.insert(TABLE_ORDENES, null, cv) ?: 0
+        }
+
+        // Órdenes para Técnico 02 para asegurar que él también vea órdenes
+        val cursorUser2 = db?.query(TABLE_USUARIOS, arrayOf(COL_USUARIO_ID), "$COL_USUARIO_USER=?", arrayOf("tecnico02"), null, null, null)
+        var idUser2: Long = 2
+        if (cursorUser2?.moveToFirst() == true) {
+            idUser2 = cursorUser2.getLong(0)
+        }
+        cursorUser2?.close()
+
+        val ordenesTec2 = listOf(
+            listOf("OT-T2-001", "2026-08-25", "Oficinas Plaza", "EQ-001", "PREVENTIVO", "PENDIENTE"),
+            listOf("TEST-T2-001", "2026-08-26", "Clinica del Norte", "EQ-00018", "CORRECTIVO", "PENDIENTE")
+        )
+        ordenesTec2.forEach { data ->
+            val cv = ContentValues().apply {
+                put(COL_ORDEN_NUM, data[0])
+                put(COL_ORDEN_FECHA, data[1])
+                put(COL_ORDEN_CLIENTE_ID, clienteIds[data[2]] ?: 1)
+                put(COL_ORDEN_EQUIPO_ID, equipoIds[data[3]] ?: 1)
+                put(COL_ORDEN_TECNICO_ID, idUser2)
+                put(COL_ORDEN_TIPO, data[4])
+                put(COL_ORDEN_ESTADO, data[5])
+            }
+            db?.insert(TABLE_ORDENES, null, cv)
         }
 
         // Historial (Mantenimientos Finalizados)
