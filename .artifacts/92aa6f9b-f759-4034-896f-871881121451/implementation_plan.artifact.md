@@ -1,91 +1,50 @@
-# Plan de Implementación: Expansión de Roles y Funcionalidades ClimaTrack
+# Plan de Mejora: Módulo de Cliente y Geolocalización Precisa
 
-Este plan detalla los cambios necesarios para incorporar los roles de Cliente y Administrador, automatizar la asignación de técnicos, integrar Google Maps y permitir la firma virtual de servicios.
+Este plan detalla las mejoras solicitadas para el módulo de cliente, incluyendo el autocompletado de direcciones mediante GPS y una vista de órdenes más detallada con información del técnico asignado.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> - **Google Maps API Key**: Se requerirá una API Key válida en el archivo `local.properties` o `AndroidManifest.xml` para que el mapa funcione correctamente.
-> - **Firma Virtual**: La firma se almacenará localmente como una imagen o como un string Base64 en la base de datos para simplificar la implementación inicial.
-> - **Lógica de Asignación**: El administrador podrá elegir entre asignación manual o automática (técnico con menos carga).
+> - **Autocompletado de Dirección**: Se utilizará el servicio de `Geocoder` de Android. Esto requiere que el dispositivo tenga conexión a Internet para traducir las coordenadas GPS en una dirección legible.
+> - **Datos del Técnico**: La información del técnico (nombre y hora asignada) solo aparecerá en las órdenes que ya hayan sido procesadas por el administrador.
 
 ## Proposed Changes
 
 ---
 
-### 1. Base de Datos y Modelos
+### 1. Mejoras en Registro de Órdenes (Cliente)
+
+#### [MODIFY] [OrderRequestActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/OrderRequestActivity.kt)
+- Implementar la función `getAddressFromLocation(lat, lon)` tras capturar el GPS.
+- Autocompletar el campo `etExactAddress` con el resultado del Geocoding.
+
+---
+
+### 2. Mejoras en Visualización de Órdenes
 
 #### [MODIFY] [Models.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/models/Models.kt)
-- Agregar `email` y `telefono` a `Usuario`.
-- Agregar `precioServicio`, `latitudCliente`, `longitudCliente`, `direccionExacta` y `firmaBase64` a `Orden`.
-
-#### [MODIFY] [DatabaseHelper.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/database/DatabaseHelper.kt)
-- Actualizar `TABLE_ORDENES` con las nuevas columnas: `precio`, `latitud`, `longitud`, `direccion_exacta`, `firma`.
-- Incrementar `DATABASE_VERSION`.
-
----
-
-### 2. Autenticación y Registro
-
-#### [NEW] [RegisterActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/RegisterActivity.kt)
-- Formulario para que nuevos clientes creen su cuenta.
-
-#### [MODIFY] [LoginActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/LoginActivity.kt)
-- Lógica de redirección:
-    - `Técnico` -> `DashboardActivity`
-    - `Cliente` -> `ClientDashboardActivity`
-    - `Administrador` -> `AdminDashboardActivity`
-
----
-
-### 3. Funcionalidades de Cliente
-
-#### [NEW] [ClientDashboardActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/ClientDashboardActivity.kt)
-- Botón para solicitar mantenimiento (genera orden).
-- Lista de mis servicios.
-- Notificación/Alerta para aceptar precio y firmar.
-
-#### [NEW] [SupportActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/SupportActivity.kt)
-- Sección de ayuda y contacto técnico.
-
----
-
-### 4. Funcionalidades de Administrador
-
-#### [NEW] [AdminDashboardActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/AdminDashboardActivity.kt)
-- Panel de control de órdenes sin asignar.
-- Botón de "Asignación Inteligente" (basado en carga de trabajo).
-
----
-
-### 5. Funcionalidades de Técnico
-
-#### [MODIFY] [MaintenanceActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/MaintenanceActivity.kt)
-- Campo para ingresar el costo del servicio.
-- Botón para enviar cotización al cliente.
-
-#### [MODIFY] [LocationActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/LocationActivity.kt)
-- Integración real con Google Maps para ver la ubicación del cliente mediante marcador.
-
----
-
-### 6. Repositorios (Lógica de Negocio)
+- Agregar campos a `OrdenInfo`: `tecnicoNombre`, `precioServicio`, `tipoServicio`, `equipoMarca`, `equipoModelo`.
 
 #### [MODIFY] [OrdenRepository.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/repositories/OrdenRepository.kt)
-- Método `assignTechnician(orderId, techId)`.
-- Método `getTechnicianWorkload()` para encontrar al técnico con menos órdenes.
-- Método `updatePriceAndNotify(orderId, price)`.
-- Método `saveClientSignature(orderId, signatureBase64)`.
+- Actualizar el query en `getOrdenesByCliente` para incluir un JOIN con la tabla de `Usuarios` (Técnico) y traer los detalles adicionales del equipo.
+
+#### [MODIFY] [OrdersAdapter.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/adapters/OrdersAdapter.kt)
+- Actualizar el diseño del `ItemOrder` para mostrar:
+    - Marca y Modelo del aire acondicionado.
+    - Nombre del Técnico (si está asignado).
+    - Tipo de servicio y fecha/hora.
+
+---
+
+### 3. Dashboard del Cliente
+
+#### [MODIFY] [ClientDashboardActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/ClientDashboardActivity.kt)
+- Configurar el `RecyclerView` con el adaptador actualizado.
+- Cargar las órdenes del cliente logueado al iniciar la actividad.
 
 ## Verification Plan
 
-### Automated Tests
-- Pruebas unitarias en `OrdenRepository` para verificar que la asignación automática elija al técnico correcto.
-- Pruebas de integración de base de datos para asegurar que los nuevos campos persistan.
-
 ### Manual Verification
-1. Registrar un nuevo Cliente.
-2. Solicitar un mantenimiento desde la cuenta del Cliente.
-3. Entrar como Administrador y asignar la orden.
-4. Entrar como Técnico, poner precio y ver ubicación en el mapa.
-5. Volver al Cliente, aceptar el precio y realizar la firma virtual.
+1. **GPS y Dirección**: Abrir "Solicitar Servicio", capturar GPS y verificar que la dirección se escriba sola.
+2. **Visualización**: Entrar como Cliente y verificar que en sus órdenes aparezca la marca/modelo del aire y el nombre del técnico si ya fue asignado.
+3. **Roles**: Verificar que el técnico vea sus servicios realizados correctamente en su historial.

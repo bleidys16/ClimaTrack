@@ -15,10 +15,12 @@ class OrdenRepository(context: Context) {
         val db = dbHelper.readableDatabase
         val query = "SELECT o.${DatabaseHelper.COL_ORDEN_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, o.${DatabaseHelper.COL_ORDEN_FECHA}, " +
                 "c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
-                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO} " +
+                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
+                "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "JOIN ${DatabaseHelper.TABLE_EQUIPOS} e ON o.${DatabaseHelper.COL_ORDEN_EQUIPO_ID} = e.${DatabaseHelper.COL_EQUIPO_ID} " +
+                "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u ON o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} " +
                 "WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = ?"
         
         val cursor = db.rawQuery(query, arrayOf(tecnicoId.toString()))
@@ -31,7 +33,11 @@ class OrdenRepository(context: Context) {
                     clienteNombre = cursor.getString(3),
                     equipoNombre = cursor.getString(4),
                     tipoServicio = cursor.getString(5),
-                    estado = cursor.getString(6)
+                    estado = cursor.getString(6),
+                    tecnicoNombre = cursor.getString(7),
+                    precioServicio = cursor.getDouble(8),
+                    equipoMarca = cursor.getString(9),
+                    equipoModelo = cursor.getString(10)
                 ))
             } while (cursor.moveToNext())
         }
@@ -124,10 +130,12 @@ class OrdenRepository(context: Context) {
         val db = dbHelper.readableDatabase
         val query = "SELECT o.${DatabaseHelper.COL_ORDEN_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, o.${DatabaseHelper.COL_ORDEN_FECHA}, " +
                 "c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
-                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO} " +
+                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
+                "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "JOIN ${DatabaseHelper.TABLE_EQUIPOS} e ON o.${DatabaseHelper.COL_ORDEN_EQUIPO_ID} = e.${DatabaseHelper.COL_EQUIPO_ID} " +
+                "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u ON o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} " +
                 "WHERE o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = ?"
         
         val cursor = db.rawQuery(query, arrayOf(clienteId.toString()))
@@ -140,7 +148,11 @@ class OrdenRepository(context: Context) {
                     clienteNombre = cursor.getString(3),
                     equipoNombre = cursor.getString(4),
                     tipoServicio = cursor.getString(5),
-                    estado = cursor.getString(6)
+                    estado = cursor.getString(6),
+                    tecnicoNombre = cursor.getString(7),
+                    precioServicio = cursor.getDouble(8),
+                    equipoMarca = cursor.getString(9),
+                    equipoModelo = cursor.getString(10)
                 ))
             } while (cursor.moveToNext())
         }

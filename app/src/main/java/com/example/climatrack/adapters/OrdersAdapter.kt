@@ -34,6 +34,7 @@ class OrdersAdapter(
             binding.tvOrderNum.text = order.numero
             binding.tvClientName.text = "Cliente: ${order.clienteNombre}"
             binding.tvEquipmentInfo.text = "Equipo: ${order.equipoNombre}"
+            binding.tvTechnician.text = "Técnico: ${order.tecnicoNombre ?: "Por asignar"}"
             binding.tvDate.text = order.fecha
             binding.tvServiceType.text = order.tipoServicio
             binding.tvStatus.text = order.estado

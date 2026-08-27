@@ -1,22 +1,10 @@
-# Tareas de Implementación - Expansión de ClimaTrack
+# Tareas de Implementación - Mejoras Cliente y Localización
 
-- `[x]` Actualizar Modelos y DatabaseHelper
-    - `[x]` Modificar `Models.kt` (Usuario y Orden)
-    - `[x]` Modificar `DatabaseHelper.kt` (Nuevas columnas e incremento de versión)
-- `[x]` Implementar Registro y Autenticación por Rol
-    - `[x]` Crear `RegisterActivity`
-    - `[x]` Actualizar `LoginActivity` (redirección por rol)
-- `[x]` Implementar Módulo de Cliente
-    - `[x]` Crear `ClientDashboardActivity`
-    - `[x]` Crear `SupportActivity`
-    - `[x]` Crear `OrderRequestActivity` (Solicitud con GPS)
-    - `[x]` Implementar firma virtual y aceptación de precio (en `ApprovalActivity`)
-- `[x]` Implementar Módulo de Administrador
-    - `[x]` Crear `AdminDashboardActivity`
-    - `[x]` Implementar lógica de asignación automática/manual (en `OrdenRepository` y `AdminDashboardActivity`)
-- `[x]` Mejoras en el Módulo de Técnico
-    - `[x]` Agregar campo de precio en `MaintenanceActivity`
-    - `[x]` Integrar Google Maps en `LocationActivity`
-- `[x]` Actualizar Repositorios
-    - `[x]` Modificar `OrdenRepository` con nueva lógica de negocio
-    - `[x]` Modificar `UsuarioRepository` con registro
+- `[x]` Actualizar Modelos y Repositorios
+    - `[x]` Modificar `Models.kt` (Agregar campos a `OrdenInfo`)
+    - `[x]` Actualizar `OrdenRepository.kt` (Query con JOINS para técnico y equipo)
+- `[x]` Implementar Autocompletado de Dirección
+    - `[x]` Modificar `OrderRequestActivity.kt` (Integrar Geocoder tras obtener GPS)
+- `[x]` Actualizar Interfaz de Usuario (UI)
+    - `[x]` Modificar `ItemOrderBinding` y `OrdersAdapter.kt`
+    - `[x]` Refinar `ClientDashboardActivity.kt`

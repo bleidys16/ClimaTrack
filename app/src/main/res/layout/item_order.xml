@@ -77,14 +77,27 @@
             app:layout_constraintStart_toStartOf="@id/tvOrderNum"
             app:layout_constraintTop_toBottomOf="@id/tvClientName" />
 
+        <TextView
+            android:id="@+id/tvTechnician"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="@font/geist_medium"
+            android:text="Técnico: No asignado"
+            android:textColor="@color/ube"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tvOrderNum"
+            app:layout_constraintTop_toBottomOf="@id/tvEquipmentInfo" />
+
         <View
             android:id="@+id/divider"
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:background="@color/cadet_grey"
             android:alpha="0.3"
-            app:layout_constraintTop_toBottomOf="@id/tvEquipmentInfo" />
+            app:layout_constraintTop_toBottomOf="@id/tvTechnician" />
 
         <ImageView
             android:id="@+id/imgCalendar"

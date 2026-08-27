@@ -3,6 +3,7 @@ package com.example.climatrack.activities
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,6 +15,7 @@ import com.example.climatrack.utils.SessionManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -66,10 +68,27 @@ class OrderRequestActivity : BaseActivity() {
                     lat = location.latitude
                     lon = location.longitude
                     binding.tvGpsStatus.text = "GPS Capturado: $lat, $lon"
+                    
+                    // Autocompletar dirección
+                    getAddress(location.latitude, location.longitude)
                 } else {
                     binding.tvGpsStatus.text = "No se pudo obtener el GPS"
                 }
             }
+    }
+
+    private fun getAddress(latitude: Double, longitude: Double) {
+        val geocoder = Geocoder(this, Locale.getDefault())
+        try {
+            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+            if (!addresses.isNullOrEmpty()) {
+                val address = addresses[0].getAddressLine(0)
+                binding.etExactAddress.setText(address)
+                Toast.makeText(this, "Dirección autocompletada", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
     private fun submitRequest() {

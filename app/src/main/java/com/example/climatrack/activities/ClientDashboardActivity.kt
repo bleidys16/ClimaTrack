@@ -3,6 +3,8 @@ package com.example.climatrack.activities
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.climatrack.adapters.OrdersAdapter
 import com.example.climatrack.databinding.ActivityClientDashboardBinding
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.utils.SessionManager
@@ -12,6 +14,7 @@ class ClientDashboardActivity : BaseActivity() {
     private lateinit var binding: ActivityClientDashboardBinding
     private lateinit var sessionManager: SessionManager
     private lateinit var ordenRepository: OrdenRepository
+    private lateinit var adapter: OrdersAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,6 +25,8 @@ class ClientDashboardActivity : BaseActivity() {
         sessionManager = SessionManager(this)
         ordenRepository = OrdenRepository(this)
 
+        setupRecyclerView()
+
         binding.btnRequestService.setOnClickListener {
             requestService()
         }
@@ -29,11 +34,30 @@ class ClientDashboardActivity : BaseActivity() {
         loadMyServices()
     }
 
+    private fun setupRecyclerView() {
+        adapter = OrdersAdapter(emptyList()) { order ->
+            // Click en la orden para ver detalle si se requiere
+        }
+        binding.rvClientOrders.layoutManager = LinearLayoutManager(this)
+        binding.rvClientOrders.adapter = adapter
+    }
+
     private fun requestService() {
         startActivity(Intent(this, OrderRequestActivity::class.java))
     }
 
+    override fun onResume() {
+        super.onResume()
+        loadMyServices()
+    }
+
     private fun loadMyServices() {
-        // Cargar servicios del cliente actual
+        val clienteId = sessionManager.getUserId()
+        val orders = ordenRepository.getOrdenesByCliente(clienteId)
+        adapter.updateList(orders)
+        
+        if (orders.isEmpty()) {
+            Toast.makeText(this, "No tienes servicios registrados", Toast.LENGTH_SHORT).show()
+        }
     }
 }
