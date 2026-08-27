@@ -27,6 +27,10 @@ class LoginActivity : BaseActivity() {
         binding.btnLogin.setOnClickListener {
             performLogin()
         }
+
+        binding.tvRegister.setOnClickListener {
+            startActivity(Intent(this, RegisterActivity::class.java))
+        }
     }
 
     private fun performLogin() {
@@ -41,10 +45,13 @@ class LoginActivity : BaseActivity() {
         val usuario = usuarioRepository.login(user, pass)
 
         if (usuario != null) {
-            sessionManager.saveSession(usuario.id, usuario.nombre)
+            sessionManager.saveSession(usuario.id, usuario.nombre, usuario.rol)
             
-            // Navegar al Dashboard
-            val intent = Intent(this, DashboardActivity::class.java)
+            val intent = when (usuario.rol.uppercase()) {
+                "ADMINISTRADOR" -> Intent(this, AdminDashboardActivity::class.java)
+                "CLIENTE" -> Intent(this, ClientDashboardActivity::class.java)
+                else -> Intent(this, DashboardActivity::class.java)
+            }
             startActivity(intent)
             finish()
         } else {

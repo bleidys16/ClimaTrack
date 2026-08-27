@@ -9,13 +9,12 @@ import android.view.View
 class SignatureView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     private var path = Path()
-    private val paint = Paint().apply {
+    private var paint = Paint().apply {
         isAntiAlias = true
         color = Color.BLACK
         style = Paint.Style.STROKE
         strokeJoin = Paint.Join.ROUND
-        strokeCap = Paint.Cap.ROUND
-        strokeWidth = 8f
+        strokeWidth = 5f
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -28,15 +27,11 @@ class SignatureView(context: Context, attrs: AttributeSet) : View(context, attrs
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                parent.requestDisallowInterceptTouchEvent(true)
                 path.moveTo(x, y)
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
                 path.lineTo(x, y)
-            }
-            MotionEvent.ACTION_UP -> {
-                parent.requestDisallowInterceptTouchEvent(false)
             }
             else -> return false
         }

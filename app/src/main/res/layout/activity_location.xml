@@ -136,42 +136,20 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Map View Visualization -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="300dp"
                 android:layout_marginTop="20dp"
                 app:cardBackgroundColor="@color/american_blue"
                 app:cardCornerRadius="16dp"
                 app:strokeWidth="0.5dp"
                 app:strokeColor="@color/cadet_grey">
 
-                <FrameLayout
+                <com.google.android.gms.maps.MapView
+                    android:id="@+id/mapView"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent" />
 
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="centerCrop"
-                        android:src="@android:drawable/ic_menu_mapmode"
-                        android:alpha="0.2" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/bg_bottom_nav_floating"
-                        android:alpha="0.3" />
-
-                    <ImageView
-                        android:id="@+id/ivMarker"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_gravity="center"
-                        android:src="@android:drawable/ic_menu_mylocation"
-                        app:tint="@color/status_finished"
-                        android:visibility="invisible"/>
-                </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Details Card -->

@@ -2,15 +2,12 @@ package com.example.climatrack.activities
 
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.os.Environment
 import android.widget.Toast
 import com.example.climatrack.databinding.ActivityApprovalBinding
 import com.example.climatrack.models.Aprobacion
 import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.repositories.ServicioRepository
-import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -88,9 +85,9 @@ class ApprovalActivity : BaseActivity() {
             return
         }
 
-        // Save signature as file
+        // Save signature as Base64
         val signatureBitmap = binding.signatureView.getSignatureBitmap()
-        val signaturePath = saveSignatureToFile(signatureBitmap)
+        val signatureBase64 = encodeBitmapToBase64(signatureBitmap)
 
         val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
         val aprobacion = Aprobacion(
@@ -98,32 +95,22 @@ class ApprovalActivity : BaseActivity() {
             cliente = clientName,
             aceptado = accepted,
             fecha = date
-            // Note: We could add signaturePath to Aprobacion model if needed
         )
 
         val result = servicioRepository.addAprobacion(aprobacion)
         if (result > 0) {
-            Toast.makeText(this, "Aprobación registrada correctamente", Toast.LENGTH_SHORT).show()
+            ordenRepository.saveFirma(orderId, signatureBase64)
+            Toast.makeText(this, "Aprobación y firma registradas correctamente", Toast.LENGTH_SHORT).show()
             finish()
         } else {
             Toast.makeText(this, "Error al registrar aprobación", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun saveSignatureToFile(bitmap: Bitmap): String {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val fileName = "SIG_${orderId}_${timeStamp}.png"
-        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        val file = File(storageDir, fileName)
-        
-        try {
-            val out = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-            out.flush()
-            out.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return file.absolutePath
+    private fun encodeBitmapToBase64(bitmap: Bitmap): String {
+        val outputStream = java.io.ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        val byteArray = outputStream.toByteArray()
+        return android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT)
     }
 }

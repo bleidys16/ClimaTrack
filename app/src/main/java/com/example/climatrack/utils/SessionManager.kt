@@ -9,15 +9,21 @@ class SessionManager(context: Context) {
     companion object {
         private const val KEY_USER_ID = "user_id"
         private const val KEY_USER_NAME = "user_name"
+        private const val KEY_USER_ROL = "user_rol"
         private const val KEY_IS_LOGGED_IN = "is_logged_in"
     }
 
-    fun saveSession(userId: Int, userName: String) {
+    fun saveSession(userId: Int, userName: String, userRol: String) {
         val editor = prefs.edit()
         editor.putInt(KEY_USER_ID, userId)
         editor.putString(KEY_USER_NAME, userName)
+        editor.putString(KEY_USER_ROL, userRol)
         editor.putBoolean(KEY_IS_LOGGED_IN, true)
         editor.apply()
+    }
+
+    fun getUserRol(): String? {
+        return prefs.getString(KEY_USER_ROL, "")
     }
 
     fun isLoggedIn(): Boolean {

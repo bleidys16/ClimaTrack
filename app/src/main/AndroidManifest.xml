@@ -34,6 +34,28 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".activities.RegisterActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".activities.ClientDashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.AdminDashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.SupportActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.OrderRequestActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".activities.DashboardActivity"
             android:exported="false" />
 
@@ -84,6 +106,10 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="YOUR_API_KEY_HERE" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

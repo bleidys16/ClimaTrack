@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 5
+        private const val DATABASE_VERSION = 6
 
         // Tabla Usuarios
         const val TABLE_USUARIOS = "usuarios"
@@ -18,6 +18,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_USUARIO_PASS = "password"
         const val COL_USUARIO_NOMBRE = "nombre"
         const val COL_USUARIO_ROL = "rol"
+        const val COL_USUARIO_EMAIL = "email"
+        const val COL_USUARIO_TEL = "telefono"
 
         // Tabla Clientes
         const val TABLE_CLIENTES = "clientes"
@@ -52,6 +54,11 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_ORDEN_TIPO = "tipo_servicio"
         const val COL_ORDEN_DESC = "descripcion"
         const val COL_ORDEN_ESTADO = "estado"
+        const val COL_ORDEN_PRECIO = "precio"
+        const val COL_ORDEN_LAT = "latitud"
+        const val COL_ORDEN_LON = "longitud"
+        const val COL_ORDEN_DIR_EXACTA = "direccion_exacta"
+        const val COL_ORDEN_FIRMA = "firma"
 
         // Tabla Mantenimientos
         const val TABLE_MANTENIMIENTOS = "mantenimientos"
@@ -113,7 +120,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_USUARIO_USER TEXT NOT NULL UNIQUE, " +
                 "$COL_USUARIO_PASS TEXT NOT NULL, " +
                 "$COL_USUARIO_NOMBRE TEXT NOT NULL, " +
-                "$COL_USUARIO_ROL TEXT NOT NULL)"
+                "$COL_USUARIO_ROL TEXT NOT NULL, " +
+                "$COL_USUARIO_EMAIL TEXT, " +
+                "$COL_USUARIO_TEL TEXT)"
 
         val createClientes = "CREATE TABLE $TABLE_CLIENTES (" +
                 "$COL_CLIENTE_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -146,6 +155,11 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_ORDEN_TIPO TEXT, " +
                 "$COL_ORDEN_DESC TEXT, " +
                 "$COL_ORDEN_ESTADO TEXT, " +
+                "$COL_ORDEN_PRECIO REAL DEFAULT 0.0, " +
+                "$COL_ORDEN_LAT REAL, " +
+                "$COL_ORDEN_LON REAL, " +
+                "$COL_ORDEN_DIR_EXACTA TEXT, " +
+                "$COL_ORDEN_FIRMA TEXT, " +
                 "FOREIGN KEY($COL_ORDEN_CLIENTE_ID) REFERENCES $TABLE_CLIENTES($COL_CLIENTE_ID), " +
                 "FOREIGN KEY($COL_ORDEN_EQUIPO_ID) REFERENCES $TABLE_EQUIPOS($COL_EQUIPO_ID), " +
                 "FOREIGN KEY($COL_ORDEN_TECNICO_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"
@@ -233,15 +247,25 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     private fun insertInitialData(db: SQLiteDatabase?) {
         // Usuarios
+        val admin = ContentValues().apply {
+            put(COL_USUARIO_USER, "admin")
+            put(COL_USUARIO_PASS, "admin123")
+            put(COL_USUARIO_NOMBRE, "Administrador Sistema")
+            put(COL_USUARIO_ROL, "Administrador")
+            put(COL_USUARIO_EMAIL, "admin@climatrack.com")
+        }
+        db?.insert(TABLE_USUARIOS, null, admin)
+
         val tecnico1 = ContentValues().apply {
             put(COL_USUARIO_USER, "tecnico01")
             put(COL_USUARIO_PASS, "123456")
             put(COL_USUARIO_NOMBRE, "Técnico 01")
             put(COL_USUARIO_ROL, "Técnico")
+            put(COL_USUARIO_EMAIL, "tecnico01@climatrack.com")
         }
         db?.insert(TABLE_USUARIOS, null, tecnico1)
         
-        // Obtener el ID real del técnico (indispensable para vincular órdenes)
+        // Obtener el ID real del técnico
         val cursorUser = db?.query(TABLE_USUARIOS, arrayOf(COL_USUARIO_ID), "$COL_USUARIO_USER=?", arrayOf("tecnico01"), null, null, null)
         var idUser1: Long = 1
         if (cursorUser?.moveToFirst() == true) {
@@ -254,8 +278,18 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COL_USUARIO_PASS, "123456")
             put(COL_USUARIO_NOMBRE, "Técnico 02")
             put(COL_USUARIO_ROL, "Técnico")
+            put(COL_USUARIO_EMAIL, "tecnico02@climatrack.com")
         }
         db?.insert(TABLE_USUARIOS, null, tecnico2)
+
+        val clienteUser = ContentValues().apply {
+            put(COL_USUARIO_USER, "cliente01")
+            put(COL_USUARIO_PASS, "123456")
+            put(COL_USUARIO_NOMBRE, "Cliente de Prueba")
+            put(COL_USUARIO_ROL, "Cliente")
+            put(COL_USUARIO_EMAIL, "cliente01@gmail.com")
+        }
+        db?.insert(TABLE_USUARIOS, null, clienteUser)
 
         // Clientes
         val clientes = listOf(

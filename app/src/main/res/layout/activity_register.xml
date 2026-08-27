@@ -11,54 +11,58 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/imgLogin"
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:layout_marginTop="64dp"
-            android:padding="2dp"
-            android:src="@drawable/person_profile"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
-            app:strokeColor="@color/ube"
-            app:strokeWidth="4dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <TextView
-            android:id="@+id/tvWelcomeTitle"
+            android:id="@+id/tvRegisterTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="¡Bienvenido de nuevo!"
+            android:layout_marginTop="48dp"
+            android:text="Crea tu cuenta"
             android:textColor="@color/white"
             android:textSize="26sp"
             android:fontFamily="@font/geist_bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imgLogin" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tvLoginInfo"
+            android:id="@+id/tvRegisterSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Ingresa tus credenciales de técnico"
+            android:text="Únete a ClimaTrack para solicitar servicios"
             android:textColor="@color/cadet_grey"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvWelcomeTitle" />
+            app:layout_constraintTop_toBottomOf="@id/tvRegisterTitle" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilFullName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:hint="Nombre Completo"
+            app:startIconDrawable="@drawable/ic_user_modern"
+            app:startIconTint="@color/cadet_grey"
+            app:layout_constraintTop_toBottomOf="@id/tvRegisterSubtitle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etFullName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:textColor="@color/white" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilUser"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:hint="@string/username_hint"
+            android:layout_marginTop="16dp"
+            android:hint="Nombre de Usuario"
             app:startIconDrawable="@drawable/ic_user_modern"
             app:startIconTint="@color/cadet_grey"
-            app:layout_constraintTop_toBottomOf="@id/tvLoginInfo">
+            app:layout_constraintTop_toBottomOf="@id/tilFullName">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etUser"
@@ -69,16 +73,52 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Correo Electrónico"
+            app:startIconDrawable="@drawable/ic_user_modern"
+            app:startIconTint="@color/cadet_grey"
+            app:layout_constraintTop_toBottomOf="@id/tilUser">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/white" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Teléfono"
+            app:startIconDrawable="@drawable/ic_user_modern"
+            app:startIconTint="@color/cadet_grey"
+            app:layout_constraintTop_toBottomOf="@id/tilEmail">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPhone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:textColor="@color/white" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="@string/password_hint"
+            android:hint="Contraseña"
             app:endIconMode="password_toggle"
             app:endIconTint="@color/cadet_grey"
             app:startIconDrawable="@drawable/ic_lock_modern"
             app:startIconTint="@color/cadet_grey"
-            app:layout_constraintTop_toBottomOf="@id/tilUser">
+            app:layout_constraintTop_toBottomOf="@id/tilPhone">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPassword"
@@ -89,43 +129,30 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLogin"
+            android:id="@+id/btnRegister"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_marginTop="40dp"
-            android:text="INICIAR SESIÓN"
+            android:layout_marginTop="32dp"
+            android:text="REGISTRARSE"
             android:textSize="16sp"
             android:fontFamily="@font/geist_bold"
             app:layout_constraintTop_toBottomOf="@id/tilPassword"
             app:backgroundTint="@color/ube" />
 
         <TextView
-            android:id="@+id/tvRegister"
+            android:id="@+id/tvBackToLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="¿No tienes cuenta? Regístrate aquí"
+            android:layout_marginBottom="24dp"
+            android:text="¿Ya tienes cuenta? Inicia sesión"
             android:textColor="@color/ube"
             android:textSize="14sp"
             android:fontFamily="@font/geist_medium"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnLogin" />
-
-        <TextView
-            android:id="@+id/tvVersionInfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="24dp"
-            android:text="ClimaTrack v1.0 • Desarrollo Seguro"
-            android:textColor="@color/cadet_grey"
-            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvRegister"
-            app:layout_constraintVertical_bias="1.0" />
+            app:layout_constraintTop_toBottomOf="@id/btnRegister" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

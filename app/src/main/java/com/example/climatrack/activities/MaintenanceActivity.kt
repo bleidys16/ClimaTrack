@@ -131,6 +131,7 @@ class MaintenanceActivity : BaseActivity() {
         val date = binding.etDate.text.toString().trim()
         val status = binding.spnEquipStatus.text.toString()
         val time = binding.spnTimeSpent.text.toString()
+        val priceStr = binding.etPrice.text.toString().trim()
 
         if (diag.isEmpty() || work.isEmpty() || date.isEmpty() || status.isEmpty()) {
             Toast.makeText(this, "Complete los campos obligatorios (*)", Toast.LENGTH_SHORT).show()
@@ -157,8 +158,14 @@ class MaintenanceActivity : BaseActivity() {
         }
 
         if (result > 0) {
-            ordenRepository.updateEstado(orderId, "EN PROCESO")
-            Toast.makeText(this, "Mantenimiento registrado correctamente", Toast.LENGTH_SHORT).show()
+            val price = priceStr.toDoubleOrNull() ?: 0.0
+            if (price > 0) {
+                ordenRepository.updatePrecio(orderId, price)
+                Toast.makeText(this, "Mantenimiento guardado y cotización enviada", Toast.LENGTH_SHORT).show()
+            } else {
+                ordenRepository.updateEstado(orderId, "EN PROCESO")
+                Toast.makeText(this, "Mantenimiento registrado correctamente", Toast.LENGTH_SHORT).show()
+            }
             finish()
         } else {
             Toast.makeText(this, "Error al guardar el mantenimiento", Toast.LENGTH_SHORT).show()

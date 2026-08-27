@@ -5,7 +5,9 @@ data class Usuario(
     val usuario: String,
     val password: String,
     val nombre: String,
-    val rol: String
+    val rol: String,
+    val email: String? = null,
+    val telefono: String? = null
 )
 
 data class Cliente(
@@ -36,10 +38,15 @@ data class Orden(
     val fecha: String,
     val clienteId: Int,
     val equipoId: Int,
-    val tecnicoId: Int,
+    val tecnicoId: Int?,
     val tipoServicio: String,
     val descripcion: String?,
-    val estado: String
+    val estado: String,
+    val precioServicio: Double = 0.0,
+    val latitudCliente: Double? = null,
+    val longitudCliente: Double? = null,
+    val direccionExacta: String? = null,
+    val firmaBase64: String? = null
 )
 
 data class OrdenInfo(

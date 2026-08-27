@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/chinese_black"
+    android:padding="24dp">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:title="Soporte Técnico"
+        app:titleTextColor="@color/white"
+        app:navigationIcon="@drawable/ic_back_modern"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tvSupportDesc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Si tienes problemas con tu equipo o necesitas asistencia inmediata, contáctanos a través de los siguientes canales:"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCall"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="32dp"
+        android:text="LLAMAR A SOPORTE"
+        app:backgroundTint="@color/ube"
+        app:layout_constraintTop_toBottomOf="@id/tvSupportDesc" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEmail"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:text="ENVIAR CORREO"
+        app:backgroundTint="@color/american_blue"
+        app:layout_constraintTop_toBottomOf="@id/btnCall" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
