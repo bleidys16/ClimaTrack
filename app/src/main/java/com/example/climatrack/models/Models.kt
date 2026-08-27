@@ -7,7 +7,11 @@ data class Usuario(
     val nombre: String,
     val rol: String,
     val email: String? = null,
-    val telefono: String? = null
+    val telefono: String? = null,
+    val isActive: Int = 0, // 0: Inactivo, 1: Activo
+    val workEndTime: String? = null,
+    val lastLat: Double? = null,
+    val lastLon: Double? = null
 )
 
 data class Cliente(

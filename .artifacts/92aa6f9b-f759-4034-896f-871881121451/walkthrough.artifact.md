@@ -1,31 +1,27 @@
-# Walkthrough - Mejoras Módulo de Cliente y Geolocalización
+# Walkthrough - Monitoreo de Técnicos y Disponibilidad
 
-He aplicado una serie de mejoras centradas en la precisión de los datos y la transparencia para el cliente.
+He implementado un sistema de monitoreo en tiempo real para el administrador y controles de disponibilidad para el personal técnico.
 
 ## Cambios Realizados
 
-### 1. Autocompletado de Dirección por GPS
-- En la pantalla de **Solicitar Mantenimiento**, al capturar la ubicación GPS, la aplicación ahora realiza un proceso de *Reverse Geocoding*.
-- Esto traduce las coordenadas en una dirección física (calle, número, ciudad) y la escribe automáticamente en el campo de dirección, ahorrando tiempo al cliente y evitando errores manuales.
+### 1. Para el Técnico: Control de Disponibilidad
+- Se añadió una tarjeta de **"Estado de Disponibilidad"** en el Dashboard del Técnico.
+- **Switch de Activo**: El técnico puede marcarse como activo. Al hacerlo, la app captura su ubicación actual y la envía al sistema.
+- **Hora de Finalización**: Permite al técnico definir a qué hora termina su jornada laboral mediante un selector de tiempo.
 
-### 2. Información del Técnico Asignado
-- Se ha modificado el modelo de datos y la lógica de la base de datos para recuperar el nombre del técnico responsable.
-- El cliente ahora puede ver en su listado de órdenes quién ha sido asignado a su servicio, promoviendo mayor confianza.
+### 2. Para el Administrador: Monitoreo en Tiempo Real
+- **Contador de Activos**: En el Dashboard de Admin ahora aparece un recuadro indicando cuántos técnicos están conectados en el momento.
+- **Mapa de Técnicos**: Nuevo botón **"VER MAPA DE TÉCNICOS"** que abre una vista de Google Maps con marcadores azules para cada técnico activo.
+- **Información Detallada**: Al tocar un marcador en el mapa, el administrador puede ver el nombre del técnico y su hora estimada de finalización.
 
-### 3. Órdenes con Mayor Detalle
-- Se actualizó el diseño de los elementos en la lista (`RecyclerView`) para mostrar:
-    - **Marca y Modelo** del equipo de aire acondicionado.
-    - **Nombre del Técnico** (o "Por asignar" si aún no tiene uno).
-    - **Estado y Precio** con colores semánticos mejorados.
-
-### 4. Sincronización del Dashboard
-- El `ClientDashboardActivity` ahora carga automáticamente las órdenes reales del cliente logueado, mostrando un mensaje si no hay servicios registrados aún.
+### 3. Infraestructura de Datos
+- Se actualizó la tabla de `usuarios` para persistir el estado, la hora de salida y las coordenadas GPS.
+- Sincronización automática de ubicación al activar la disponibilidad.
 
 ## Cómo Probarlo
-1. **Solicitud**: Entra como cliente, ve a "SOLICITAR SERVICIO", captura el GPS y observa cómo se rellena la dirección. Envía la solicitud.
-2. **Asignación**: Entra como administrador (`admin`) y asigna la orden (puedes usar el botón inteligente).
-3. **Verificación**: Vuelve a entrar como cliente y verás que en tu lista ahora aparece el nombre del técnico que el sistema le asignó.
+1. **Técnico**: Entra como `tecnico01`, activa el switch de disponibilidad y selecciona una hora de finalización (ej: 18:00).
+2. **Administrador**: Entra como `admin`, observa que el contador de técnicos activos se ha incrementado. Toca en el mapa y verás a `tecnico01` posicionado en su ubicación actual.
 
-render_diffs(file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main%20(1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/OrderRequestActivity.kt)
-render_diffs(file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main%20(1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/repositories/OrdenRepository.kt)
-render_diffs(file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main%20(1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/adapters/OrdersAdapter.kt)
+render_diffs(file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main%20(1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/DashboardActivity.kt)
+render_diffs(file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main%20(1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/AdminDashboardActivity.kt)
+render_diffs(file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main%20(1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/repositories/UsuarioRepository.kt)

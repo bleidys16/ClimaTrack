@@ -37,6 +37,19 @@ Este plan detalla las mejoras solicitadas para el módulo de cliente, incluyendo
 ---
 
 ### 3. Dashboard del Cliente
+...
+---
+
+### 4. Monitoreo de Técnicos (Admin/Técnico)
+
+#### [MODIFY] [Usuario](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/models/Models.kt)
+- Nuevos campos: `isActive`, `workEndTime`, `lastLat`, `lastLon`.
+
+#### [MODIFY] [DashboardActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/DashboardActivity.kt)
+- Interfaz para que el técnico se marque como "Activo" y defina su hora de salida.
+
+#### [NEW] [TechnicianMapActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/TechnicianMapActivity.kt)
+- Mapa interactivo para que el administrador vea a todo su personal en tiempo real.
 
 #### [MODIFY] [ClientDashboardActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack-main (1)/ClimaTrack-main/app/src/main/java/com/example/climatrack/activities/ClientDashboardActivity.kt)
 - Configurar el `RecyclerView` con el adaptador actualizado.

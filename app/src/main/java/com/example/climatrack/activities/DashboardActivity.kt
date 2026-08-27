@@ -1,18 +1,24 @@
 package com.example.climatrack.activities
 
+import android.annotation.SuppressLint
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
 import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityDashboardBinding
 import com.example.climatrack.repositories.OrdenRepository
+import com.example.climatrack.repositories.UsuarioRepository
 import com.example.climatrack.utils.SessionManager
+import com.google.android.gms.location.LocationServices
+import java.util.*
 
 class DashboardActivity : BaseActivity() {
 
     private lateinit var binding: ActivityDashboardBinding
     private lateinit var sessionManager: SessionManager
     private lateinit var ordenRepository: OrdenRepository
+    private lateinit var usuarioRepository: UsuarioRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,10 +27,54 @@ class DashboardActivity : BaseActivity() {
 
         sessionManager = SessionManager(this)
         ordenRepository = OrdenRepository(this)
+        usuarioRepository = UsuarioRepository(this)
 
         setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
         setupUI()
+        setupStatusLogic()
         setupBottomNavigation()
+    }
+
+    private fun setupStatusLogic() {
+        val userId = sessionManager.getUserId()
+        val user = usuarioRepository.getById(userId)
+        
+        user?.let {
+            binding.swActiveStatus.isChecked = it.isActive == 1
+            binding.etWorkEndTime.setText(it.workEndTime ?: "")
+        }
+
+        val calendar = Calendar.getInstance()
+
+        binding.etWorkEndTime.setOnClickListener {
+            TimePickerDialog(this, { _, hour, minute ->
+                val time = String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+                binding.etWorkEndTime.setText(time)
+                updateTechnicianStatus()
+            }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
+        }
+
+        binding.swActiveStatus.setOnCheckedChangeListener { _, _ ->
+            updateTechnicianStatus()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun updateTechnicianStatus() {
+        val userId = sessionManager.getUserId()
+        val isActive = if (binding.swActiveStatus.isChecked) 1 else 0
+        val workEnd = binding.etWorkEndTime.text.toString()
+
+        if (isActive == 1) {
+            val fusedLocation = LocationServices.getFusedLocationProviderClient(this)
+            fusedLocation.lastLocation.addOnSuccessListener { location ->
+                usuarioRepository.updateStatus(userId, isActive, workEnd, location?.latitude, location?.longitude)
+                if (location != null) Toast.makeText(this, "Estado actualizado con ubicación", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            usuarioRepository.updateStatus(userId, isActive, workEnd, null, null)
+            Toast.makeText(this, "Ahora estás desconectado", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onResume() {

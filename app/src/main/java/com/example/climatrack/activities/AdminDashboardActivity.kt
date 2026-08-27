@@ -5,11 +5,13 @@ import android.os.Bundle
 import android.widget.Toast
 import com.example.climatrack.databinding.ActivityAdminDashboardBinding
 import com.example.climatrack.repositories.OrdenRepository
+import com.example.climatrack.repositories.UsuarioRepository
 
 class AdminDashboardActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAdminDashboardBinding
     private lateinit var ordenRepository: OrdenRepository
+    private lateinit var usuarioRepository: UsuarioRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,6 +20,7 @@ class AdminDashboardActivity : BaseActivity() {
         setupEdgeToEdge(binding.root, binding.toolbar)
 
         ordenRepository = OrdenRepository(this)
+        usuarioRepository = UsuarioRepository(this)
 
         binding.btnAutoAssign.setOnClickListener {
             performAutoAssignment()
@@ -26,8 +29,24 @@ class AdminDashboardActivity : BaseActivity() {
         binding.btnRegisterNewTech.setOnClickListener {
             startActivity(Intent(this, RegisterTechnicianActivity::class.java))
         }
+
+        binding.btnViewTechMap.setOnClickListener {
+            startActivity(Intent(this, TechnicianMapActivity::class.java))
+        }
         
         loadUnassignedOrders()
+        loadTechStats()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadUnassignedOrders()
+        loadTechStats()
+    }
+
+    private fun loadTechStats() {
+        val activeTechs = usuarioRepository.getActiveTechnicians()
+        binding.tvActiveTechsCount.text = "${activeTechs.size} Técnicos Activos"
     }
 
     private fun loadUnassignedOrders() {
