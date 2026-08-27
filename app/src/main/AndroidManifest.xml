@@ -47,6 +47,11 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.RegisterTechnicianActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".activities.SupportActivity"
             android:exported="false" />
 

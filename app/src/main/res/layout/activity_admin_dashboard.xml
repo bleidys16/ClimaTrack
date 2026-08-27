@@ -43,14 +43,26 @@
             app:layout_constraintBottom_toTopOf="@id/btnAutoAssign"
             app:layout_constraintTop_toBottomOf="@id/tvAdminTitle" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnAutoAssign"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="ASIGNACIÓN INTELIGENTE"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:backgroundTint="@color/ube" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRegisterNewTech"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="8dp"
+                android:text="NUEVO TÉCNICO"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnAutoAssign"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAutoAssign"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:text="AUTO ASIGNAR"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/btnRegisterNewTech"
+                app:backgroundTint="@color/ube" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

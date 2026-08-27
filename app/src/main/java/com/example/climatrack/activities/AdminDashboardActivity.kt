@@ -1,5 +1,6 @@
 package com.example.climatrack.activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import com.example.climatrack.databinding.ActivityAdminDashboardBinding
@@ -20,6 +21,10 @@ class AdminDashboardActivity : BaseActivity() {
 
         binding.btnAutoAssign.setOnClickListener {
             performAutoAssignment()
+        }
+
+        binding.btnRegisterNewTech.setOnClickListener {
+            startActivity(Intent(this, RegisterTechnicianActivity::class.java))
         }
         
         loadUnassignedOrders()
