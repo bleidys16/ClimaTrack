@@ -36,7 +36,13 @@ class ClientDashboardActivity : BaseActivity() {
 
     private fun setupRecyclerView() {
         adapter = OrdersAdapter(emptyList()) { order ->
-            // Click en la orden para ver detalle si se requiere
+            if (order.estado == "PENDIENTE APROBACIÓN") {
+                val intent = Intent(this, ApprovalActivity::class.java)
+                intent.putExtra("ORDER_ID", order.id)
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Estado: ${order.estado}", Toast.LENGTH_SHORT).show()
+            }
         }
         binding.rvClientOrders.layoutManager = LinearLayoutManager(this)
         binding.rvClientOrders.adapter = adapter
