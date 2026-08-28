@@ -140,3 +140,22 @@ data class Ubicacion(
     val direccion: String? = null,
     val fecha: String
 )
+
+data class ActividadTecnico(
+    val id: Int = 0,
+    val tecnicoId: Int,
+    val fecha: String,
+    val horaInicio: String?,
+    val horaFin: String?,
+    val lat: Double? = null,
+    val lon: Double? = null
+)
+
+data class TecnicoStats(
+    val id: Int,
+    val nombre: String,
+    val trabajosRealizados: Int,
+    val isActive: Int,
+    val email: String? = null,
+    val telefono: String? = null
+)

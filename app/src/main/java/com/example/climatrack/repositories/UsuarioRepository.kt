@@ -4,7 +4,11 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import com.example.climatrack.database.DatabaseHelper
+import com.example.climatrack.models.ActividadTecnico
+import com.example.climatrack.models.TecnicoStats
 import com.example.climatrack.models.Usuario
+import java.text.SimpleDateFormat
+import java.util.*
 
 class UsuarioRepository(context: Context) {
     private val dbHelper = DatabaseHelper(context)
@@ -118,6 +122,36 @@ class UsuarioRepository(context: Context) {
         return list
     }
 
+    fun getAllClientes(): List<Usuario> {
+        val list = mutableListOf<Usuario>()
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(
+            DatabaseHelper.TABLE_USUARIOS,
+            null,
+            "${DatabaseHelper.COL_USUARIO_ROL}=?",
+            arrayOf("Cliente"),
+            null, null, null
+        )
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(Usuario(
+                    id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
+                    usuario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USER)),
+                    password = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASS)),
+                    nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE)),
+                    rol = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ROL)),
+                    email = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_EMAIL)),
+                    telefono = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_TEL)),
+                    isActive = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ACTIVE)),
+                    workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
+                    workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END))
+                ))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
+
     fun getActiveTechnicians(): List<Usuario> {
         val list = mutableListOf<Usuario>()
         val db = dbHelper.readableDatabase
@@ -159,6 +193,93 @@ class UsuarioRepository(context: Context) {
             put(DatabaseHelper.COL_USUARIO_LAT, lat)
             put(DatabaseHelper.COL_USUARIO_LON, lon)
         }
-        return db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()))
+        
+        val result = db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()))
+        
+        if (result > 0) {
+            logActivity(userId, isActive, workStart, workEnd, lat, lon)
+        }
+        
+        return result
+    }
+
+    private fun logActivity(userId: Int, isActive: Int, start: String?, end: String?, lat: Double?, lon: Double?) {
+        val db = dbHelper.writableDatabase
+        val fecha = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        
+        // Buscar si ya hay registro para hoy
+        val cursor = db.query(DatabaseHelper.TABLE_ACTIVIDAD, arrayOf(DatabaseHelper.COL_ACT_ID),
+            "${DatabaseHelper.COL_ACT_TECH_ID}=? AND ${DatabaseHelper.COL_ACT_FECHA}=?",
+            arrayOf(userId.toString(), fecha), null, null, null)
+        
+        val values = ContentValues().apply {
+            if (isActive == 1) {
+                put(DatabaseHelper.COL_ACT_INICIO, start)
+                put(DatabaseHelper.COL_ACT_LAT, lat)
+                put(DatabaseHelper.COL_ACT_LON, lon)
+            } else {
+                put(DatabaseHelper.COL_ACT_FIN, end)
+            }
+        }
+
+        if (cursor.moveToFirst()) {
+            val id = cursor.getInt(0)
+            db.update(DatabaseHelper.TABLE_ACTIVIDAD, values, "${DatabaseHelper.COL_ACT_ID}=?", arrayOf(id.toString()))
+        } else {
+            values.put(DatabaseHelper.COL_ACT_TECH_ID, userId)
+            values.put(DatabaseHelper.COL_ACT_FECHA, fecha)
+            db.insert(DatabaseHelper.TABLE_ACTIVIDAD, null, values)
+        }
+        cursor.close()
+    }
+
+    fun getTechnicianStats(): List<TecnicoStats> {
+        val list = mutableListOf<TecnicoStats>()
+        val db = dbHelper.readableDatabase
+        val query = "SELECT u.${DatabaseHelper.COL_USUARIO_ID}, u.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
+                    "u.${DatabaseHelper.COL_USUARIO_ACTIVE}, u.${DatabaseHelper.COL_USUARIO_EMAIL}, u.${DatabaseHelper.COL_USUARIO_TEL}, " +
+                    "(SELECT COUNT(*) FROM ${DatabaseHelper.TABLE_ORDENES} o WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} AND o.${DatabaseHelper.COL_ORDEN_ESTADO} = 'FINALIZADA') as count " +
+                    "FROM ${DatabaseHelper.TABLE_USUARIOS} u " +
+                    "WHERE u.${DatabaseHelper.COL_USUARIO_ROL} = 'Técnico'"
+        
+        val cursor = db.rawQuery(query, null)
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(TecnicoStats(
+                    id = cursor.getInt(0),
+                    nombre = cursor.getString(1),
+                    isActive = cursor.getInt(2),
+                    email = cursor.getString(3),
+                    telefono = cursor.getString(4),
+                    trabajosRealizados = cursor.getInt(5)
+                ))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
+
+    fun getTechnicianHistory(techId: Int): List<ActividadTecnico> {
+        val list = mutableListOf<ActividadTecnico>()
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(DatabaseHelper.TABLE_ACTIVIDAD, null,
+            "${DatabaseHelper.COL_ACT_TECH_ID}=?", arrayOf(techId.toString()),
+            null, null, "${DatabaseHelper.COL_ACT_FECHA} DESC")
+        
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(ActividadTecnico(
+                    id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_ID)),
+                    tecnicoId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_TECH_ID)),
+                    fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_FECHA)),
+                    horaInicio = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_INICIO)),
+                    horaFin = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_FIN)),
+                    lat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_LAT)),
+                    lon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_LON))
+                ))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
     }
 }

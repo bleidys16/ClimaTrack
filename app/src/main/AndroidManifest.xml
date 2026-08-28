@@ -113,6 +113,15 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.TechnicianDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.ManualOrderActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 

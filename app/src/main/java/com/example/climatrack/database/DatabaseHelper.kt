@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 8
+        private const val DATABASE_VERSION = 9
 
         // Tabla Usuarios
         const val TABLE_USUARIOS = "usuarios"
@@ -25,6 +25,16 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_USUARIO_WORK_END = "work_end_time"
         const val COL_USUARIO_LAT = "last_lat"
         const val COL_USUARIO_LON = "last_lon"
+
+        // Tabla Actividad Técnico (Historial)
+        const val TABLE_ACTIVIDAD = "actividad_tecnico"
+        const val COL_ACT_ID = "id"
+        const val COL_ACT_TECH_ID = "tecnico_id"
+        const val COL_ACT_FECHA = "fecha"
+        const val COL_ACT_INICIO = "hora_inicio"
+        const val COL_ACT_FIN = "hora_fin"
+        const val COL_ACT_LAT = "latitud"
+        const val COL_ACT_LON = "longitud"
 
         // Tabla Clientes
         const val TABLE_CLIENTES = "clientes"
@@ -227,6 +237,16 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_UBI_FECHA TEXT, " +
                 "FOREIGN KEY($COL_UBI_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
 
+        val createActividad = "CREATE TABLE $TABLE_ACTIVIDAD (" +
+                "$COL_ACT_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "$COL_ACT_TECH_ID INTEGER, " +
+                "$COL_ACT_FECHA TEXT NOT NULL, " +
+                "$COL_ACT_INICIO TEXT, " +
+                "$COL_ACT_FIN TEXT, " +
+                "$COL_ACT_LAT REAL, " +
+                "$COL_ACT_LON REAL, " +
+                "FOREIGN KEY($COL_ACT_TECH_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"
+
         db?.execSQL(createUsuarios)
         db?.execSQL(createClientes)
         db?.execSQL(createEquipos)
@@ -237,11 +257,13 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db?.execSQL(createEvidencias)
         db?.execSQL(createAprobaciones)
         db?.execSQL(createUbicaciones)
+        db?.execSQL(createActividad)
 
         insertInitialData(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+        db?.execSQL("DROP TABLE IF EXISTS $TABLE_ACTIVIDAD")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_UBICACIONES")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_APROBACIONES")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_EVIDENCIAS")

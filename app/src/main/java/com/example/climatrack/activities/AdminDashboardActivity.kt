@@ -3,6 +3,9 @@ package com.example.climatrack.activities
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.climatrack.adapters.OrdersAdapter
+import com.example.climatrack.adapters.TechnicianAdapter
 import com.example.climatrack.databinding.ActivityAdminDashboardBinding
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.repositories.UsuarioRepository
@@ -12,6 +15,8 @@ class AdminDashboardActivity : BaseActivity() {
     private lateinit var binding: ActivityAdminDashboardBinding
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var usuarioRepository: UsuarioRepository
+    private lateinit var techAdapter: TechnicianAdapter
+    private lateinit var ordersAdapter: OrdersAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,6 +26,8 @@ class AdminDashboardActivity : BaseActivity() {
 
         ordenRepository = OrdenRepository(this)
         usuarioRepository = UsuarioRepository(this)
+
+        setupRecyclerViews()
 
         binding.btnAutoAssign.setOnClickListener {
             performAutoAssignment()
@@ -33,25 +40,53 @@ class AdminDashboardActivity : BaseActivity() {
         binding.btnViewTechMap.setOnClickListener {
             startActivity(Intent(this, TechnicianMapActivity::class.java))
         }
+
+        binding.btnManualOrder.setOnClickListener {
+            startActivity(Intent(this, ManualOrderActivity::class.java))
+        }
         
-        loadUnassignedOrders()
-        loadTechStats()
+        loadData()
+    }
+
+    private fun setupRecyclerViews() {
+        techAdapter = TechnicianAdapter(emptyList()) { tech ->
+            val intent = Intent(this, TechnicianDetailActivity::class.java)
+            intent.putExtra("TECH_ID", tech.id)
+            startActivity(intent)
+        }
+        binding.rvTechnicians.layoutManager = LinearLayoutManager(this)
+        binding.rvTechnicians.adapter = techAdapter
+
+        ordersAdapter = OrdersAdapter(emptyList()) { order ->
+            // Ir a detalle de orden si es necesario
+        }
+        binding.rvUnassignedOrders.layoutManager = LinearLayoutManager(this)
+        binding.rvUnassignedOrders.adapter = ordersAdapter
     }
 
     override fun onResume() {
         super.onResume()
-        loadUnassignedOrders()
-        loadTechStats()
+        loadData()
+    }
+
+    private fun loadData() {
+        val techs = usuarioRepository.getTechnicianStats()
+        techAdapter.updateList(techs)
+        
+        val activeCount = techs.count { it.isActive == 1 }
+        binding.tvActiveTechsCount.text = activeCount.toString()
+
+        val unassigned = ordenRepository.getUnassignedOrders()
+        ordersAdapter.updateList(unassigned)
+        binding.tvPendingOrdersCount.text = unassigned.size.toString()
     }
 
     private fun loadTechStats() {
-        val activeTechs = usuarioRepository.getActiveTechnicians()
-        binding.tvActiveTechsCount.text = "${activeTechs.size} Técnicos Activos"
+        // Obsoleto, integrado en loadData
     }
 
     private fun loadUnassignedOrders() {
-        // Implementar carga de órdenes sin técnico
-        Toast.makeText(this, "Cargando órdenes sin asignar...", Toast.LENGTH_SHORT).show()
+        // Obsoleto, integrado en loadData
     }
 
     private fun performAutoAssignment() {
