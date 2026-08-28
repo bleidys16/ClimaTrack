@@ -52,7 +52,10 @@ class DashboardActivity : BaseActivity() {
         }
 
         binding.swActiveStatus.setOnCheckedChangeListener { _, isChecked ->
-            val currentTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+            val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+            sdf.timeZone = TimeZone.getTimeZone("America/Bogota")
+            val currentTime = sdf.format(Date())
+            
             binding.swActiveStatus.text = if (isChecked) "Activo" else "Inactivo"
             binding.swActiveStatus.setTextColor(ContextCompat.getColor(this, 
                 if (isChecked) R.color.status_finished else R.color.status_canceled))

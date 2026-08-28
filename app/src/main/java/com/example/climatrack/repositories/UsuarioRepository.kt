@@ -205,7 +205,9 @@ class UsuarioRepository(context: Context) {
 
     private fun logActivity(userId: Int, isActive: Int, start: String?, end: String?, lat: Double?, lon: Double?) {
         val db = dbHelper.writableDatabase
-        val fecha = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        sdf.timeZone = TimeZone.getTimeZone("America/Bogota")
+        val fecha = sdf.format(Date())
         
         // Buscar si ya hay registro para hoy
         val cursor = db.query(DatabaseHelper.TABLE_ACTIVIDAD, arrayOf(DatabaseHelper.COL_ACT_ID),

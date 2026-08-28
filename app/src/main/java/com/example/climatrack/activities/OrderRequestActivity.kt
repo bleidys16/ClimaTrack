@@ -124,7 +124,9 @@ class OrderRequestActivity : BaseActivity() {
             return
         }
 
-        val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        sdf.timeZone = TimeZone.getTimeZone("America/Bogota")
+        val date = sdf.format(Date())
         val orderNum = "REQ-" + System.currentTimeMillis().toString().takeLast(6)
 
         val newOrder = Orden(
