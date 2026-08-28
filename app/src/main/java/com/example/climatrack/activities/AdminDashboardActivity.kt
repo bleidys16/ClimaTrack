@@ -3,6 +3,7 @@ package com.example.climatrack.activities
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.climatrack.adapters.OrdersAdapter
 import com.example.climatrack.adapters.TechnicianAdapter
@@ -58,10 +59,26 @@ class AdminDashboardActivity : BaseActivity() {
         binding.rvTechnicians.adapter = techAdapter
 
         ordersAdapter = OrdersAdapter(emptyList()) { order ->
-            // Ir a detalle de orden si es necesario
+            showAssignDialog(order.id)
         }
         binding.rvUnassignedOrders.layoutManager = LinearLayoutManager(this)
         binding.rvUnassignedOrders.adapter = ordersAdapter
+    }
+
+    private fun showAssignDialog(orderId: Int) {
+        val technicians = usuarioRepository.getAllTecnicos()
+        val techNames = technicians.map { it.nombre }.toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle("Asignar Técnico")
+            .setItems(techNames) { _, which ->
+                val selectedTech = technicians[which]
+                ordenRepository.assignTechnician(orderId, selectedTech.id)
+                Toast.makeText(this, "Orden asignada a ${selectedTech.nombre}", Toast.LENGTH_SHORT).show()
+                loadData()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     override fun onResume() {
