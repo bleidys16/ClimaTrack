@@ -31,6 +31,12 @@ class ClientDashboardActivity : BaseActivity() {
             requestService()
         }
 
+        binding.btnLogout.setOnClickListener {
+            sessionManager.logout()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
+
         loadMyServices()
     }
 

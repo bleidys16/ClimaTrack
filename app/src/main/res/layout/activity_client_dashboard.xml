@@ -15,7 +15,20 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Mi ClimaTrack"
-            app:titleTextColor="@color/white" />
+            app:titleTextColor="@color/white">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogout"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="16dp"
+                android:text="CERRAR SESIÓN"
+                android:textColor="@color/status_canceled"
+                android:textSize="12sp"
+                app:icon="@drawable/ic_nav_logout"
+                app:iconTint="@color/status_canceled" />
+        </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

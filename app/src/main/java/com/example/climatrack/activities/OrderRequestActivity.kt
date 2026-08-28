@@ -5,11 +5,14 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
+import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.example.climatrack.databinding.ActivityOrderRequestBinding
 import com.example.climatrack.models.Orden
+import com.example.climatrack.repositories.EquipoRepository
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.utils.SessionManager
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -23,6 +26,7 @@ class OrderRequestActivity : BaseActivity() {
 
     private lateinit var binding: ActivityOrderRequestBinding
     private lateinit var ordenRepository: OrdenRepository
+    private lateinit var equipoRepository: EquipoRepository
     private lateinit var sessionManager: SessionManager
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     
@@ -44,11 +48,27 @@ class OrderRequestActivity : BaseActivity() {
         setupEdgeToEdge(binding.root)
 
         ordenRepository = OrdenRepository(this)
+        equipoRepository = EquipoRepository(this)
         sessionManager = SessionManager(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        setupModelSpinner()
         binding.btnGetGps.setOnClickListener { checkPermissions() }
         binding.btnSubmitRequest.setOnClickListener { submitRequest() }
+    }
+
+    private fun setupModelSpinner() {
+        val baseModels = listOf("LG Dual Inverter", "Samsung 360 Cassette", "Midea MS-18K", "York YXC-48", "Otro (Ingresar manualmente)")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, baseModels)
+        binding.spinnerModel.setAdapter(adapter)
+
+        binding.spinnerModel.setOnItemClickListener { _, _, position, _ ->
+            if (baseModels[position].contains("Otro")) {
+                binding.tilManualModel.visibility = View.VISIBLE
+            } else {
+                binding.tilManualModel.visibility = View.GONE
+            }
+        }
     }
 
     private fun checkPermissions() {
@@ -94,9 +114,13 @@ class OrderRequestActivity : BaseActivity() {
     private fun submitRequest() {
         val desc = binding.etDescription.text.toString().trim()
         val addr = binding.etExactAddress.text.toString().trim()
+        val selectedModel = binding.spinnerModel.text.toString()
+        val manualModel = binding.etManualModel.text.toString().trim()
 
-        if (desc.isEmpty() || addr.isEmpty()) {
-            Toast.makeText(this, "Complete la descripción y la dirección", Toast.LENGTH_SHORT).show()
+        val finalModel = if (selectedModel.contains("Otro")) manualModel else selectedModel
+
+        if (desc.isEmpty() || addr.isEmpty() || finalModel.isEmpty()) {
+            Toast.makeText(this, "Complete todos los campos, incluyendo el modelo", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -106,11 +130,11 @@ class OrderRequestActivity : BaseActivity() {
         val newOrder = Orden(
             numero = orderNum,
             fecha = date,
-            clienteId = sessionManager.getUserId(), // Asumimos que el Usuario ID es el Cliente ID o están vinculados
-            equipoId = 1, // Por ahora dummy, debería elegir equipo o ser 0
+            clienteId = sessionManager.getUserId(),
+            equipoId = 1, // En un flujo real esto debería buscar o crear un equipo con finalModel
             tecnicoId = null,
             tipoServicio = "CORRECTIVO",
-            descripcion = desc,
+            descripcion = "Modelo: $finalModel\n\n$desc",
             estado = "SIN ASIGNAR",
             direccionExacta = addr,
             latitudCliente = lat,
