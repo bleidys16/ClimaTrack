@@ -65,7 +65,9 @@ data class OrdenInfo(
     val tecnicoNombre: String? = null,
     val precioServicio: Double = 0.0,
     val equipoMarca: String? = null,
-    val equipoModelo: String? = null
+    val equipoModelo: String? = null,
+    val descripcion: String? = null,
+    val direccion: String? = null
 )
 
 data class Mantenimiento(

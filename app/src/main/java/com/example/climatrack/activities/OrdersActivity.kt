@@ -55,13 +55,12 @@ class OrdersActivity : BaseActivity() {
     }
 
     private fun filterOrders(position: Int) {
-        val status = when (position) {
-            0 -> "PENDIENTE"
-            1 -> "EN PROCESO"
-            2 -> "FINALIZADA"
-            else -> "PENDIENTE"
+        val filtered = when (position) {
+            0 -> allOrders.filter { it.estado == "PENDIENTE" || it.estado == "PENDIENTE APROBACIÓN" || it.estado == "APROBADA" }
+            1 -> allOrders.filter { it.estado == "EN PROCESO" }
+            2 -> allOrders.filter { it.estado == "FINALIZADA" }
+            else -> allOrders.filter { it.estado == "PENDIENTE" }
         }
-        val filtered = allOrders.filter { it.estado == status }
         updateUI(filtered)
     }
 

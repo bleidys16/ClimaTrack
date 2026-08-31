@@ -2,9 +2,11 @@ package com.example.climatrack.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityOrderDetailBinding
@@ -20,7 +22,7 @@ class OrderDetailActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityOrderDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupEdgeToEdge(binding.root)
+        setupEdgeToEdge(binding.root, binding.toolbar)
 
         ordenRepository = OrdenRepository(this)
         orderId = intent.getIntExtra("ORDER_ID", -1)
@@ -50,10 +52,14 @@ class OrderDetailActivity : BaseActivity() {
             binding.tvClientInfo.text = "Cliente: ${it.clienteNombre}"
             binding.tvEquipInfo.text = "Equipo: ${it.equipoNombre}"
             binding.tvServiceType.text = "Servicio: ${it.tipoServicio}"
+            binding.tvAddressInfo.text = "Dirección: ${it.direccion ?: "No especificada"}"
+            binding.tvProblemInfo.text = "Problema: ${it.descripcion ?: "Sin descripción"}"
 
             // Status color
             val (containerColor, textColor) = when (it.estado) {
                 "PENDIENTE" -> R.color.status_pending_container to R.color.status_pending
+                "PENDIENTE APROBACIÓN" -> R.color.status_in_progress_container to R.color.status_in_progress
+                "APROBADA" -> R.color.status_finished_container to R.color.status_finished
                 "EN PROCESO" -> R.color.status_in_progress_container to R.color.status_in_progress
                 "FINALIZADA" -> R.color.status_finished_container to R.color.status_finished
                 "CANCELADA" -> R.color.status_error_container to R.color.status_error
@@ -62,15 +68,47 @@ class OrderDetailActivity : BaseActivity() {
             binding.tvStatus.backgroundTintList = ContextCompat.getColorStateList(this, containerColor)
             binding.tvStatus.setTextColor(ContextCompat.getColor(this, textColor))
             
-            if (it.estado == "FINALIZADA") {
-                binding.btnFinishOrder.isEnabled = false
+            updateUIVisibility(it.estado)
+        }
+    }
+
+    private fun updateUIVisibility(estado: String) {
+        // Reset all
+        binding.btnSendQuote.visibility = View.GONE
+        binding.btnStartService.visibility = View.GONE
+        binding.btnRegisterMaint.isEnabled = false
+        binding.btnSpareParts.isEnabled = false
+        binding.btnEvidence.isEnabled = false
+        binding.btnLocation.isEnabled = false
+        binding.btnFinishOrder.isEnabled = false
+        binding.llFinishContainer.alpha = 0.5f
+
+        when (estado) {
+            "PENDIENTE" -> {
+                binding.btnSendQuote.visibility = View.VISIBLE
+            }
+            "APROBADA" -> {
+                binding.btnStartService.visibility = View.VISIBLE
+            }
+            "EN PROCESO" -> {
+                binding.btnRegisterMaint.isEnabled = true
+                binding.btnSpareParts.isEnabled = true
+                binding.btnEvidence.isEnabled = true
+                binding.btnLocation.isEnabled = true
+                binding.btnFinishOrder.isEnabled = true
+                binding.llFinishContainer.alpha = 1.0f
+                binding.tvFinishLabel.text = "Finalizar"
+            }
+            "FINALIZADA" -> {
                 binding.tvFinishLabel.text = "ORDEN FINALIZADA"
-                binding.llFinishContainer.alpha = 0.5f
             }
         }
     }
 
     private fun setupButtons() {
+        binding.btnSendQuote.setOnClickListener { showQuoteDialog() }
+        binding.btnStartService.setOnClickListener { startService() }
+
         binding.btnRegisterMaint.setOnClickListener {
             Intent(this, MaintenanceActivity::class.java).also {
                 it.putExtra("ORDER_ID", orderId)
@@ -107,6 +145,42 @@ class OrderDetailActivity : BaseActivity() {
         }
 
         binding.btnFinishOrder.setOnClickListener { confirmFinish() }
+    }
+
+    private fun showQuoteDialog() {
+        val input = EditText(this)
+        input.hint = "Ingresar costo del servicio"
+        input.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        
+        val container = LinearLayout(this)
+        container.orientation = LinearLayout.VERTICAL
+        val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        lp.setMargins(60, 20, 60, 0)
+        input.layoutParams = lp
+        container.addView(input)
+
+        AlertDialog.Builder(this)
+            .setTitle("Enviar Cotización")
+            .setMessage("Ingrese el valor total para que el cliente lo apruebe.")
+            .setView(container)
+            .setPositiveButton("Enviar") { _, _ ->
+                val price = input.text.toString().toDoubleOrNull() ?: 0.0
+                if (price > 0) {
+                    ordenRepository.updatePrecio(orderId, price)
+                    Toast.makeText(this, "Cotización enviada al cliente", Toast.LENGTH_SHORT).show()
+                    loadOrderData()
+                } else {
+                    Toast.makeText(this, "Ingrese un precio válido", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun startService() {
+        ordenRepository.updateEstado(orderId, "EN PROCESO")
+        Toast.makeText(this, "Servicio iniciado", Toast.LENGTH_SHORT).show()
+        loadOrderData()
     }
 
     private fun confirmFinish() {

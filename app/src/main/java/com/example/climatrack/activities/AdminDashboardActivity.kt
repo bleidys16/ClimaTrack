@@ -10,12 +10,14 @@ import com.example.climatrack.adapters.TechnicianAdapter
 import com.example.climatrack.databinding.ActivityAdminDashboardBinding
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.repositories.UsuarioRepository
+import com.example.climatrack.utils.SessionManager
 
 class AdminDashboardActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAdminDashboardBinding
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var usuarioRepository: UsuarioRepository
+    private lateinit var sessionManager: SessionManager
     private lateinit var techAdapter: TechnicianAdapter
     private lateinit var ordersAdapter: OrdersAdapter
 
@@ -27,6 +29,7 @@ class AdminDashboardActivity : BaseActivity() {
 
         ordenRepository = OrdenRepository(this)
         usuarioRepository = UsuarioRepository(this)
+        sessionManager = SessionManager(this)
 
         setupRecyclerViews()
 
@@ -44,6 +47,12 @@ class AdminDashboardActivity : BaseActivity() {
 
         binding.btnManualOrder.setOnClickListener {
             startActivity(Intent(this, ManualOrderActivity::class.java))
+        }
+
+        binding.btnLogout.setOnClickListener {
+            sessionManager.logout()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
         
         loadData()

@@ -127,10 +127,11 @@
 
             <!-- Resumen del servicio -->
             <TextView
+                android:id="@+id/tvSummaryTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Resumen del servicio"
+                android:text="Detalles de la Cotización"
                 android:textColor="@color/white"
                 android:fontFamily="@font/geist_bold"
                 android:textSize="16sp" />
@@ -143,16 +144,37 @@
                 app:cardCornerRadius="12dp"
                 app:strokeWidth="0.5dp"
                 app:strokeColor="@color/cadet_grey">
-                <TextView
-                    android:id="@+id/tvSummary"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp"
-                    android:text="Cargando detalles..."
-                    android:textColor="@color/white"
-                    android:textSize="13sp"
-                    android:lineSpacingExtra="4dp"
-                    android:fontFamily="@font/geist" />
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:id="@+id/tvSummary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Cargando detalles..."
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp"
+                        android:fontFamily="@font/geist" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/cadet_grey"
+                        android:layout_marginVertical="12dp"
+                        android:alpha="0.2"/>
+
+                    <TextView
+                        android:id="@+id/tvPriceDisplay"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Costo Estimado: $0.00"
+                        android:textColor="@color/status_finished"
+                        android:textSize="18sp"
+                        android:fontFamily="@font/geist_bold" />
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Observaciones del cliente -->

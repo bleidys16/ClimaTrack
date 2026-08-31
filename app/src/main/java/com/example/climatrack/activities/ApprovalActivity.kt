@@ -64,15 +64,22 @@ class ApprovalActivity : BaseActivity() {
     }
 
     private fun loadSummary() {
-        val mant = mantenimientoRepository.getByOrdenId(orderId)
         val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
-        
-        if (mant != null && info != null) {
-            val summary = "• Tipo de servicio: ${info.tipoServicio}\n" +
-                    "• Fecha del mantenimiento: ${mant.fecha}\n" +
-                    "• Técnico: ${sessionManager.getUserName()}\n" +
-                    "• Trabajo realizado: ${mant.trabajoRealizado}"
-            binding.tvSummary.text = summary
+        info?.let {
+            if (it.estado == "PENDIENTE APROBACIÓN") {
+                binding.tvSummaryTitle.text = "Detalles de la Cotización"
+                binding.tvSummary.text = "• Problema: ${it.descripcion}\n• Servicio solicitado: ${it.tipoServicio}"
+                binding.tvPriceDisplay.text = "Costo del Servicio: $${String.format(Locale.getDefault(), "%.2f", it.precioServicio)}"
+                binding.btnSaveApproval.text = "CONFIRMAR Y APROBAR COTIZACIÓN"
+            } else {
+                binding.tvSummaryTitle.text = "Resumen del Servicio Realizado"
+                val mant = mantenimientoRepository.getByOrdenId(orderId)
+                if (mant != null) {
+                    binding.tvSummary.text = "• Trabajo: ${mant.trabajoRealizado}\n• Diagnóstico: ${mant.diagnostico}"
+                    binding.tvPriceDisplay.text = "Costo Final: $${String.format(Locale.getDefault(), "%.2f", it.precioServicio)}"
+                }
+                binding.btnSaveApproval.text = "GUARDAR CONFORMIDAD FINAL"
+            }
         }
     }
 
@@ -80,10 +87,13 @@ class ApprovalActivity : BaseActivity() {
         val clientName = binding.etClientName.text.toString().trim()
         val accepted = if (binding.swAccept.isChecked) 1 else 0
 
-        if (clientName.isEmpty()) {
-            Toast.makeText(this, "Ingrese el nombre del cliente", Toast.LENGTH_SHORT).show()
+        if (clientName.isEmpty() || accepted == 0) {
+            Toast.makeText(this, "Debe ingresar el nombre y aceptar los términos", Toast.LENGTH_SHORT).show()
             return
         }
+
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val nextStatus = if (info?.estado == "PENDIENTE APROBACIÓN") "APROBADA" else "FINALIZADA"
 
         // Save signature as Base64
         val signatureBitmap = binding.signatureView.getSignatureBitmap()
@@ -100,7 +110,8 @@ class ApprovalActivity : BaseActivity() {
         val result = servicioRepository.addAprobacion(aprobacion)
         if (result > 0) {
             ordenRepository.saveFirma(orderId, signatureBase64)
-            Toast.makeText(this, "Aprobación y firma registradas correctamente", Toast.LENGTH_SHORT).show()
+            ordenRepository.updateEstado(orderId, nextStatus)
+            Toast.makeText(this, "Confirmación enviada correctamente", Toast.LENGTH_SHORT).show()
             finish()
         } else {
             Toast.makeText(this, "Error al registrar aprobación", Toast.LENGTH_SHORT).show()

@@ -18,25 +18,44 @@
             android:minHeight="?attr/actionBarSize"
             app:titleTextColor="@color/white">
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingVertical="8dp">
-                <TextView
+                android:gravity="center_vertical">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:paddingVertical="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Admin"
+                        android:textColor="@color/ube"
+                        android:textSize="20sp"
+                        android:fontFamily="@font/geist_bold"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dashboard"
+                        android:textColor="@color/white"
+                        android:textSize="20sp"
+                        android:fontFamily="@font/geist_bold"
+                        android:layout_marginStart="4dp"/>
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLogout"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Admin"
-                    android:textColor="@color/ube"
-                    android:textSize="20sp"
-                    android:fontFamily="@font/geist_bold"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Dashboard"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:fontFamily="@font/geist_bold"
-                    android:layout_marginStart="4dp"/>
+                    android:layout_marginEnd="8dp"
+                    android:text="SALIR"
+                    android:textColor="@color/status_canceled"
+                    android:textSize="12sp"
+                    app:icon="@drawable/ic_nav_logout"
+                    app:iconTint="@color/status_canceled" />
             </LinearLayout>
         </com.google.android.material.appbar.MaterialToolbar>
 

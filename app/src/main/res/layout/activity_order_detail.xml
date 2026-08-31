@@ -102,8 +102,34 @@
                         android:layout_marginTop="12dp"
                         android:fontFamily="@font/geist"
                         android:text="Equipo: York YXC-48"
-                        android:textColor="@color/cadet_grey"
+                        android:textColor="@color/white"
                         android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tvAddressInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/geist"
+                        android:text="Dirección: Calle 123"
+                        android:textColor="@color/cadet_grey"
+                        android:textSize="14sp"
+                        app:drawableStartCompat="@android:drawable/ic_menu_mylocation"
+                        android:drawablePadding="8dp"
+                        app:drawableTint="@color/cadet_grey" />
+
+                    <TextView
+                        android:id="@+id/tvProblemInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/geist"
+                        android:text="Problema: No enfría"
+                        android:textColor="@color/cadet_grey"
+                        android:textSize="14sp"
+                        app:drawableStartCompat="@android:drawable/ic_menu_help"
+                        android:drawablePadding="8dp"
+                        app:drawableTint="@color/cadet_grey" />
 
                     <TextView
                         android:id="@+id/tvServiceType"
@@ -115,6 +141,33 @@
                         android:textColor="@color/ube" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Status Actions -->
+            <LinearLayout
+                android:id="@+id/llStatusActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSendQuote"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:text="ENVIAR COTIZACIÓN A CLIENTE"
+                    app:backgroundTint="@color/ube"
+                    app:cornerRadius="12dp"
+                    android:visibility="gone"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStartService"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:text="INICIAR SERVICIO"
+                    app:backgroundTint="@color/status_finished"
+                    app:cornerRadius="12dp"
+                    android:visibility="gone"/>
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"

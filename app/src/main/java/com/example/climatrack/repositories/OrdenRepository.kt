@@ -17,7 +17,8 @@ class OrdenRepository(context: Context) {
                 "COALESCE(c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Cliente Externo') as cliente_nombre, " +
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
-                "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO} " +
+                "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -39,7 +40,9 @@ class OrdenRepository(context: Context) {
                     tecnicoNombre = cursor.getString(7),
                     precioServicio = cursor.getDouble(8),
                     equipoMarca = cursor.getString(9),
-                    equipoModelo = cursor.getString(10)
+                    equipoModelo = cursor.getString(10),
+                    descripcion = cursor.getString(11),
+                    direccion = cursor.getString(12)
                 ))
             } while (cursor.moveToNext())
         }
@@ -134,7 +137,8 @@ class OrdenRepository(context: Context) {
                 "COALESCE(c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Cliente Externo') as cliente_nombre, " +
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
-                "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO} " +
+                "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -156,7 +160,9 @@ class OrdenRepository(context: Context) {
                     tecnicoNombre = cursor.getString(7),
                     precioServicio = cursor.getDouble(8),
                     equipoMarca = cursor.getString(9),
-                    equipoModelo = cursor.getString(10)
+                    equipoModelo = cursor.getString(10),
+                    descripcion = cursor.getString(11),
+                    direccion = cursor.getString(12)
                 ))
             } while (cursor.moveToNext())
         }
@@ -170,7 +176,8 @@ class OrdenRepository(context: Context) {
         val query = "SELECT o.${DatabaseHelper.COL_ORDEN_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, o.${DatabaseHelper.COL_ORDEN_FECHA}, " +
                 "COALESCE(c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Cliente Externo') as cliente_nombre, " +
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
-                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO} " +
+                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -187,7 +194,9 @@ class OrdenRepository(context: Context) {
                     clienteNombre = cursor.getString(3),
                     equipoNombre = cursor.getString(4),
                     tipoServicio = cursor.getString(5),
-                    estado = cursor.getString(6)
+                    estado = cursor.getString(6),
+                    descripcion = cursor.getString(7),
+                    direccion = cursor.getString(8)
                 ))
             } while (cursor.moveToNext())
         }
