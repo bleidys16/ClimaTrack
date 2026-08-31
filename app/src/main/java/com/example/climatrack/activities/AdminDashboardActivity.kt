@@ -20,6 +20,7 @@ class AdminDashboardActivity : BaseActivity() {
     private lateinit var sessionManager: SessionManager
     private lateinit var techAdapter: TechnicianAdapter
     private lateinit var ordersAdapter: OrdersAdapter
+    private var allUnassignedOrders: List<com.example.climatrack.models.OrdenInfo> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,8 +55,27 @@ class AdminDashboardActivity : BaseActivity() {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
+
+        setupSearch()
         
         loadData()
+    }
+
+    private fun setupSearch() {
+        binding.etSearchOrders.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterUnassignedOrders(s.toString())
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+    }
+
+    private fun filterUnassignedOrders(query: String) {
+        val filtered = allUnassignedOrders.filter {
+            it.numero.contains(query, true) || it.clienteNombre.contains(query, true)
+        }
+        ordersAdapter.updateList(filtered)
     }
 
     private fun setupRecyclerViews() {
@@ -102,9 +122,9 @@ class AdminDashboardActivity : BaseActivity() {
         val activeCount = techs.count { it.isActive == 1 }
         binding.tvActiveTechsCount.text = activeCount.toString()
 
-        val unassigned = ordenRepository.getUnassignedOrders()
-        ordersAdapter.updateList(unassigned)
-        binding.tvPendingOrdersCount.text = unassigned.size.toString()
+        allUnassignedOrders = ordenRepository.getUnassignedOrders()
+        filterUnassignedOrders(binding.etSearchOrders.text.toString())
+        binding.tvPendingOrdersCount.text = allUnassignedOrders.size.toString()
     }
 
     private fun loadTechStats() {

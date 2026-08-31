@@ -197,6 +197,23 @@
                     android:textColor="@color/ube" />
             </LinearLayout>
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilSearchOrders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="8dp"
+                android:hint="Buscar por número o cliente"
+                app:startIconDrawable="@android:drawable/ic_menu_search"
+                app:startIconTint="@color/cadet_grey">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etSearchOrders"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvUnassignedOrders"
                 android:layout_width="match_parent"
