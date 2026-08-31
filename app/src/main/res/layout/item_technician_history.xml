@@ -37,6 +37,17 @@
                 android:text="Día Laboral"
                 android:textColor="@color/cadet_grey"
                 android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Duración: 0h 0m"
+                android:textColor="@color/ube"
+                android:textSize="11sp"
+                android:fontFamily="@font/geist_medium"
+                android:visibility="gone" />
         </LinearLayout>
 
         <LinearLayout

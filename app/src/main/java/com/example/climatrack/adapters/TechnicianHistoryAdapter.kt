@@ -38,6 +38,30 @@ class TechnicianHistoryAdapter(private val history: List<ActividadTecnico>) :
             binding.tvHistoryDay.text = "Actividad Registrada"
             binding.tvHistoryStart.text = "Inicio: ${item.horaInicio ?: "--:--"}"
             binding.tvHistoryEnd.text = "Fin: ${item.horaFin ?: "--:--"}"
+
+            if (!item.horaInicio.isNullOrEmpty() && !item.horaFin.isNullOrEmpty()) {
+                try {
+                    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    val start = sdf.parse(item.horaInicio)
+                    val end = sdf.parse(item.horaFin)
+                    if (start != null && end != null) {
+                        val diff = end.time - start.time
+                        val minutes = diff / (1000 * 60)
+                        if (minutes > 0) {
+                            val h = minutes / 60
+                            val m = minutes % 60
+                            binding.tvDuration.visibility = android.view.View.VISIBLE
+                            binding.tvDuration.text = "Duración: ${h}h ${m}m"
+                        } else {
+                            binding.tvDuration.visibility = android.view.View.GONE
+                        }
+                    }
+                } catch (e: Exception) {
+                    binding.tvDuration.visibility = android.view.View.GONE
+                }
+            } else {
+                binding.tvDuration.visibility = android.view.View.GONE
+            }
         }
     }
 }
