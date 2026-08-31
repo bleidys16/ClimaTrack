@@ -1,0 +1,78 @@
+package com.example.climatrack.activities
+
+import android.os.Bundle
+import android.view.View
+import androidx.core.content.ContextCompat
+import com.example.climatrack.R
+import com.example.climatrack.databinding.ActivityClientOrderDetailBinding
+import com.example.climatrack.repositories.MantenimientoRepository
+import com.example.climatrack.repositories.OrdenRepository
+import java.util.*
+
+class ClientOrderDetailActivity : BaseActivity() {
+
+    private lateinit var binding: ActivityClientOrderDetailBinding
+    private lateinit var ordenRepository: OrdenRepository
+    private lateinit var mantenimientoRepository: MantenimientoRepository
+    private var orderId: Int = -1
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityClientOrderDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setupEdgeToEdge(binding.root, binding.toolbar)
+
+        ordenRepository = OrdenRepository(this)
+        mantenimientoRepository = MantenimientoRepository(this)
+        orderId = intent.getIntExtra("ORDER_ID", -1)
+
+        if (orderId == -1) {
+            finish()
+            return
+        }
+
+        setupToolbar()
+        loadOrderDetails()
+    }
+
+    private fun setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
+    }
+
+    private fun loadOrderDetails() {
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val mant = mantenimientoRepository.getByOrdenId(orderId)
+
+        info?.let {
+            binding.tvOrderNum.text = "Orden: ${it.numero}"
+            binding.tvStatus.text = it.estado
+            binding.tvServiceType.text = "Servicio: ${it.tipoServicio}"
+            binding.tvDate.text = "Fecha: ${it.fecha}"
+            binding.tvTechnician.text = "Técnico: ${it.tecnicoNombre ?: "Por asignar"}"
+            binding.tvEquipment.text = "Aire: ${it.equipoMarca ?: ""} ${it.equipoModelo ?: ""}"
+            binding.tvTotalCost.text = "Costo Total: $${String.format(Locale.getDefault(), "%.2f", it.precioServicio)}"
+
+            // Status color logic
+            val (containerColor, textColor) = when (it.estado) {
+                "PENDIENTE" -> R.color.status_pending_container to R.color.status_pending
+                "PENDIENTE APROBACIÓN" -> R.color.status_in_progress_container to R.color.status_in_progress
+                "APROBADA" -> R.color.status_finished_container to R.color.status_finished
+                "EN PROCESO" -> R.color.status_in_progress_container to R.color.status_in_progress
+                "FINALIZADA" -> R.color.status_finished_container to R.color.status_finished
+                "CANCELADA" -> R.color.status_error_container to R.color.status_error
+                else -> R.color.status_pending_container to R.color.status_pending
+            }
+            binding.tvStatus.backgroundTintList = ContextCompat.getColorStateList(this, containerColor)
+            binding.tvStatus.setTextColor(ContextCompat.getColor(this, textColor))
+        }
+
+        mant?.let {
+            binding.tvWorkTitle.visibility = View.VISIBLE
+            binding.cardWorkDetails.visibility = View.VISIBLE
+            binding.tvDiagnosis.text = "Diagnóstico: ${it.diagnostico}"
+            binding.tvWorkDone.text = "Trabajo Realizado: ${it.trabajoRealizado}"
+        }
+    }
+}

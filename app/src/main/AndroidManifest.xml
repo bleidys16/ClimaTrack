@@ -117,6 +117,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.ClientOrderDetailActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".activities.ManualOrderActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />

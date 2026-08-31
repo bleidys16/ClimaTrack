@@ -47,7 +47,9 @@ class ClientDashboardActivity : BaseActivity() {
                 intent.putExtra("ORDER_ID", order.id)
                 startActivity(intent)
             } else {
-                Toast.makeText(this, "Estado: ${order.estado}", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, ClientOrderDetailActivity::class.java)
+                intent.putExtra("ORDER_ID", order.id)
+                startActivity(intent)
             }
         }
         binding.rvClientOrders.layoutManager = LinearLayoutManager(this)
