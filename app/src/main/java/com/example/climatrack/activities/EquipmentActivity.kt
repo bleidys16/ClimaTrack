@@ -16,6 +16,7 @@ class EquipmentActivity : BaseActivity() {
     private lateinit var binding: ActivityEquipmentBinding
     private lateinit var equipoRepository: EquipoRepository
     private lateinit var adapter: EquipmentAdapter
+    private var filterClientId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,16 +24,26 @@ class EquipmentActivity : BaseActivity() {
         setContentView(binding.root)
 
         equipoRepository = EquipoRepository(this)
+        filterClientId = intent.getIntExtra("CLIENT_ID", -1)
 
         setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
         setupToolbar()
         setupRecyclerView()
         setupSearch()
-        setupBottomNavigation()
+        
+        if (filterClientId != -1) {
+            binding.navContainer.visibility = android.view.View.GONE
+            binding.toolbar.title = "Mis Equipos"
+        } else {
+            setupBottomNavigation()
+        }
+        
         setupFilterButton()
 
         binding.fabAddEquipment.setOnClickListener {
-            startActivity(Intent(this, EquipmentFormActivity::class.java))
+            val intent = Intent(this, EquipmentFormActivity::class.java)
+            if (filterClientId != -1) intent.putExtra("CLIENT_ID", filterClientId)
+            startActivity(intent)
         }
     }
 
@@ -57,7 +68,7 @@ class EquipmentActivity : BaseActivity() {
     }
 
     private fun filterByStatus(status: String) {
-        val fullList = equipoRepository.getAll()
+        val fullList = if (filterClientId != -1) equipoRepository.getByCliente(filterClientId) else equipoRepository.getAll()
         val filtered = fullList.filter { it.estado == status }
         adapter.updateList(filtered)
     }
@@ -114,12 +125,12 @@ class EquipmentActivity : BaseActivity() {
     }
 
     private fun loadEquipment() {
-        val equipment = equipoRepository.getAll()
+        val equipment = if (filterClientId != -1) equipoRepository.getByCliente(filterClientId) else equipoRepository.getAll()
         adapter.updateList(equipment)
     }
 
     private fun filterList(query: String) {
-        val fullList = equipoRepository.getAll()
+        val fullList = if (filterClientId != -1) equipoRepository.getByCliente(filterClientId) else equipoRepository.getAll()
         val filtered = fullList.filter {
             it.codigo.contains(query, true) ||
             it.marca.contains(query, true) ||

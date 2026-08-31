@@ -23,6 +23,7 @@ class EquipmentFormActivity : BaseActivity() {
     private lateinit var binding: ActivityEquipmentFormBinding
     private lateinit var equipoRepository: EquipoRepository
     private var equipmentId: Int = -1
+    private var clientId: Int = -1
     private var photoUri: Uri? = null
     private var photoFile: File? = null
     private var currentPhotoPath: String? = null
@@ -46,6 +47,14 @@ class EquipmentFormActivity : BaseActivity() {
 
         equipoRepository = EquipoRepository(this)
         equipmentId = intent.getIntExtra("EQUIPMENT_ID", -1)
+        clientId = intent.getIntExtra("CLIENT_ID", -1)
+
+        if (clientId == -1) {
+            val session = com.example.climatrack.utils.SessionManager(this)
+            if (session.getUserRol() == "Cliente") {
+                clientId = session.getUserId()
+            }
+        }
 
         setupToolbar()
         setupSpinner()
@@ -143,7 +152,7 @@ class EquipmentFormActivity : BaseActivity() {
             serial = serial,
             capacidad = capacity,
             ubicacion = location,
-            clienteId = 1, // Por simplicidad asignamos al cliente 1
+            clienteId = if (clientId != -1) clientId else 1,
             estado = status,
             imagenPath = currentPhotoPath
         )

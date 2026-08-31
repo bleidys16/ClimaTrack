@@ -39,6 +39,21 @@ class EquipoRepository(context: Context) {
         return list
     }
 
+    fun getByCliente(clienteId: Int): List<Equipo> {
+        val list = mutableListOf<Equipo>()
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(DatabaseHelper.TABLE_EQUIPOS, null, 
+            "${DatabaseHelper.COL_EQUIPO_CLIENTE_ID}=?", arrayOf(clienteId.toString()), 
+            null, null, null)
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(cursorToEquipo(cursor))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
+
     fun getById(id: Int): Equipo? {
         val db = dbHelper.readableDatabase
         val cursor = db.query(DatabaseHelper.TABLE_EQUIPOS, null, "${DatabaseHelper.COL_EQUIPO_ID}=?", arrayOf(id.toString()), null, null, null)

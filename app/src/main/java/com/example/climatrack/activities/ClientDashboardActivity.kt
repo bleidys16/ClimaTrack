@@ -31,6 +31,12 @@ class ClientDashboardActivity : BaseActivity() {
             requestService()
         }
 
+        binding.btnMyEquipment.setOnClickListener {
+            val intent = Intent(this, EquipmentActivity::class.java)
+            intent.putExtra("CLIENT_ID", sessionManager.getUserId())
+            startActivity(intent)
+        }
+
         binding.btnLogout.setOnClickListener {
             sessionManager.logout()
             startActivity(Intent(this, LoginActivity::class.java))

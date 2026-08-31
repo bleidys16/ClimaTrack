@@ -32,6 +32,7 @@ class OrderRequestActivity : BaseActivity() {
     
     private var lat: Double? = null
     private var lon: Double? = null
+    private var selectedEquipmentId: Int = 1 // Default dummy
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -58,15 +59,27 @@ class OrderRequestActivity : BaseActivity() {
     }
 
     private fun setupModelSpinner() {
-        val baseModels = listOf("LG Dual Inverter", "Samsung 360 Cassette", "Midea MS-18K", "York YXC-48", "Otro (Ingresar manualmente)")
+        val myEquip = equipoRepository.getByCliente(sessionManager.getUserId())
+        val baseModels = mutableListOf<String>()
+        
+        myEquip.forEach { baseModels.add("${it.marca} ${it.modelo} (Mío)") }
+        baseModels.addAll(listOf("LG Dual Inverter", "Samsung 360 Cassette", "Midea MS-18K", "York YXC-48", "Otro (Ingresar manualmente)"))
+        
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, baseModels)
         binding.spinnerModel.setAdapter(adapter)
 
         binding.spinnerModel.setOnItemClickListener { _, _, position, _ ->
-            if (baseModels[position].contains("Otro")) {
-                binding.tilManualModel.visibility = View.VISIBLE
-            } else {
+            if (position < myEquip.size) {
+                selectedEquipmentId = myEquip[position].id
                 binding.tilManualModel.visibility = View.GONE
+            } else {
+                selectedEquipmentId = 1 // Or handle better
+                val text = baseModels[position]
+                if (text.contains("Otro")) {
+                    binding.tilManualModel.visibility = View.VISIBLE
+                } else {
+                    binding.tilManualModel.visibility = View.GONE
+                }
             }
         }
     }
@@ -133,7 +146,7 @@ class OrderRequestActivity : BaseActivity() {
             numero = orderNum,
             fecha = date,
             clienteId = sessionManager.getUserId(),
-            equipoId = 1, // En un flujo real esto debería buscar o crear un equipo con finalModel
+            equipoId = selectedEquipmentId,
             tecnicoId = null,
             tipoServicio = "CORRECTIVO",
             descripcion = "Modelo: $finalModel\n\n$desc",
