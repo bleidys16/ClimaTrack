@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 12
+        private const val DATABASE_VERSION = 13
 
         // Columna común para soporte offline/sincronización
         const val COL_SYNCED = "is_synced"
@@ -77,6 +77,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_ORDEN_LON = "longitud"
         const val COL_ORDEN_DIR_EXACTA = "direccion_exacta"
         const val COL_ORDEN_FIRMA = "firma"
+        const val COL_ORDEN_CALIFICACION = "calificacion"
+        const val COL_ORDEN_COMENTARIO = "comentario"
 
         // Tabla Mantenimientos
         const val TABLE_MANTENIMIENTOS = "mantenimientos"
@@ -184,6 +186,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_ORDEN_DIR_EXACTA TEXT, " +
                 "$COL_ORDEN_FIRMA TEXT, " +
                 "$COL_SYNCED INTEGER DEFAULT 0, " +
+                "$COL_ORDEN_CALIFICACION INTEGER DEFAULT 0, " +
+                "$COL_ORDEN_COMENTARIO TEXT, " +
                 "FOREIGN KEY($COL_ORDEN_CLIENTE_ID) REFERENCES $TABLE_CLIENTES($COL_CLIENTE_ID), " +
                 "FOREIGN KEY($COL_ORDEN_EQUIPO_ID) REFERENCES $TABLE_EQUIPOS($COL_EQUIPO_ID), " +
                 "FOREIGN KEY($COL_ORDEN_TECNICO_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"

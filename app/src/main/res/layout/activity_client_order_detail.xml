@@ -222,6 +222,7 @@
                 android:textSize="16sp" />
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTotalCost"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -243,6 +244,76 @@
                         android:textColor="@color/status_finished"
                         android:textSize="18sp"
                         android:fontFamily="@font/geist_bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Feedback Section -->
+            <TextView
+                android:id="@+id/tvFeedbackTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Califica nuestro servicio"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardFeedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/ube">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <RatingBar
+                        android:id="@+id/ratingBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:numStars="5"
+                        android:stepSize="1.0"
+                        android:theme="@style/Widget.AppCompat.RatingBar" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilComment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:hint="Deja un comentario (opcional)"
+                        app:hintTextColor="@color/cadet_grey">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etComment"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSubmitFeedback"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="16dp"
+                        android:text="ENVIAR CALIFICACIÓN"
+                        app:backgroundTint="@color/ube" />
+
+                    <TextView
+                        android:id="@+id/tvSavedComment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="@color/cadet_grey"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/geist_medium"
+                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

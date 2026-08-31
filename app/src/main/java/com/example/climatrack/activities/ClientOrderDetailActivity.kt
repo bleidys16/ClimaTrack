@@ -2,6 +2,7 @@ package com.example.climatrack.activities
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityClientOrderDetailBinding
@@ -33,6 +34,7 @@ class ClientOrderDetailActivity : BaseActivity() {
 
         setupToolbar()
         loadOrderDetails()
+        binding.btnSubmitFeedback.setOnClickListener { submitFeedback() }
     }
 
     private fun setupToolbar() {
@@ -66,6 +68,8 @@ class ClientOrderDetailActivity : BaseActivity() {
             }
             binding.tvStatus.backgroundTintList = ContextCompat.getColorStateList(this, containerColor)
             binding.tvStatus.setTextColor(ContextCompat.getColor(this, textColor))
+
+            setupFeedbackUI(it)
         }
 
         mant?.let {
@@ -73,6 +77,53 @@ class ClientOrderDetailActivity : BaseActivity() {
             binding.cardWorkDetails.visibility = View.VISIBLE
             binding.tvDiagnosis.text = "Diagnóstico: ${it.diagnostico}"
             binding.tvWorkDone.text = "Trabajo Realizado: ${it.trabajoRealizado}"
+        }
+    }
+
+    private fun setupFeedbackUI(order: com.example.climatrack.models.OrdenInfo) {
+        if (order.estado == "FINALIZADA") {
+            binding.tvFeedbackTitle.visibility = View.VISIBLE
+            binding.cardFeedback.visibility = View.VISIBLE
+            
+            if (order.calificacion > 0) {
+                // Already rated
+                binding.ratingBar.rating = order.calificacion.toFloat()
+                binding.ratingBar.setIsIndicator(true)
+                binding.tilComment.visibility = View.GONE
+                binding.btnSubmitFeedback.visibility = View.GONE
+                
+                if (!order.comentario.isNullOrEmpty()) {
+                    binding.tvSavedComment.visibility = View.VISIBLE
+                    binding.tvSavedComment.text = "Tu comentario: ${order.comentario}"
+                }
+            } else {
+                // Not rated yet
+                binding.ratingBar.setIsIndicator(false)
+                binding.tilComment.visibility = View.VISIBLE
+                binding.btnSubmitFeedback.visibility = View.VISIBLE
+                binding.tvSavedComment.visibility = View.GONE
+            }
+        } else {
+            binding.tvFeedbackTitle.visibility = View.GONE
+            binding.cardFeedback.visibility = View.GONE
+        }
+    }
+
+    private fun submitFeedback() {
+        val rating = binding.ratingBar.rating.toInt()
+        val comment = binding.etComment.text.toString().trim()
+
+        if (rating == 0) {
+            Toast.makeText(this, "Por favor selecciona una calificación", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val result = ordenRepository.updateFeedback(orderId, rating, if (comment.isEmpty()) null else comment)
+        if (result > 0) {
+            Toast.makeText(this, "¡Gracias por tu calificación!", Toast.LENGTH_SHORT).show()
+            loadOrderDetails()
+        } else {
+            Toast.makeText(this, "Error al guardar calificación", Toast.LENGTH_SHORT).show()
         }
     }
 }

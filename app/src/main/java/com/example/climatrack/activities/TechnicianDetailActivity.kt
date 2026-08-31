@@ -43,6 +43,8 @@ class TechnicianDetailActivity : BaseActivity() {
 
         stats?.let {
             binding.tvDetailRole.text = "Técnico - ${it.trabajosRealizados} servicios"
+            binding.detailRatingBar.rating = it.promedioCalificacion.toFloat()
+            binding.tvRatingValue.text = String.format(java.util.Locale.getDefault(), "%.1f", it.promedioCalificacion)
         }
 
         binding.rvActivityHistory.layoutManager = LinearLayoutManager(this)

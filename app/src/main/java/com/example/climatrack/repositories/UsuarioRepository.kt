@@ -239,10 +239,11 @@ class UsuarioRepository(context: Context) {
         val list = mutableListOf<TecnicoStats>()
         val db = dbHelper.readableDatabase
         val query = "SELECT u.${DatabaseHelper.COL_USUARIO_ID}, u.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
-                    "u.${DatabaseHelper.COL_USUARIO_ACTIVE}, u.${DatabaseHelper.COL_USUARIO_EMAIL}, u.${DatabaseHelper.COL_USUARIO_TEL}, " +
-                    "(SELECT COUNT(*) FROM ${DatabaseHelper.TABLE_ORDENES} o WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} AND o.${DatabaseHelper.COL_ORDEN_ESTADO} = 'FINALIZADA') as count " +
-                    "FROM ${DatabaseHelper.TABLE_USUARIOS} u " +
-                    "WHERE u.${DatabaseHelper.COL_USUARIO_ROL} = 'Técnico'"
+                "u.${DatabaseHelper.COL_USUARIO_ACTIVE}, u.${DatabaseHelper.COL_USUARIO_EMAIL}, u.${DatabaseHelper.COL_USUARIO_TEL}, " +
+                "(SELECT COUNT(*) FROM ${DatabaseHelper.TABLE_ORDENES} o WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} AND o.${DatabaseHelper.COL_ORDEN_ESTADO} = 'FINALIZADA') as count, " +
+                "(SELECT AVG(${DatabaseHelper.COL_ORDEN_CALIFICACION}) FROM ${DatabaseHelper.TABLE_ORDENES} o WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} AND o.${DatabaseHelper.COL_ORDEN_CALIFICACION} > 0) as avg_rating " +
+                "FROM ${DatabaseHelper.TABLE_USUARIOS} u " +
+                "WHERE u.${DatabaseHelper.COL_USUARIO_ROL} = 'Técnico'"
         
         val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
@@ -253,7 +254,8 @@ class UsuarioRepository(context: Context) {
                     isActive = cursor.getInt(2),
                     email = cursor.getString(3),
                     telefono = cursor.getString(4),
-                    trabajosRealizados = cursor.getInt(5)
+                    trabajosRealizados = cursor.getInt(5),
+                    promedioCalificacion = cursor.getDouble(6)
                 ))
             } while (cursor.moveToNext())
         }

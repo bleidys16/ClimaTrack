@@ -18,7 +18,7 @@ class OrdenRepository(context: Context) {
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -42,7 +42,9 @@ class OrdenRepository(context: Context) {
                     equipoMarca = cursor.getString(9),
                     equipoModelo = cursor.getString(10),
                     descripcion = cursor.getString(11),
-                    direccion = cursor.getString(12)
+                    direccion = cursor.getString(12),
+                    calificacion = cursor.getInt(13),
+                    comentario = cursor.getString(14)
                 ))
             } while (cursor.moveToNext())
         }
@@ -112,6 +114,15 @@ class OrdenRepository(context: Context) {
         return db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
     }
 
+    fun updateFeedback(id: Int, calificacion: Int, comentario: String?): Int {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DatabaseHelper.COL_ORDEN_CALIFICACION, calificacion)
+            put(DatabaseHelper.COL_ORDEN_COMENTARIO, comentario)
+        }
+        return db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
+    }
+
     fun create(orden: Orden): Long {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
@@ -138,7 +149,7 @@ class OrdenRepository(context: Context) {
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -162,7 +173,9 @@ class OrdenRepository(context: Context) {
                     equipoMarca = cursor.getString(9),
                     equipoModelo = cursor.getString(10),
                     descripcion = cursor.getString(11),
-                    direccion = cursor.getString(12)
+                    direccion = cursor.getString(12),
+                    calificacion = cursor.getInt(13),
+                    comentario = cursor.getString(14)
                 ))
             } while (cursor.moveToNext())
         }
@@ -177,7 +190,7 @@ class OrdenRepository(context: Context) {
                 "COALESCE(c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Cliente Externo') as cliente_nombre, " +
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -196,7 +209,9 @@ class OrdenRepository(context: Context) {
                     tipoServicio = cursor.getString(5),
                     estado = cursor.getString(6),
                     descripcion = cursor.getString(7),
-                    direccion = cursor.getString(8)
+                    direccion = cursor.getString(8),
+                    calificacion = cursor.getInt(9),
+                    comentario = cursor.getString(10)
                 ))
             } while (cursor.moveToNext())
         }
