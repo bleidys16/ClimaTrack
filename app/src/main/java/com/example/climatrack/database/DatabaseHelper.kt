@@ -9,7 +9,10 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 11
+        private const val DATABASE_VERSION = 12
+
+        // Columna común para soporte offline/sincronización
+        const val COL_SYNCED = "is_synced"
 
         // Tabla Usuarios
         const val TABLE_USUARIOS = "usuarios"
@@ -180,6 +183,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_ORDEN_LON REAL, " +
                 "$COL_ORDEN_DIR_EXACTA TEXT, " +
                 "$COL_ORDEN_FIRMA TEXT, " +
+                "$COL_SYNCED INTEGER DEFAULT 0, " +
                 "FOREIGN KEY($COL_ORDEN_CLIENTE_ID) REFERENCES $TABLE_CLIENTES($COL_CLIENTE_ID), " +
                 "FOREIGN KEY($COL_ORDEN_EQUIPO_ID) REFERENCES $TABLE_EQUIPOS($COL_EQUIPO_ID), " +
                 "FOREIGN KEY($COL_ORDEN_TECNICO_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"
@@ -194,6 +198,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_MANT_RECOM TEXT, " +
                 "$COL_MANT_ESTADO_EQ TEXT, " +
                 "$COL_MANT_TIEMPO TEXT, " +
+                "$COL_SYNCED INTEGER DEFAULT 0, " +
                 "FOREIGN KEY($COL_MANT_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
 
         val createRepuestos = "CREATE TABLE $TABLE_REPUESTOS (" +
@@ -210,6 +215,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_DET_CANT INTEGER, " +
                 "$COL_DET_OBS TEXT, " +
                 "$COL_DET_PRECIO REAL DEFAULT 0, " +
+                "$COL_SYNCED INTEGER DEFAULT 0, " +
                 "FOREIGN KEY($COL_DET_MANT_ID) REFERENCES $TABLE_MANTENIMIENTOS($COL_MANT_ID), " +
                 "FOREIGN KEY($COL_DET_REP_ID) REFERENCES $TABLE_REPUESTOS($COL_REP_ID))"
 
@@ -218,6 +224,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_EVI_ORDEN_ID INTEGER, " +
                 "$COL_EVI_RUTA TEXT, " +
                 "$COL_EVI_FECHA TEXT, " +
+                "$COL_SYNCED INTEGER DEFAULT 0, " +
                 "FOREIGN KEY($COL_EVI_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
 
         val createAprobaciones = "CREATE TABLE $TABLE_APROBACIONES (" +

@@ -51,7 +51,8 @@ data class Orden(
     val latitudCliente: Double? = null,
     val longitudCliente: Double? = null,
     val direccionExacta: String? = null,
-    val firmaBase64: String? = null
+    val firmaBase64: String? = null,
+    val isSynced: Int = 0 // 0: Local, 1: Sincronizado
 )
 
 data class OrdenInfo(
@@ -79,7 +80,8 @@ data class Mantenimiento(
     val observaciones: String?,
     val recomendaciones: String?,
     val estadoEquipo: String,
-    val tiempoEmpleado: String
+    val tiempoEmpleado: String,
+    val isSynced: Int = 0
 )
 
 data class MantenimientoInfo(
@@ -106,7 +108,8 @@ data class DetalleRepuesto(
     val repuestoId: Int,
     val cantidad: Int,
     val observacion: String?,
-    val precioHistorico: Double = 0.0
+    val precioHistorico: Double = 0.0,
+    val isSynced: Int = 0
 )
 
 data class DetalleRepuestoInfo(
@@ -123,7 +126,8 @@ data class Evidencia(
     val id: Int = 0,
     val ordenId: Int,
     val rutaFoto: String,
-    val fecha: String
+    val fecha: String,
+    val isSynced: Int = 0
 )
 
 data class Aprobacion(
