@@ -2,6 +2,7 @@ package com.example.climatrack.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.climatrack.adapters.OrdersAdapter
@@ -14,6 +15,7 @@ class ClientDashboardActivity : BaseActivity() {
     private lateinit var binding: ActivityClientDashboardBinding
     private lateinit var sessionManager: SessionManager
     private lateinit var ordenRepository: OrdenRepository
+    private lateinit var equipoRepository: com.example.climatrack.repositories.EquipoRepository
     private lateinit var adapter: OrdersAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,6 +26,7 @@ class ClientDashboardActivity : BaseActivity() {
 
         sessionManager = SessionManager(this)
         ordenRepository = OrdenRepository(this)
+        equipoRepository = com.example.climatrack.repositories.EquipoRepository(this)
 
         setupRecyclerView()
 
@@ -44,6 +47,40 @@ class ClientDashboardActivity : BaseActivity() {
         }
 
         loadMyServices()
+        checkMaintenanceReminders()
+    }
+
+    private fun checkMaintenanceReminders() {
+        val myEquip = equipoRepository.getByCliente(sessionManager.getUserId())
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val sixMonthsAgo = java.util.Calendar.getInstance().apply { add(java.util.Calendar.MONTH, -6) }.time
+
+        var equipmentsNeedingService = 0
+        myEquip.forEach { equip ->
+            val history = ordenRepository.getOrdenesByEquipo(equip.id)
+            val lastMaintenance = history.find { it.estado == "FINALIZADA" }
+            
+            if (lastMaintenance != null) {
+                try {
+                    val date = sdf.parse(lastMaintenance.fecha)
+                    if (date != null && date.before(sixMonthsAgo)) {
+                        equipmentsNeedingService++
+                    }
+                } catch (e: Exception) { e.printStackTrace() }
+            } else {
+                // Never maintained -> Assume it needs one
+                equipmentsNeedingService++
+            }
+        }
+
+        if (equipmentsNeedingService > 0) {
+            binding.cardReminder.visibility = View.VISIBLE
+            binding.tvReminderText.text = if (equipmentsNeedingService == 1) 
+                "Tienes 1 equipo que requiere mantenimiento preventivo." 
+                else "Tienes $equipmentsNeedingService equipos que requieren mantenimiento preventivo."
+        } else {
+            binding.cardReminder.visibility = View.GONE
+        }
     }
 
     private fun setupRecyclerView() {
@@ -69,6 +106,7 @@ class ClientDashboardActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         loadMyServices()
+        checkMaintenanceReminders()
     }
 
     private fun loadMyServices() {
