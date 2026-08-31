@@ -106,9 +106,17 @@ class EquipmentActivity : BaseActivity() {
 
     private fun setupRecyclerView() {
         adapter = EquipmentAdapter(emptyList()) { equipment ->
-            val intent = Intent(this, EquipmentFormActivity::class.java)
-            intent.putExtra("EQUIPMENT_ID", equipment.id)
-            startActivity(intent)
+            if (filterClientId != -1) {
+                // Client view -> History
+                val intent = Intent(this, EquipmentDetailActivity::class.java)
+                intent.putExtra("EQUIPMENT_ID", equipment.id)
+                startActivity(intent)
+            } else {
+                // Admin/Tech view -> Edit form
+                val intent = Intent(this, EquipmentFormActivity::class.java)
+                intent.putExtra("EQUIPMENT_ID", equipment.id)
+                startActivity(intent)
+            }
         }
         binding.rvEquipment.layoutManager = LinearLayoutManager(this)
         binding.rvEquipment.adapter = adapter

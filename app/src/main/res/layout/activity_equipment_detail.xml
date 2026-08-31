@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/chinese_black">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/chinese_black"
+        app:elevation="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_back_modern"
+            app:navigationIconTint="@color/white">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hoja de Vida del Equipo"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="18sp" />
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Equipment Info Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/cadet_grey">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:id="@+id/tvEquipTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Aire Acondicionado"
+                        android:textColor="@color/white"
+                        android:textSize="22sp"
+                        android:fontFamily="@font/geist_bold" />
+
+                    <TextView
+                        android:id="@+id/tvEquipCode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Código: EQ-000"
+                        android:textColor="@color/ube"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/geist_medium" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginVertical="16dp"
+                        android:background="@color/cadet_grey"
+                        android:alpha="0.3" />
+
+                    <GridLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:columnCount="2">
+
+                        <TextView
+                            android:id="@+id/tvBrand"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="Marca: ..."
+                            android:textColor="@color/cadet_grey"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvModel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="Modelo: ..."
+                            android:textColor="@color/cadet_grey"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvType"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:layout_marginTop="8dp"
+                            android:text="Tipo: ..."
+                            android:textColor="@color/cadet_grey"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvLocation"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:layout_marginTop="8dp"
+                            android:text="Ubicación: ..."
+                            android:textColor="@color/cadet_grey"
+                            android:textSize="13sp" />
+                    </GridLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Historial de Mantenimientos"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:fontFamily="@font/geist_bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvEquipmentHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:nestedScrollingEnabled="false" />
+
+            <LinearLayout
+                android:id="@+id/llNoHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="32dp"
+                android:visibility="gone">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sin historial de servicios"
+                    android:textColor="@color/cadet_grey"
+                    android:fontFamily="@font/geist_medium" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
