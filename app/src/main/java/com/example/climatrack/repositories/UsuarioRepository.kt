@@ -37,7 +37,8 @@ class UsuarioRepository(context: Context) {
                 workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
                 workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END)),
                 lastLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT)),
-                lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))
+                lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON)),
+                imagenPerfil = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_IMAGEN))
             )
         }
         cursor.close()
@@ -56,6 +57,7 @@ class UsuarioRepository(context: Context) {
             put(DatabaseHelper.COL_USUARIO_ACTIVE, usuario.isActive)
             put(DatabaseHelper.COL_USUARIO_WORK_START, usuario.workStartTime)
             put(DatabaseHelper.COL_USUARIO_WORK_END, usuario.workEndTime)
+            put(DatabaseHelper.COL_USUARIO_IMAGEN, usuario.imagenPerfil)
         }
         return db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
     }
@@ -83,7 +85,8 @@ class UsuarioRepository(context: Context) {
                 workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
                 workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END)),
                 lastLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT)),
-                lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))
+                lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON)),
+                imagenPerfil = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_IMAGEN))
             )
         }
         cursor.close()
@@ -285,5 +288,16 @@ class UsuarioRepository(context: Context) {
         }
         cursor.close()
         return list
+    }
+
+    fun updateProfile(userId: Int, nombre: String, email: String?, telefono: String?, imagePath: String?): Int {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DatabaseHelper.COL_USUARIO_NOMBRE, nombre)
+            put(DatabaseHelper.COL_USUARIO_EMAIL, email)
+            put(DatabaseHelper.COL_USUARIO_TEL, telefono)
+            put(DatabaseHelper.COL_USUARIO_IMAGEN, imagePath)
+        }
+        return db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()))
     }
 }

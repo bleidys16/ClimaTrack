@@ -91,10 +91,25 @@ class DashboardActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         loadStats()
+        loadProfileImage()
+    }
+
+    private fun loadProfileImage() {
+        val user = usuarioRepository.getById(sessionManager.getUserId())
+        user?.imagenPerfil?.let { path ->
+            val file = java.io.File(path)
+            if (file.exists()) {
+                binding.ivUserAvatar.setImageURI(android.net.Uri.fromFile(file))
+            }
+        }
     }
 
     private fun setupUI() {
         binding.tvWelcome.text = "Hola Técnico"
+
+        binding.ivUserAvatar.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
 
         binding.btnOrders.setOnClickListener {
             startActivity(Intent(this, OrdersActivity::class.java))

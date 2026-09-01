@@ -56,6 +56,10 @@ class AdminDashboardActivity : BaseActivity() {
             finish()
         }
 
+        binding.ivAdminAvatar.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
+
         setupSearch()
         
         loadData()
@@ -116,6 +120,14 @@ class AdminDashboardActivity : BaseActivity() {
     }
 
     private fun loadData() {
+        val user = usuarioRepository.getById(sessionManager.getUserId())
+        user?.imagenPerfil?.let { path ->
+            val file = java.io.File(path)
+            if (file.exists()) {
+                binding.ivAdminAvatar.setImageURI(android.net.Uri.fromFile(file))
+            }
+        }
+
         val techs = usuarioRepository.getTechnicianStats()
         techAdapter.updateList(techs)
         

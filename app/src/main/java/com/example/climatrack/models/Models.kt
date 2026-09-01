@@ -12,7 +12,8 @@ data class Usuario(
     val workStartTime: String? = null,
     val workEndTime: String? = null,
     val lastLat: Double? = null,
-    val lastLon: Double? = null
+    val lastLon: Double? = null,
+    val imagenPerfil: String? = null
 )
 
 data class Cliente(

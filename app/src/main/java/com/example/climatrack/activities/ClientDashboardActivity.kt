@@ -15,6 +15,7 @@ class ClientDashboardActivity : BaseActivity() {
     private lateinit var binding: ActivityClientDashboardBinding
     private lateinit var sessionManager: SessionManager
     private lateinit var ordenRepository: OrdenRepository
+    private lateinit var usuarioRepository: com.example.climatrack.repositories.UsuarioRepository
     private lateinit var equipoRepository: com.example.climatrack.repositories.EquipoRepository
     private lateinit var adapter: OrdersAdapter
 
@@ -26,6 +27,7 @@ class ClientDashboardActivity : BaseActivity() {
 
         sessionManager = SessionManager(this)
         ordenRepository = OrdenRepository(this)
+        usuarioRepository = com.example.climatrack.repositories.UsuarioRepository(this)
         equipoRepository = com.example.climatrack.repositories.EquipoRepository(this)
 
         setupRecyclerView()
@@ -44,6 +46,10 @@ class ClientDashboardActivity : BaseActivity() {
             sessionManager.logout()
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
+        }
+
+        binding.ivClientAvatar.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
         }
 
         loadMyServices()
@@ -110,6 +116,14 @@ class ClientDashboardActivity : BaseActivity() {
     }
 
     private fun loadMyServices() {
+        val user = usuarioRepository.getById(sessionManager.getUserId())
+        user?.imagenPerfil?.let { path ->
+            val file = java.io.File(path)
+            if (file.exists()) {
+                binding.ivClientAvatar.setImageURI(android.net.Uri.fromFile(file))
+            }
+        }
+
         val clienteId = sessionManager.getUserId()
         val orders = ordenRepository.getOrdenesByCliente(clienteId)
         adapter.updateList(orders)
