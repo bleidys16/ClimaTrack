@@ -1,6 +1,7 @@
 package com.example.climatrack.activities
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
@@ -8,14 +9,18 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityOrderDetailBinding
+import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.repositories.OrdenRepository
+import com.example.climatrack.utils.PdfGenerator
 
 class OrderDetailActivity : BaseActivity() {
 
     private lateinit var binding: ActivityOrderDetailBinding
     private lateinit var ordenRepository: OrdenRepository
+    private lateinit var mantenimientoRepository: MantenimientoRepository
     private var orderId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,6 +30,7 @@ class OrderDetailActivity : BaseActivity() {
         setupEdgeToEdge(binding.root, binding.toolbar)
 
         ordenRepository = OrdenRepository(this)
+        mantenimientoRepository = MantenimientoRepository(this)
         orderId = intent.getIntExtra("ORDER_ID", -1)
 
         if (orderId == -1) {
@@ -76,6 +82,7 @@ class OrderDetailActivity : BaseActivity() {
         // Reset all
         binding.btnSendQuote.visibility = View.GONE
         binding.btnStartService.visibility = View.GONE
+        binding.btnDownloadPdf.visibility = View.GONE
         binding.btnRegisterMaint.isEnabled = false
         binding.btnSpareParts.isEnabled = false
         binding.btnEvidence.isEnabled = false
@@ -101,6 +108,7 @@ class OrderDetailActivity : BaseActivity() {
             }
             "FINALIZADA" -> {
                 binding.tvFinishLabel.text = "ORDEN FINALIZADA"
+                binding.btnDownloadPdf.visibility = View.VISIBLE
             }
         }
     }
@@ -108,6 +116,7 @@ class OrderDetailActivity : BaseActivity() {
     private fun setupButtons() {
         binding.btnSendQuote.setOnClickListener { showQuoteDialog() }
         binding.btnStartService.setOnClickListener { startService() }
+        binding.btnDownloadPdf.setOnClickListener { generateAndOpenPdf() }
 
         binding.btnRegisterMaint.setOnClickListener {
             Intent(this, MaintenanceActivity::class.java).also {
@@ -194,5 +203,32 @@ class OrderDetailActivity : BaseActivity() {
             }
             .setNegativeButton("Cancelar", null)
             .show()
+    }
+
+    private fun generateAndOpenPdf() {
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val mant = mantenimientoRepository.getByOrdenId(orderId)
+        
+        info?.let {
+            val pdfFile = PdfGenerator(this).generateTechnicalReport(it, mant)
+            if (pdfFile != null) {
+                openPdf(pdfFile)
+            } else {
+                Toast.makeText(this, "Error al generar PDF", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun openPdf(file: java.io.File) {
+        val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/pdf")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "No hay lector de PDF instalado", Toast.LENGTH_SHORT).show()
+        }
     }
 }

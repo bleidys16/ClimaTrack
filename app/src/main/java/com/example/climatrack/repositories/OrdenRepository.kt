@@ -18,7 +18,7 @@ class OrdenRepository(context: Context) {
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -44,7 +44,8 @@ class OrdenRepository(context: Context) {
                     descripcion = cursor.getString(11),
                     direccion = cursor.getString(12),
                     calificacion = cursor.getInt(13),
-                    comentario = cursor.getString(14)
+                    comentario = cursor.getString(14),
+                    firmaBase64 = cursor.getString(15)
                 ))
             } while (cursor.moveToNext())
         }
@@ -149,7 +150,7 @@ class OrdenRepository(context: Context) {
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -175,7 +176,8 @@ class OrdenRepository(context: Context) {
                     descripcion = cursor.getString(11),
                     direccion = cursor.getString(12),
                     calificacion = cursor.getInt(13),
-                    comentario = cursor.getString(14)
+                    comentario = cursor.getString(14),
+                    firmaBase64 = cursor.getString(15)
                 ))
             } while (cursor.moveToNext())
         }
@@ -274,7 +276,7 @@ class OrdenRepository(context: Context) {
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -301,7 +303,8 @@ class OrdenRepository(context: Context) {
                     descripcion = cursor.getString(11),
                     direccion = cursor.getString(12),
                     calificacion = cursor.getInt(13),
-                    comentario = cursor.getString(14)
+                    comentario = cursor.getString(14),
+                    firmaBase64 = cursor.getString(15)
                 ))
             } while (cursor.moveToNext())
         }

@@ -72,7 +72,8 @@ data class OrdenInfo(
     val descripcion: String? = null,
     val direccion: String? = null,
     val calificacion: Int = 0,
-    val comentario: String? = null
+    val comentario: String? = null,
+    val firmaBase64: String? = null
 )
 
 data class Mantenimiento(

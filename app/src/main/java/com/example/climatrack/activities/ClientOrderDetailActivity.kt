@@ -1,13 +1,16 @@
 package com.example.climatrack.activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityClientOrderDetailBinding
 import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.repositories.OrdenRepository
+import com.example.climatrack.utils.PdfGenerator
 import java.util.*
 
 class ClientOrderDetailActivity : BaseActivity() {
@@ -35,6 +38,7 @@ class ClientOrderDetailActivity : BaseActivity() {
         setupToolbar()
         loadOrderDetails()
         binding.btnSubmitFeedback.setOnClickListener { submitFeedback() }
+        binding.btnDownloadReceipt.setOnClickListener { generateAndOpenReceipt() }
     }
 
     private fun setupToolbar() {
@@ -68,6 +72,10 @@ class ClientOrderDetailActivity : BaseActivity() {
             }
             binding.tvStatus.backgroundTintList = ContextCompat.getColorStateList(this, containerColor)
             binding.tvStatus.setTextColor(ContextCompat.getColor(this, textColor))
+
+            if (it.estado == "FINALIZADA") {
+                binding.btnDownloadReceipt.visibility = View.VISIBLE
+            }
 
             setupFeedbackUI(it)
         }
@@ -124,6 +132,33 @@ class ClientOrderDetailActivity : BaseActivity() {
             loadOrderDetails()
         } else {
             Toast.makeText(this, "Error al guardar calificación", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun generateAndOpenReceipt() {
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val mant = mantenimientoRepository.getByOrdenId(orderId)
+        
+        info?.let {
+            val pdfFile = PdfGenerator(this).generateClientReport(it, mant)
+            if (pdfFile != null) {
+                openPdf(pdfFile)
+            } else {
+                Toast.makeText(this, "Error al generar certificado", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun openPdf(file: java.io.File) {
+        val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/pdf")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "No hay lector de PDF instalado", Toast.LENGTH_SHORT).show()
         }
     }
 }

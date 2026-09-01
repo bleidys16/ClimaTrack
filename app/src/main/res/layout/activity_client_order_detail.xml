@@ -108,6 +108,18 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDownloadReceipt"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="16dp"
+                android:text="DESCARGAR CERTIFICADO PDF"
+                android:textColor="@color/status_finished"
+                app:icon="@android:drawable/ic_menu_save"
+                app:iconTint="@color/status_finished"
+                android:visibility="gone" />
+
             <!-- Technician & Equipment -->
             <TextView
                 android:layout_width="wrap_content"
