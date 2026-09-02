@@ -6,6 +6,8 @@
     <color name="ube">#8387C3</color>
     <color name="cadet_grey">#959BB5</color>
     <color name="cool_grey">#8A8CAC</color>
+    <color name="glass_white">#1AFFFFFF</color>
+    <color name="glass_toolbar">#CC0A1123</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>

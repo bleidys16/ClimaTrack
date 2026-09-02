@@ -8,14 +8,16 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/chinese_black"
-        app:elevation="0dp">
+        android:background="@android:color/transparent"
+        app:elevation="0dp"
+        app:liftOnScroll="true">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="?attr/actionBarSize"
+            android:background="@color/glass_toolbar"
             app:titleTextColor="@color/white">
 
             <LinearLayout
@@ -52,6 +54,49 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="24dp">
+
+            <!-- Header Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingBottom="24dp">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivUserAvatar"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:padding="2dp"
+                    android:src="@drawable/perfil_tecnico"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
+                    app:strokeColor="@color/ube"
+                    app:strokeWidth="2dp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvWelcome"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hola, Técnico"
+                        android:textColor="@color/white"
+                        android:textSize="22sp"
+                        android:fontFamily="@font/geist_bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/welcome_back"
+                        android:textColor="@color/cadet_grey"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+            </LinearLayout>
 
             <!-- Status Section -->
             <com.google.android.material.card.MaterialCardView
@@ -133,51 +178,43 @@
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <LinearLayout
+                        android:id="@+id/layoutLocationInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@android:drawable/ic_menu_mylocation"
+                            app:tint="@color/cadet_grey" />
+
+                        <TextView
+                            android:id="@+id/tvCurrentLocation"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="Ubicación: --, --"
+                            android:textColor="@color/cadet_grey"
+                            android:textSize="12sp"
+                            android:fontFamily="@font/geist_medium" />
+
+                        <ImageButton
+                            android:id="@+id/btnRefreshLocation"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@android:drawable/ic_popup_sync"
+                            app:tint="@color/ube" />
+                    </LinearLayout>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- Header Section -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingBottom="24dp">
-
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/ivUserAvatar"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:padding="2dp"
-                    android:src="@drawable/perfil_tecnico"
-                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
-                    app:strokeColor="@color/ube"
-                    app:strokeWidth="2dp" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/tvWelcome"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Hola, Técnico"
-                        android:textColor="@color/white"
-                        android:textSize="22sp"
-                        android:fontFamily="@font/geist_bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/welcome_back"
-                        android:textColor="@color/cadet_grey"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-            </LinearLayout>
 
             <!-- Stats Section -->
             <TextView
