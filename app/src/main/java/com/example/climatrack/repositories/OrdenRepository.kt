@@ -312,6 +312,25 @@ class OrdenRepository(context: Context) {
         return list
     }
 
+    fun getTopBrandsStats(): List<com.example.climatrack.adapters.StatItem> {
+        val list = mutableListOf<com.example.climatrack.adapters.StatItem>()
+        val db = dbHelper.readableDatabase
+        val query = "SELECT e.${DatabaseHelper.COL_EQUIPO_MARCA}, COUNT(*) as count " +
+                "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
+                "JOIN ${DatabaseHelper.TABLE_EQUIPOS} e ON o.${DatabaseHelper.COL_ORDEN_EQUIPO_ID} = e.${DatabaseHelper.COL_EQUIPO_ID} " +
+                "GROUP BY e.${DatabaseHelper.COL_EQUIPO_MARCA} " +
+                "ORDER BY count DESC LIMIT 5"
+        
+        val cursor = db.rawQuery(query, null)
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(com.example.climatrack.adapters.StatItem(cursor.getString(0), cursor.getInt(1)))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
+
     private fun cursorToOrden(cursor: Cursor): Orden {
         val techIdx = cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECNICO_ID)
         val tecnicoId = if (cursor.isNull(techIdx)) null else cursor.getInt(techIdx)

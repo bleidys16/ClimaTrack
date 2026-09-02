@@ -149,4 +149,23 @@ class ServicioRepository(context: Context) {
             arrayOf(id.toString())
         )
     }
+
+    fun getTopPartsStats(): List<com.example.climatrack.adapters.StatItem> {
+        val list = mutableListOf<com.example.climatrack.adapters.StatItem>()
+        val db = dbHelper.readableDatabase
+        val query = "SELECT r.${DatabaseHelper.COL_REP_NOMBRE}, SUM(d.${DatabaseHelper.COL_DET_CANT}) as total " +
+                "FROM ${DatabaseHelper.TABLE_DETALLE_REPUESTOS} d " +
+                "JOIN ${DatabaseHelper.TABLE_REPUESTOS} r ON d.${DatabaseHelper.COL_DET_REP_ID} = r.${DatabaseHelper.COL_REP_ID} " +
+                "GROUP BY d.${DatabaseHelper.COL_DET_REP_ID} " +
+                "ORDER BY total DESC LIMIT 5"
+        
+        val cursor = db.rawQuery(query, null)
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(com.example.climatrack.adapters.StatItem(cursor.getString(0), cursor.getInt(1)))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
 }

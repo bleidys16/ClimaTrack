@@ -46,6 +46,10 @@ class AdminDashboardActivity : BaseActivity() {
             startActivity(Intent(this, TechnicianMapActivity::class.java))
         }
 
+        binding.btnFailureIntel.setOnClickListener {
+            startActivity(Intent(this, FailureIntelligenceActivity::class.java))
+        }
+
         binding.btnManualOrder.setOnClickListener {
             startActivity(Intent(this, ManualOrderActivity::class.java))
         }
