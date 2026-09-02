@@ -196,12 +196,16 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardPending"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_margin="4dp"
                     app:cardBackgroundColor="@color/american_blue"
-                    app:strokeWidth="0dp">
+                    app:strokeWidth="0dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -229,12 +233,16 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardInProgress"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_margin="4dp"
                     app:cardBackgroundColor="@color/american_blue"
-                    app:strokeWidth="0dp">
+                    app:strokeWidth="0dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -262,12 +270,16 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardFinished"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_margin="4dp"
                     app:cardBackgroundColor="@color/american_blue"
-                    app:strokeWidth="0dp">
+                    app:strokeWidth="0dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
                     <LinearLayout
                         android:layout_width="match_parent"

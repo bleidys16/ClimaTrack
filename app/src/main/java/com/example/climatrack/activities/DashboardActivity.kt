@@ -30,7 +30,8 @@ class DashboardActivity : BaseActivity() {
         ordenRepository = OrdenRepository(this)
         usuarioRepository = UsuarioRepository(this)
 
-        setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
+        val appBar = binding.root.findViewById<android.view.View>(R.id.toolbar)?.parent as? android.view.View
+        setupEdgeToEdge(binding.root, appBar ?: binding.toolbar, binding.navContainer)
         setupUI()
         setupStatusLogic()
         setupBottomNavigation()
@@ -42,6 +43,8 @@ class DashboardActivity : BaseActivity() {
         
         user?.let {
             val isActive = it.isActive == 1
+            // Usamos un listener nulo temporalmente para evitar disparar el guardado al inicializar
+            binding.swActiveStatus.setOnCheckedChangeListener(null)
             binding.swActiveStatus.isChecked = isActive
             binding.swActiveStatus.text = if (isActive) "Activo" else "Inactivo"
             binding.swActiveStatus.setTextColor(ContextCompat.getColor(this, 
@@ -49,8 +52,13 @@ class DashboardActivity : BaseActivity() {
             
             binding.etWorkStartTime.setText(it.workStartTime ?: "")
             binding.etWorkEndTime.setText(it.workEndTime ?: "")
+            
+            // Reasignamos el listener real
+            attachStatusListener()
         }
+    }
 
+    private fun attachStatusListener() {
         binding.swActiveStatus.setOnCheckedChangeListener { _, isChecked ->
             val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
             sdf.timeZone = TimeZone.getTimeZone("America/Bogota")
@@ -65,26 +73,33 @@ class DashboardActivity : BaseActivity() {
             } else {
                 binding.etWorkEndTime.setText(currentTime)
             }
-            updateTechnicianStatus()
+            updateTechnicianStatus(isChecked)
         }
     }
 
     @SuppressLint("MissingPermission")
-    private fun updateTechnicianStatus() {
+    private fun updateTechnicianStatus(isChecked: Boolean) {
         val userId = sessionManager.getUserId()
-        val isActive = if (binding.swActiveStatus.isChecked) 1 else 0
+        val isActive = if (isChecked) 1 else 0
         val workStart = binding.etWorkStartTime.text.toString()
         val workEnd = binding.etWorkEndTime.text.toString()
+
+        // Guardado inmediato del estado para evitar pérdidas al cerrar sesión
+        usuarioRepository.updateStatus(userId, isActive, workStart, workEnd, null, null)
 
         if (isActive == 1) {
             val fusedLocation = LocationServices.getFusedLocationProviderClient(this)
             fusedLocation.lastLocation.addOnSuccessListener { location ->
-                usuarioRepository.updateStatus(userId, isActive, workStart, workEnd, location?.latitude, location?.longitude)
-                if (location != null) Toast.makeText(this, "Estado actualizado con ubicación", Toast.LENGTH_SHORT).show()
+                if (location != null) {
+                    // Actualización posterior con la ubicación real
+                    usuarioRepository.updateStatus(userId, isActive, workStart, workEnd, location.latitude, location.longitude)
+                    Toast.makeText(this, "Jornada iniciada con ubicación", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Jornada iniciada (ubicación no disponible)", Toast.LENGTH_SHORT).show()
+                }
             }
         } else {
-            usuarioRepository.updateStatus(userId, isActive, workStart, workEnd, null, null)
-            Toast.makeText(this, "Ahora estás desconectado", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Jornada finalizada", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -109,6 +124,24 @@ class DashboardActivity : BaseActivity() {
 
         binding.ivUserAvatar.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
+        }
+
+        binding.cardPending.setOnClickListener {
+            val intent = Intent(this, OrdersActivity::class.java)
+            intent.putExtra("TAB_INDEX", 0)
+            startActivity(intent)
+        }
+
+        binding.cardInProgress.setOnClickListener {
+            val intent = Intent(this, OrdersActivity::class.java)
+            intent.putExtra("TAB_INDEX", 1)
+            startActivity(intent)
+        }
+
+        binding.cardFinished.setOnClickListener {
+            val intent = Intent(this, OrdersActivity::class.java)
+            intent.putExtra("TAB_INDEX", 2)
+            startActivity(intent)
         }
 
         binding.btnOrders.setOnClickListener {

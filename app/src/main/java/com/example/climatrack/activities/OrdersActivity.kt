@@ -34,6 +34,10 @@ class OrdersActivity : BaseActivity() {
         setupRecyclerView()
         setupTabs()
         setupBottomNavigation()
+        
+        val initialTab = intent.getIntExtra("TAB_INDEX", 0)
+        binding.tabs.getTabAt(initialTab)?.select()
+        
         loadOrders()
     }
 
@@ -94,8 +98,15 @@ class OrdersActivity : BaseActivity() {
     }
 
     private fun loadOrders() {
-        val tecnicoId = sessionManager.getUserId()
-        allOrders = ordenRepository.getAllInfoByTecnico(tecnicoId)
+        val userId = sessionManager.getUserId()
+        val userRol = sessionManager.getUserRol()?.uppercase() ?: ""
+
+        allOrders = if (userRol == "ADMINISTRADOR") {
+            ordenRepository.getAllInfo()
+        } else {
+            ordenRepository.getAllInfoByTecnico(userId)
+        }
+        
         filterOrders(binding.tabs.selectedTabPosition)
     }
 

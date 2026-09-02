@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
     android:background="@color/chinese_black">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:background="@color/chinese_black"
+        app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
@@ -17,89 +18,102 @@
             android:layout_height="?attr/actionBarSize"
             app:title="Nuevo Técnico"
             app:titleTextColor="@color/white"
-            app:navigationIcon="@drawable/ic_back_modern"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:navigationIcon="@drawable/ic_back_modern" />
 
-        <TextView
-            android:id="@+id/tvTechTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Registrar Personal Técnico"
-            android:textColor="@color/white"
-            android:textSize="22sp"
-            android:fontFamily="@font/geist_bold"
-            app:layout_constraintTop_toBottomOf="@id/toolbar"
-            app:layout_constraintStart_toStartOf="parent" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilFullName"
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:hint="Nombre Completo del Técnico"
-            app:layout_constraintTop_toBottomOf="@id/tvTechTitle">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etFullName"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/tvTechTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:text="Registrar Personal Técnico"
+                android:textColor="@color/white"
+                android:textSize="22sp"
+                android:fontFamily="@font/geist_bold"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilFullName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/white" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginTop="32dp"
+                android:hint="Nombre Completo del Técnico"
+                app:layout_constraintTop_toBottomOf="@id/tvTechTitle">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etFullName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilUser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Usuario de Acceso"
-            app:layout_constraintTop_toBottomOf="@id/tilFullName">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etUser"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilUser"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/white" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginTop="16dp"
+                android:hint="Usuario de Acceso"
+                app:layout_constraintTop_toBottomOf="@id/tilFullName">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etUser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Correo Corporativo"
-            app:layout_constraintTop_toBottomOf="@id/tilUser">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etEmail"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textEmailAddress"
-                android:textColor="@color/white" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginTop="16dp"
+                android:hint="Correo Corporativo"
+                app:layout_constraintTop_toBottomOf="@id/tilUser">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textEmailAddress"
+                    android:textColor="@color/white" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Contraseña Provisional"
-            app:endIconMode="password_toggle"
-            app:layout_constraintTop_toBottomOf="@id/tilEmail">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPassword"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPassword"
-                android:textColor="@color/white" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginTop="16dp"
+                android:hint="Contraseña Provisional"
+                app:endIconMode="password_toggle"
+                app:layout_constraintTop_toBottomOf="@id/tilEmail">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:textColor="@color/white" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnRegisterTech"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="40dp"
-            android:text="CREAR CUENTA DE TÉCNICO"
-            app:layout_constraintTop_toBottomOf="@id/tilPassword"
-            app:backgroundTint="@color/ube" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRegisterTech"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="40dp"
+                android:text="CREAR CUENTA DE TÉCNICO"
+                app:layout_constraintTop_toBottomOf="@id/tilPassword"
+                app:backgroundTint="@color/ube" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.core.widget.NestedScrollView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -10,6 +10,9 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
+import android.widget.Toast
+import com.example.climatrack.R
+
 class TechnicianMapActivity : BaseActivity(), OnMapReadyCallback {
 
     private lateinit var binding: ActivityTechnicianMapBinding
@@ -20,7 +23,7 @@ class TechnicianMapActivity : BaseActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         binding = ActivityTechnicianMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupEdgeToEdge(binding.root, binding.toolbar)
+        setupEdgeToEdge(binding.root, binding.appBarLayout)
 
         usuarioRepository = UsuarioRepository(this)
         
@@ -29,6 +32,7 @@ class TechnicianMapActivity : BaseActivity(), OnMapReadyCallback {
         binding.mapView.getMapAsync(this)
 
         binding.fabRefresh.setOnClickListener {
+            Toast.makeText(this, "Buscando técnicos activos...", Toast.LENGTH_SHORT).show()
             loadActiveTechnicians()
         }
     }
@@ -43,15 +47,23 @@ class TechnicianMapActivity : BaseActivity(), OnMapReadyCallback {
         googleMap?.clear()
         val techs = usuarioRepository.getActiveTechnicians()
         
-        if (techs.isEmpty()) return
+        if (techs.isEmpty()) {
+            Toast.makeText(this, "No hay técnicos activos en este momento", Toast.LENGTH_LONG).show()
+            // Ubicación por defecto (por ejemplo, centro de Colombia o una ubicación genérica)
+            val defaultPos = LatLng(4.6243, -74.0636) // Bogotá
+            googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(defaultPos, 6f))
+            return
+        }
 
         var firstPos: LatLng? = null
+        var count = 0
         for (tech in techs) {
             val lat = tech.lastLat
             val lon = tech.lastLon
             if (lat != null && lon != null) {
                 val pos = LatLng(lat, lon)
                 if (firstPos == null) firstPos = pos
+                count++
                 
                 googleMap?.addMarker(
                     MarkerOptions()
@@ -63,8 +75,11 @@ class TechnicianMapActivity : BaseActivity(), OnMapReadyCallback {
             }
         }
 
-        firstPos?.let {
-            googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 12f))
+        if (firstPos != null) {
+            googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(firstPos, 12f))
+            Toast.makeText(this, "Se encontraron $count técnicos activos", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Técnicos activos sin ubicación registrada", Toast.LENGTH_SHORT).show()
         }
     }
 

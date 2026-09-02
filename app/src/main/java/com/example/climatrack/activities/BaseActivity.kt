@@ -20,6 +20,17 @@ open class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+    }
+
+    override fun startActivity(intent: android.content.Intent?) {
+        super.startActivity(intent)
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+    }
+
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
 
     protected fun setupCustomNavigation(
@@ -69,27 +80,34 @@ open class BaseActivity : AppCompatActivity() {
         layout.layoutParams = params
     }
 
-    protected fun setupEdgeToEdge(rootView: View, toolbar: View? = null, bottomNavContainer: View? = null) {
+    protected fun setupEdgeToEdge(rootView: View, topView: View? = null, bottomNavContainer: View? = null) {
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
             
-            if (toolbar != null) {
-                toolbar.updatePadding(top = systemBars.top)
+            // Si se proporciona una vista superior (Toolbar o AppBarLayout), le aplicamos el padding a ella.
+            // Si no, se lo aplicamos a la vista raíz para que todo el contenido baje.
+            if (topView != null) {
+                topView.updatePadding(top = systemBars.top)
             } else {
                 v.updatePadding(top = systemBars.top)
             }
             
+            val bottomInset = if (ime.bottom > 0) ime.bottom else systemBars.bottom
+
             if (bottomNavContainer != null) {
                 val params = bottomNavContainer.layoutParams
                 if (params is ViewGroup.MarginLayoutParams) {
                     bottomNavContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                        bottomMargin = systemBars.bottom + 16
+                        bottomMargin = bottomInset + 16
                     }
                 } else {
-                    bottomNavContainer.updatePadding(bottom = systemBars.bottom)
+                    bottomNavContainer.updatePadding(bottom = bottomInset)
                 }
             } else {
-                v.updatePadding(bottom = systemBars.bottom)
+                // Si no hay navegación inferior, aseguramos que el fondo de la pantalla
+                // no sea tapado por la barra de navegación del sistema
+                v.updatePadding(bottom = bottomInset)
             }
 
             insets

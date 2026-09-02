@@ -26,7 +26,12 @@ class AdminDashboardActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupEdgeToEdge(binding.root, binding.toolbar)
+        
+        // En AdminDashboardActivity el toolbar está dentro de AppBarLayout sin ID explícito,
+        // pero podemos obtener el AppBarLayout por tipo o simplemente usar el contenedor raíz si falla.
+        val appBar = binding.root.findViewById<android.view.View>(com.example.climatrack.R.id.toolbar)?.parent as? android.view.View
+        
+        setupEdgeToEdge(binding.root, appBar ?: binding.toolbar)
 
         ordenRepository = OrdenRepository(this)
         usuarioRepository = UsuarioRepository(this)
@@ -36,6 +41,20 @@ class AdminDashboardActivity : BaseActivity() {
 
         binding.btnAutoAssign.setOnClickListener {
             performAutoAssignment()
+        }
+
+        binding.btnViewAllOrders.setOnClickListener {
+            startActivity(Intent(this, OrdersActivity::class.java))
+        }
+
+        binding.cardActiveTechs.setOnClickListener {
+            startActivity(Intent(this, TechnicianMapActivity::class.java))
+        }
+
+        binding.cardPendingOrders.setOnClickListener {
+            val intent = Intent(this, OrdersActivity::class.java)
+            intent.putExtra("TAB_INDEX", 0)
+            startActivity(intent)
         }
 
         binding.btnRegisterNewTech.setOnClickListener {

@@ -15,7 +15,7 @@ class RegisterTechnicianActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterTechnicianBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupEdgeToEdge(binding.root, binding.toolbar)
+        setupEdgeToEdge(binding.root, binding.appBarLayout)
 
         usuarioRepository = UsuarioRepository(this)
 

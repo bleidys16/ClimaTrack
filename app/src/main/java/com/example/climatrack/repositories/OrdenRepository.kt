@@ -10,6 +10,49 @@ import com.example.climatrack.models.OrdenInfo
 class OrdenRepository(context: Context) {
     private val dbHelper = DatabaseHelper(context)
 
+    fun getAllInfo(): List<OrdenInfo> {
+        val list = mutableListOf<OrdenInfo>()
+        val db = dbHelper.readableDatabase
+        val query = "SELECT o.${DatabaseHelper.COL_ORDEN_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, o.${DatabaseHelper.COL_ORDEN_FECHA}, " +
+                "COALESCE(c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Cliente Externo') as cliente_nombre, " +
+                "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
+                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
+                "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
+                "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
+                "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
+                "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
+                "JOIN ${DatabaseHelper.TABLE_EQUIPOS} e ON o.${DatabaseHelper.COL_ORDEN_EQUIPO_ID} = e.${DatabaseHelper.COL_EQUIPO_ID} " +
+                "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_tech ON o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u_tech.${DatabaseHelper.COL_USUARIO_ID} " +
+                "ORDER BY o.${DatabaseHelper.COL_ORDEN_FECHA} DESC"
+        
+        val cursor = db.rawQuery(query, null)
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(OrdenInfo(
+                    id = cursor.getInt(0),
+                    numero = cursor.getString(1),
+                    fecha = cursor.getString(2),
+                    clienteNombre = cursor.getString(3),
+                    equipoNombre = cursor.getString(4),
+                    tipoServicio = cursor.getString(5),
+                    estado = cursor.getString(6),
+                    tecnicoNombre = if (cursor.isNull(7)) "Sin asignar" else cursor.getString(7),
+                    precioServicio = cursor.getDouble(8),
+                    equipoMarca = cursor.getString(9),
+                    equipoModelo = cursor.getString(10),
+                    descripcion = cursor.getString(11),
+                    direccion = cursor.getString(12),
+                    calificacion = cursor.getInt(13),
+                    comentario = cursor.getString(14),
+                    firmaBase64 = cursor.getString(15)
+                ))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
+
     fun getAllInfoByTecnico(tecnicoId: Int): List<OrdenInfo> {
         val list = mutableListOf<OrdenInfo>()
         val db = dbHelper.readableDatabase

@@ -1,6 +1,7 @@
 package com.example.climatrack.activities
 
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import com.example.climatrack.databinding.ActivityManualOrderBinding
@@ -26,7 +27,12 @@ class ManualOrderActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityManualOrderBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupEdgeToEdge(binding.root)
+        
+        // Obtenemos el AppBarLayout si existe en el layout
+        val appBar = binding.root.findViewById<com.google.android.material.appbar.AppBarLayout>(com.example.climatrack.R.id.appBarLayout) ?: 
+                     binding.root.findViewWithTag<View>("app_bar")
+        
+        setupEdgeToEdge(binding.root, appBar ?: binding.toolbar)
 
         ordenRepository = OrdenRepository(this)
         usuarioRepository = UsuarioRepository(this)
