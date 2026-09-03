@@ -31,6 +31,7 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
     private var googleMap: GoogleMap? = null
     private var techMarker: Marker? = null
     private var firestoreListener: ListenerRegistration? = null
+    private lateinit var servicioRepository: com.example.climatrack.repositories.ServicioRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +41,7 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
 
         ordenRepository = OrdenRepository(this)
         mantenimientoRepository = MantenimientoRepository(this)
+        servicioRepository = com.example.climatrack.repositories.ServicioRepository(this)
         orderId = intent.getIntExtra("ORDER_ID", -1)
 
         if (orderId == -1) {
@@ -138,11 +140,27 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
             setupFeedbackUI(it)
         }
 
-        mant?.let {
+        mant?.let { m ->
             binding.tvWorkTitle.visibility = View.VISIBLE
             binding.cardWorkDetails.visibility = View.VISIBLE
-            binding.tvDiagnosis.text = "Diagnóstico: ${it.diagnostico}"
-            binding.tvWorkDone.text = "Trabajo Realizado: ${it.trabajoRealizado}"
+            binding.tvDiagnosis.text = "Diagnóstico: ${m.diagnostico}"
+            binding.tvWorkDone.text = "Trabajo Realizado: ${m.trabajoRealizado}"
+
+            // Load Spare Parts
+            val parts = servicioRepository.getRepuestosByMantenimiento(m.id)
+            if (parts.isNotEmpty()) {
+                binding.tvPartsTitle.visibility = View.VISIBLE
+                binding.cardSpareParts.visibility = View.VISIBLE
+                binding.llPartsContainer.removeAllViews()
+                
+                parts.forEach { part ->
+                    val partBinding = com.example.climatrack.databinding.ItemSparePartClientBinding.inflate(layoutInflater, binding.llPartsContainer, false)
+                    partBinding.tvPartName.text = part.repuestoNombre
+                    partBinding.tvPartQty.text = "x${part.cantidad}"
+                    partBinding.tvPartPrice.text = "$${String.format(Locale.getDefault(), "%.2f", part.precio * part.cantidad)}"
+                    binding.llPartsContainer.addView(partBinding.root)
+                }
+            }
         }
     }
 

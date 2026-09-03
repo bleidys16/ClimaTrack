@@ -223,6 +223,36 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Spare Parts -->
+            <TextView
+                android:id="@+id/tvPartsTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Repuestos y Materiales"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSpareParts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/cadet_grey"
+                android:visibility="gone">
+                <LinearLayout
+                    android:id="@+id/llPartsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp" />
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Costs -->
             <TextView
                 android:layout_width="wrap_content"
