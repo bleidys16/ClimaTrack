@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityLoginBinding
 import com.example.climatrack.repositories.UsuarioRepository
+import com.example.climatrack.utils.FirebaseHelper
 import com.example.climatrack.utils.SessionManager
 
 class LoginActivity : BaseActivity() {
@@ -34,28 +35,56 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun performLogin() {
-        val user = binding.etUser.text.toString().trim()
+        val email = binding.etUser.text.toString().trim()
         val pass = binding.etPassword.text.toString().trim()
 
-        if (user.isEmpty() || pass.isEmpty()) {
+        if (email.isEmpty() || pass.isEmpty()) {
             Toast.makeText(this, getString(R.string.error_empty_fields), Toast.LENGTH_SHORT).show()
             return
         }
 
-        val usuario = usuarioRepository.login(user, pass)
-
-        if (usuario != null) {
-            sessionManager.saveSession(usuario.id, usuario.nombre, usuario.rol)
-            
-            val intent = when (usuario.rol.uppercase()) {
-                "ADMINISTRADOR" -> Intent(this, AdminDashboardActivity::class.java)
-                "CLIENTE" -> Intent(this, ClientDashboardActivity::class.java)
-                else -> Intent(this, DashboardActivity::class.java)
+        // 1. Try Firebase Auth
+        FirebaseHelper.auth.signInWithEmailAndPassword(email, pass)
+            .addOnSuccessListener {
+                // 2. Fetch User Data from Firestore
+                FirebaseHelper.db.collection("usuarios")
+                    .whereEqualTo("email", email)
+                    .get()
+                    .addOnSuccessListener { documents ->
+                        if (!documents.isEmpty) {
+                            val doc = documents.documents[0]
+                            val id = doc.getLong("id")?.toInt() ?: -1
+                            val nombre = doc.getString("nombre") ?: ""
+                            val rol = doc.getString("rol") ?: ""
+                            
+                            // 3. Save Session
+                            sessionManager.saveSession(id, nombre, rol)
+                            
+                            navigateToDashboard(rol)
+                        } else {
+                            Toast.makeText(this, "Usuario no encontrado en la nube", Toast.LENGTH_SHORT).show()
+                        }
+                    }
             }
-            startActivity(intent)
-            finish()
-        } else {
-            Toast.makeText(this, getString(R.string.error_invalid_credentials), Toast.LENGTH_SHORT).show()
+            .addOnFailureListener {
+                // 4. Fallback to Local Login (for existing local-only users)
+                val usuario = usuarioRepository.login(email, pass)
+                if (usuario != null) {
+                    sessionManager.saveSession(usuario.id, usuario.nombre, usuario.rol)
+                    navigateToDashboard(usuario.rol)
+                } else {
+                    Toast.makeText(this, "Error de acceso", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private fun navigateToDashboard(rol: String) {
+        val intent = when (rol.uppercase()) {
+            "ADMINISTRADOR" -> Intent(this, AdminDashboardActivity::class.java)
+            "CLIENTE" -> Intent(this, ClientDashboardActivity::class.java)
+            else -> Intent(this, DashboardActivity::class.java)
         }
+        startActivity(intent)
+        finish()
     }
 }

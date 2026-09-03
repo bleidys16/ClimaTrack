@@ -6,51 +6,17 @@ import android.database.Cursor
 import com.example.climatrack.database.DatabaseHelper
 import com.example.climatrack.models.Orden
 import com.example.climatrack.models.OrdenInfo
+import com.example.climatrack.utils.FirebaseHelper
+import com.google.firebase.firestore.SetOptions
 
 class OrdenRepository(context: Context) {
     private val dbHelper = DatabaseHelper(context)
+    private val firestore = FirebaseHelper.db
 
-    fun getAllInfo(): List<OrdenInfo> {
-        val list = mutableListOf<OrdenInfo>()
-        val db = dbHelper.readableDatabase
-        val query = "SELECT o.${DatabaseHelper.COL_ORDEN_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, o.${DatabaseHelper.COL_ORDEN_FECHA}, " +
-                "COALESCE(c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Cliente Externo') as cliente_nombre, " +
-                "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
-                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
-                "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
-                "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
-                "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
-                "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
-                "JOIN ${DatabaseHelper.TABLE_EQUIPOS} e ON o.${DatabaseHelper.COL_ORDEN_EQUIPO_ID} = e.${DatabaseHelper.COL_EQUIPO_ID} " +
-                "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_tech ON o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u_tech.${DatabaseHelper.COL_USUARIO_ID} " +
-                "ORDER BY o.${DatabaseHelper.COL_ORDEN_FECHA} DESC"
-        
-        val cursor = db.rawQuery(query, null)
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(OrdenInfo(
-                    id = cursor.getInt(0),
-                    numero = cursor.getString(1),
-                    fecha = cursor.getString(2),
-                    clienteNombre = cursor.getString(3),
-                    equipoNombre = cursor.getString(4),
-                    tipoServicio = cursor.getString(5),
-                    estado = cursor.getString(6),
-                    tecnicoNombre = if (cursor.isNull(7)) "Sin asignar" else cursor.getString(7),
-                    precioServicio = cursor.getDouble(8),
-                    equipoMarca = cursor.getString(9),
-                    equipoModelo = cursor.getString(10),
-                    descripcion = cursor.getString(11),
-                    direccion = cursor.getString(12),
-                    calificacion = cursor.getInt(13),
-                    comentario = cursor.getString(14),
-                    firmaBase64 = cursor.getString(15)
-                ))
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        return list
+    fun syncOrderToCloud(id: Int) {
+        val orden = getById(id) ?: return
+        firestore.collection("ordenes").document(orden.numero)
+            .set(orden, SetOptions.merge())
     }
 
     fun getAllInfoByTecnico(tecnicoId: Int): List<OrdenInfo> {
@@ -67,9 +33,9 @@ class OrdenRepository(context: Context) {
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
                 "JOIN ${DatabaseHelper.TABLE_EQUIPOS} e ON o.${DatabaseHelper.COL_ORDEN_EQUIPO_ID} = e.${DatabaseHelper.COL_EQUIPO_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_tech ON o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u_tech.${DatabaseHelper.COL_USUARIO_ID} " +
-                "WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = ?"
+                (if (tecnicoId != -1) "WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = ?" else "")
         
-        val cursor = db.rawQuery(query, arrayOf(tecnicoId.toString()))
+        val cursor = if (tecnicoId != -1) db.rawQuery(query, arrayOf(tecnicoId.toString())) else db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {
                 list.add(OrdenInfo(
@@ -137,7 +103,9 @@ class OrdenRepository(context: Context) {
         val values = ContentValues().apply {
             put(DatabaseHelper.COL_ORDEN_ESTADO, nuevoEstado)
         }
-        return db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
+        val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
+        if (result > 0) syncOrderToCloud(id)
+        return result
     }
 
     fun updatePrecio(id: Int, precio: Double): Int {
@@ -146,7 +114,9 @@ class OrdenRepository(context: Context) {
             put(DatabaseHelper.COL_ORDEN_PRECIO, precio)
             put(DatabaseHelper.COL_ORDEN_ESTADO, "PENDIENTE APROBACIÓN")
         }
-        return db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
+        val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
+        if (result > 0) syncOrderToCloud(id)
+        return result
     }
 
     fun saveFirma(id: Int, firmaBase64: String): Int {
@@ -155,7 +125,9 @@ class OrdenRepository(context: Context) {
             put(DatabaseHelper.COL_ORDEN_FIRMA, firmaBase64)
             put(DatabaseHelper.COL_ORDEN_ESTADO, "FINALIZADA")
         }
-        return db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
+        val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
+        if (result > 0) syncOrderToCloud(id)
+        return result
     }
 
     fun updateFeedback(id: Int, calificacion: Int, comentario: String?): Int {
@@ -164,7 +136,9 @@ class OrdenRepository(context: Context) {
             put(DatabaseHelper.COL_ORDEN_CALIFICACION, calificacion)
             put(DatabaseHelper.COL_ORDEN_COMENTARIO, comentario)
         }
-        return db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
+        val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
+        if (result > 0) syncOrderToCloud(id)
+        return result
     }
 
     fun create(orden: Orden): Long {
@@ -182,7 +156,9 @@ class OrdenRepository(context: Context) {
             put(DatabaseHelper.COL_ORDEN_LON, orden.longitudCliente)
             put(DatabaseHelper.COL_ORDEN_DIR_EXACTA, orden.direccionExacta)
         }
-        return db.insert(DatabaseHelper.TABLE_ORDENES, null, values)
+        val result = db.insert(DatabaseHelper.TABLE_ORDENES, null, values)
+        if (result > 0) syncOrderToCloud(result.toInt())
+        return result
     }
 
     fun getOrdenesByCliente(clienteId: Int): List<OrdenInfo> {
@@ -235,7 +211,7 @@ class OrdenRepository(context: Context) {
                 "COALESCE(c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Cliente Externo') as cliente_nombre, " +
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -256,7 +232,8 @@ class OrdenRepository(context: Context) {
                     descripcion = cursor.getString(7),
                     direccion = cursor.getString(8),
                     calificacion = cursor.getInt(9),
-                    comentario = cursor.getString(10)
+                    comentario = cursor.getString(10),
+                    firmaBase64 = cursor.getString(11)
                 ))
             } while (cursor.moveToNext())
         }
@@ -372,6 +349,43 @@ class OrdenRepository(context: Context) {
         }
         cursor.close()
         return list
+    }
+
+    fun fetchOrdersFromCloud(onComplete: () -> Unit) {
+        firestore.collection("ordenes")
+            .get()
+            .addOnSuccessListener { documents ->
+                val db = dbHelper.writableDatabase
+                for (doc in documents) {
+                    val orden = doc.toObject(Orden::class.java)
+                    if (orden != null) {
+                        val values = ContentValues().apply {
+                            put(DatabaseHelper.COL_ORDEN_NUM, orden.numero)
+                            put(DatabaseHelper.COL_ORDEN_FECHA, orden.fecha)
+                            put(DatabaseHelper.COL_ORDEN_CLIENTE_ID, orden.clienteId)
+                            put(DatabaseHelper.COL_ORDEN_EQUIPO_ID, orden.equipoId)
+                            put(DatabaseHelper.COL_ORDEN_TECNICO_ID, orden.tecnicoId)
+                            put(DatabaseHelper.COL_ORDEN_TIPO, orden.tipoServicio)
+                            put(DatabaseHelper.COL_ORDEN_DESC, orden.descripcion)
+                            put(DatabaseHelper.COL_ORDEN_ESTADO, orden.estado)
+                            put(DatabaseHelper.COL_ORDEN_PRECIO, orden.precioServicio)
+                            put(DatabaseHelper.COL_ORDEN_DIR_EXACTA, orden.direccionExacta)
+                            put(DatabaseHelper.COL_ORDEN_FIRMA, orden.firmaBase64)
+                            put(DatabaseHelper.COL_ORDEN_CALIFICACION, orden.calificacion)
+                            put(DatabaseHelper.COL_ORDEN_COMENTARIO, orden.comentario)
+                        }
+                        
+                        val count = db.update(DatabaseHelper.TABLE_ORDENES, values, 
+                            "${DatabaseHelper.COL_ORDEN_NUM}=?", arrayOf(orden.numero))
+                        
+                        if (count == 0) {
+                            db.insert(DatabaseHelper.TABLE_ORDENES, null, values)
+                        }
+                    }
+                }
+                onComplete()
+            }
+            .addOnFailureListener { onComplete() }
     }
 
     private fun cursorToOrden(cursor: Cursor): Orden {

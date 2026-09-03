@@ -6,6 +6,7 @@ import android.widget.Toast
 import com.example.climatrack.databinding.ActivityRegisterBinding
 import com.example.climatrack.models.Usuario
 import com.example.climatrack.repositories.UsuarioRepository
+import com.example.climatrack.utils.FirebaseHelper
 import com.example.climatrack.utils.SessionManager
 
 class RegisterActivity : BaseActivity() {
@@ -44,23 +45,29 @@ class RegisterActivity : BaseActivity() {
             return
         }
 
-        val newUser = Usuario(
-            usuario = user,
-            password = pass,
-            nombre = fullName,
-            rol = "Cliente",
-            email = email,
-            telefono = phone
-        )
+        // 1. Register in Firebase Auth
+        FirebaseHelper.auth.createUserWithEmailAndPassword(email, pass)
+            .addOnSuccessListener { authResult ->
+                val newUser = Usuario(
+                    usuario = user,
+                    password = pass,
+                    nombre = fullName,
+                    rol = "Cliente",
+                    email = email,
+                    telefono = phone
+                )
 
-        val result = usuarioRepository.register(newUser)
+                // 2. Save in Local DB
+                val localId = usuarioRepository.register(newUser)
+                
+                // 3. Save in Firestore
+                usuarioRepository.syncUserToCloud(newUser.copy(id = localId.toInt()))
 
-        if (result > 0) {
-            Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
-            // Podríamos loguear automáticamente o ir al login
-            finish()
-        } else {
-            Toast.makeText(this, "Error al registrar: El usuario ya existe", Toast.LENGTH_SHORT).show()
-        }
+                Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            }
     }
 }

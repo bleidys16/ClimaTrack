@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "570784133372",
+    "project_id": "climatrack-1b05c",
+    "storage_bucket": "climatrack-1b05c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:570784133372:android:8c98d9df9475ad2b106779",
+        "android_client_info": {
+          "package_name": "com.example.climatrack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLZIj0LcH8tMcDZYJc7EUQkr1bwJwxFZg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

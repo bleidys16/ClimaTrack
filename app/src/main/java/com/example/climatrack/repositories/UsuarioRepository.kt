@@ -7,11 +7,29 @@ import com.example.climatrack.database.DatabaseHelper
 import com.example.climatrack.models.ActividadTecnico
 import com.example.climatrack.models.TecnicoStats
 import com.example.climatrack.models.Usuario
+import com.example.climatrack.utils.FirebaseHelper
+import com.google.firebase.firestore.SetOptions
 import java.text.SimpleDateFormat
 import java.util.*
 
 class UsuarioRepository(context: Context) {
     private val dbHelper = DatabaseHelper(context)
+    private val firestore = FirebaseHelper.db
+
+    fun syncUserToCloud(usuario: Usuario) {
+        val userMap = hashMapOf(
+            "id" to usuario.id,
+            "usuario" to usuario.usuario,
+            "nombre" to usuario.nombre,
+            "rol" to usuario.rol,
+            "email" to usuario.email,
+            "telefono" to usuario.telefono,
+            "isActive" to usuario.isActive,
+            "imagenPerfil" to usuario.imagenPerfil
+        )
+        firestore.collection("usuarios").document(usuario.id.toString())
+            .set(userMap, SetOptions.merge())
+    }
 
     fun login(usuario: String, password: String): Usuario? {
         val db = dbHelper.readableDatabase
