@@ -259,6 +259,33 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Live Tracking Map -->
+            <TextView
+                android:id="@+id/tvTrackingTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Sigue a tu técnico en vivo"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTrackingMap"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/ube"
+                android:visibility="gone">
+                <com.google.android.gms.maps.MapView
+                    android:id="@+id/mapViewTracking"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Feedback Section -->
             <TextView
                 android:id="@+id/tvFeedbackTitle"

@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 14
+        private const val DATABASE_VERSION = 15
 
         // Columna común para soporte offline/sincronización
         const val COL_SYNCED = "is_synced"
@@ -80,6 +80,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_ORDEN_FIRMA = "firma"
         const val COL_ORDEN_CALIFICACION = "calificacion"
         const val COL_ORDEN_COMENTARIO = "comentario"
+        const val COL_ORDEN_TECH_LAT = "tecnico_lat"
+        const val COL_ORDEN_TECH_LON = "tecnico_lon"
 
         // Tabla Mantenimientos
         const val TABLE_MANTENIMIENTOS = "mantenimientos"
@@ -190,6 +192,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_SYNCED INTEGER DEFAULT 0, " +
                 "$COL_ORDEN_CALIFICACION INTEGER DEFAULT 0, " +
                 "$COL_ORDEN_COMENTARIO TEXT, " +
+                "$COL_ORDEN_TECH_LAT REAL, " +
+                "$COL_ORDEN_TECH_LON REAL, " +
                 "FOREIGN KEY($COL_ORDEN_CLIENTE_ID) REFERENCES $TABLE_CLIENTES($COL_CLIENTE_ID), " +
                 "FOREIGN KEY($COL_ORDEN_EQUIPO_ID) REFERENCES $TABLE_EQUIPOS($COL_EQUIPO_ID), " +
                 "FOREIGN KEY($COL_ORDEN_TECNICO_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"
@@ -378,24 +382,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             }
             equipoIds[data[0]] = db?.insert(TABLE_EQUIPOS, null, cv) ?: 0
         }
-
-        // Órdenes Pendientes (Removidas para evitar colisión de IDs con nuevos usuarios)
-        /*
-        val ordenes = listOf(
-            listOf("OT-00001", "2026-08-19", "Hotel del Mar", "EQ-001", "PREVENTIVO", "PENDIENTE"),
-            ...
-        )
-        ...
-        */
-
-        // Órdenes para Técnico 02 (Removidas para evitar colisión de IDs con nuevos usuarios)
-        /*
-        val ordenesTec2 = listOf(
-            listOf("OT-T2-001", "2026-08-25", "Oficinas Plaza", "EQ-001", "PREVENTIVO", "PENDIENTE"),
-            listOf("TEST-T2-001", "2026-08-26", "Clinica del Norte", "EQ-00018", "CORRECTIVO", "PENDIENTE")
-        )
-        ...
-        */
 
         // Historial (Mantenimientos Finalizados)
         val historial = listOf(

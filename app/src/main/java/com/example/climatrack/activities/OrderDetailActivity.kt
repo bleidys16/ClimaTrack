@@ -1,13 +1,18 @@
 package com.example.climatrack.activities
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.example.climatrack.R
@@ -15,6 +20,7 @@ import com.example.climatrack.databinding.ActivityOrderDetailBinding
 import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.utils.PdfGenerator
+import com.google.android.gms.location.LocationServices
 
 class OrderDetailActivity : BaseActivity() {
 
@@ -22,6 +28,17 @@ class OrderDetailActivity : BaseActivity() {
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private var orderId: Int = -1
+    private val handler = Handler(Looper.getMainLooper())
+    private var isTracking = false
+
+    private val trackingRunnable = object : Runnable {
+        override fun run() {
+            if (isTracking) {
+                updateTechnicianLocation()
+                handler.postDelayed(this, 10000)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +78,6 @@ class OrderDetailActivity : BaseActivity() {
             binding.tvAddressInfo.text = "Dirección: ${it.direccion ?: "No especificada"}"
             binding.tvProblemInfo.text = "Problema: ${it.descripcion ?: "Sin descripción"}"
 
-            // Status color
             val (containerColor, textColor) = when (it.estado) {
                 "PENDIENTE" -> R.color.status_pending_container to R.color.status_pending
                 "PENDIENTE APROBACIÓN" -> R.color.status_in_progress_container to R.color.status_in_progress
@@ -79,7 +95,6 @@ class OrderDetailActivity : BaseActivity() {
     }
 
     private fun updateUIVisibility(estado: String) {
-        // Reset all
         binding.btnSendQuote.visibility = View.GONE
         binding.btnStartService.visibility = View.GONE
         binding.btnDownloadPdf.visibility = View.GONE
@@ -105,10 +120,35 @@ class OrderDetailActivity : BaseActivity() {
                 binding.btnFinishOrder.isEnabled = true
                 binding.llFinishContainer.alpha = 1.0f
                 binding.tvFinishLabel.text = "Finalizar"
+                startTracking()
             }
             "FINALIZADA" -> {
                 binding.tvFinishLabel.text = "ORDEN FINALIZADA"
                 binding.btnDownloadPdf.visibility = View.VISIBLE
+                stopTracking()
+            }
+        }
+    }
+
+    private fun startTracking() {
+        if (!isTracking) {
+            isTracking = true
+            handler.post(trackingRunnable)
+        }
+    }
+
+    private fun stopTracking() {
+        isTracking = false
+        handler.removeCallbacks(trackingRunnable)
+    }
+
+    private fun updateTechnicianLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
+
+        val fusedClient = LocationServices.getFusedLocationProviderClient(this)
+        fusedClient.lastLocation.addOnSuccessListener { location ->
+            location?.let {
+                ordenRepository.updateTechnicianGps(orderId, it.latitude, it.longitude)
             }
         }
     }
@@ -230,5 +270,10 @@ class OrderDetailActivity : BaseActivity() {
         } catch (e: Exception) {
             Toast.makeText(this, "No hay lector de PDF instalado", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopTracking()
     }
 }

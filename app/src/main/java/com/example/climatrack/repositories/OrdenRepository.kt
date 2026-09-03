@@ -141,6 +141,24 @@ class OrdenRepository(context: Context) {
         return result
     }
 
+    fun updateTechnicianGps(id: Int, lat: Double, lon: Double): Int {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DatabaseHelper.COL_ORDEN_TECH_LAT, lat)
+            put(DatabaseHelper.COL_ORDEN_TECH_LON, lon)
+        }
+        val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
+        if (result > 0) {
+            // Update only specific fields in Firestore for performance
+            val orden = getById(id)
+            if (orden != null) {
+                firestore.collection("ordenes").document(orden.numero)
+                    .update("tecnicoLat", lat, "tecnicoLon", lon)
+            }
+        }
+        return result
+    }
+
     fun create(orden: Orden): Long {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {

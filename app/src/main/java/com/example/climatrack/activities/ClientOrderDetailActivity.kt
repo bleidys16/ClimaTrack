@@ -10,15 +10,27 @@ import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityClientOrderDetailBinding
 import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.repositories.OrdenRepository
+import com.example.climatrack.utils.FirebaseHelper
 import com.example.climatrack.utils.PdfGenerator
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.firestore.ListenerRegistration
 import java.util.*
 
-class ClientOrderDetailActivity : BaseActivity() {
+class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
 
     private lateinit var binding: ActivityClientOrderDetailBinding
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private var orderId: Int = -1
+    private var googleMap: GoogleMap? = null
+    private var techMarker: Marker? = null
+    private var firestoreListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,10 +47,52 @@ class ClientOrderDetailActivity : BaseActivity() {
             return
         }
 
+        binding.mapViewTracking.onCreate(savedInstanceState)
+        binding.mapViewTracking.getMapAsync(this)
+
         setupToolbar()
         loadOrderDetails()
         binding.btnSubmitFeedback.setOnClickListener { submitFeedback() }
         binding.btnDownloadReceipt.setOnClickListener { generateAndOpenReceipt() }
+    }
+
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
+        googleMap?.uiSettings?.isZoomControlsEnabled = true
+    }
+
+    private fun startLiveTracking(orderNum: String) {
+        binding.tvTrackingTitle.visibility = View.VISIBLE
+        binding.cardTrackingMap.visibility = View.VISIBLE
+
+        firestoreListener = FirebaseHelper.db.collection("ordenes")
+            .document(orderNum)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
+
+                val tecnicoLat = snapshot.getDouble("tecnicoLat")
+                val tecnicoLon = snapshot.getDouble("tecnicoLon")
+                
+                if (tecnicoLat != null && tecnicoLon != null) {
+                    updateMarker(tecnicoLat, tecnicoLon)
+                }
+            }
+    }
+
+    private fun updateMarker(lat: Double, lon: Double) {
+        val pos = LatLng(lat, lon)
+        if (techMarker == null) {
+            techMarker = googleMap?.addMarker(
+                MarkerOptions()
+                    .position(pos)
+                    .title("Tu Técnico")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+            )
+            googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 15f))
+        } else {
+            techMarker?.position = pos
+            googleMap?.animateCamera(CameraUpdateFactory.newLatLng(pos))
+        }
     }
 
     private fun setupToolbar() {
@@ -77,6 +131,10 @@ class ClientOrderDetailActivity : BaseActivity() {
                 binding.btnDownloadReceipt.visibility = View.VISIBLE
             }
 
+            if (it.estado == "EN PROCESO") {
+                startLiveTracking(it.numero)
+            }
+
             setupFeedbackUI(it)
         }
 
@@ -94,7 +152,6 @@ class ClientOrderDetailActivity : BaseActivity() {
             binding.cardFeedback.visibility = View.VISIBLE
             
             if (order.calificacion > 0) {
-                // Already rated
                 binding.ratingBar.rating = order.calificacion.toFloat()
                 binding.ratingBar.setIsIndicator(true)
                 binding.tilComment.visibility = View.GONE
@@ -105,7 +162,6 @@ class ClientOrderDetailActivity : BaseActivity() {
                     binding.tvSavedComment.text = "Tu comentario: ${order.comentario}"
                 }
             } else {
-                // Not rated yet
                 binding.ratingBar.setIsIndicator(false)
                 binding.tilComment.visibility = View.VISIBLE
                 binding.btnSubmitFeedback.visibility = View.VISIBLE
@@ -160,5 +216,26 @@ class ClientOrderDetailActivity : BaseActivity() {
         } catch (e: Exception) {
             Toast.makeText(this, "No hay lector de PDF instalado", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.mapViewTracking.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        binding.mapViewTracking.onPause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding.mapViewTracking.onDestroy()
+        firestoreListener?.remove()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        binding.mapViewTracking.onLowMemory()
     }
 }

@@ -55,7 +55,9 @@ data class Orden(
     val firmaBase64: String? = null,
     val isSynced: Int = 0, // 0: Local, 1: Sincronizado
     val calificacion: Int = 0, // 1-5
-    val comentario: String? = null
+    val comentario: String? = null,
+    val tecnicoLat: Double? = null,
+    val tecnicoLon: Double? = null
 )
 
 data class OrdenInfo(
@@ -74,7 +76,9 @@ data class OrdenInfo(
     val direccion: String? = null,
     val calificacion: Int = 0,
     val comentario: String? = null,
-    val firmaBase64: String? = null
+    val firmaBase64: String? = null,
+    val tecnicoLat: Double? = null,
+    val tecnicoLon: Double? = null
 )
 
 data class Mantenimiento(
