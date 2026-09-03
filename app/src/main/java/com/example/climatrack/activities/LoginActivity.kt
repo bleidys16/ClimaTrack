@@ -81,20 +81,29 @@ class LoginActivity : BaseActivity() {
                             
                             navigateToDashboard(rol)
                         } else {
-                            Toast.makeText(this, "Usuario no encontrado en la nube", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Usuario no encontrado en la nube, intentando local...", Toast.LENGTH_SHORT).show()
+                            fallbackToLocalLogin(email, pass)
                         }
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Error de red en nube, intentando local...", Toast.LENGTH_SHORT).show()
+                        fallbackToLocalLogin(email, pass)
                     }
             }
             .addOnFailureListener {
                 // 4. Fallback to Local Login (for existing local-only users)
-                val usuario = usuarioRepository.login(email, pass)
-                if (usuario != null) {
-                    sessionManager.saveSession(usuario.id, usuario.nombre, usuario.rol)
-                    navigateToDashboard(usuario.rol)
-                } else {
-                    Toast.makeText(this, "Error de acceso", Toast.LENGTH_SHORT).show()
-                }
+                fallbackToLocalLogin(email, pass)
             }
+    }
+
+    private fun fallbackToLocalLogin(email: String, pass: String) {
+        val usuario = usuarioRepository.login(email, pass)
+        if (usuario != null) {
+            sessionManager.saveSession(usuario.id, usuario.nombre, usuario.rol)
+            navigateToDashboard(usuario.rol)
+        } else {
+            Toast.makeText(this, "Error de acceso", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun navigateToDashboard(rol: String) {

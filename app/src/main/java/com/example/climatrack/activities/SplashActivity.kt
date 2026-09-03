@@ -33,7 +33,13 @@ class SplashActivity : BaseActivity() {
             if (!isFinishing) {
                 val sessionManager = SessionManager(this)
                 if (sessionManager.isLoggedIn()) {
-                    startActivity(Intent(this, DashboardActivity::class.java))
+                    val rol = sessionManager.getUserRol() ?: ""
+                    val intent = when (rol.uppercase()) {
+                        "ADMINISTRADOR" -> Intent(this, AdminDashboardActivity::class.java)
+                        "CLIENTE" -> Intent(this, ClientDashboardActivity::class.java)
+                        else -> Intent(this, DashboardActivity::class.java)
+                    }
+                    startActivity(intent)
                 } else {
                     startActivity(Intent(this, LoginActivity::class.java))
                 }
