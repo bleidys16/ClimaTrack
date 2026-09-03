@@ -9,14 +9,13 @@ import com.example.climatrack.models.OrdenInfo
 import com.example.climatrack.utils.FirebaseHelper
 import com.google.firebase.firestore.SetOptions
 
-class OrdenRepository(context: Context) {
+class OrdenRepository(private val context: Context) {
     private val dbHelper = DatabaseHelper(context)
     private val firestore = FirebaseHelper.db
 
     fun syncOrderToCloud(id: Int) {
-        val orden = getById(id) ?: return
-        firestore.collection("ordenes").document(orden.numero)
-            .set(orden, SetOptions.merge())
+        // We'll let SyncManager handle background sync
+        com.example.climatrack.utils.SyncManager.startImmediateSync(context)
     }
 
     fun getAllInfoByTecnico(tecnicoId: Int): List<OrdenInfo> {

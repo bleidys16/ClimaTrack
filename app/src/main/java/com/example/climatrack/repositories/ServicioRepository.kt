@@ -7,8 +7,9 @@ import com.example.climatrack.models.Aprobacion
 import com.example.climatrack.models.DetalleRepuesto
 import com.example.climatrack.models.Evidencia
 import com.example.climatrack.models.Ubicacion
+import com.example.climatrack.utils.SyncManager
 
-class ServicioRepository(context: Context) {
+class ServicioRepository(private val context: Context) {
     private val dbHelper = DatabaseHelper(context)
 
     fun addRepuesto(detalle: DetalleRepuesto): Long {
@@ -19,8 +20,11 @@ class ServicioRepository(context: Context) {
             put(DatabaseHelper.COL_DET_CANT, detalle.cantidad)
             put(DatabaseHelper.COL_DET_OBS, detalle.observacion)
             put(DatabaseHelper.COL_DET_PRECIO, detalle.precioHistorico)
+            put(DatabaseHelper.COL_SYNCED, 0)
         }
-        return db.insert(DatabaseHelper.TABLE_DETALLE_REPUESTOS, null, values)
+        val result = db.insert(DatabaseHelper.TABLE_DETALLE_REPUESTOS, null, values)
+        if (result > 0) SyncManager.startImmediateSync(context)
+        return result
     }
 
     fun getRepuestosByMantenimiento(mantenimientoId: Int): List<com.example.climatrack.models.DetalleRepuestoInfo> {
@@ -62,8 +66,11 @@ class ServicioRepository(context: Context) {
             put(DatabaseHelper.COL_EVI_ORDEN_ID, evidencia.ordenId)
             put(DatabaseHelper.COL_EVI_RUTA, evidencia.rutaFoto)
             put(DatabaseHelper.COL_EVI_FECHA, evidencia.fecha)
+            put(DatabaseHelper.COL_SYNCED, 0)
         }
-        return db.insert(DatabaseHelper.TABLE_EVIDENCIAS, null, values)
+        val result = db.insert(DatabaseHelper.TABLE_EVIDENCIAS, null, values)
+        if (result > 0) SyncManager.startImmediateSync(context)
+        return result
     }
 
     fun addUbicacion(ubicacion: Ubicacion): Long {
@@ -132,7 +139,8 @@ class ServicioRepository(context: Context) {
                         id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ID)),
                         ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ORDEN_ID)),
                         rutaFoto = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_RUTA)),
-                        fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_FECHA))
+                        fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_FECHA)),
+                        isSynced = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_SYNCED))
                     )
                 )
             } while (cursor.moveToNext())

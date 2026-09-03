@@ -4,12 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.climatrack.R
 import com.example.climatrack.adapters.EquipmentAdapter
 import com.example.climatrack.databinding.ActivityEquipmentBinding
 import com.example.climatrack.repositories.EquipoRepository
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 
 class EquipmentActivity : BaseActivity() {
 
@@ -39,11 +40,41 @@ class EquipmentActivity : BaseActivity() {
         }
         
         setupFilterButton()
+        setupQRScanner()
 
         binding.fabAddEquipment.setOnClickListener {
             val intent = Intent(this, EquipmentFormActivity::class.java)
             if (filterClientId != -1) intent.putExtra("CLIENT_ID", filterClientId)
             startActivity(intent)
+        }
+    }
+
+    private fun setupQRScanner() {
+        binding.ivScanQR.setOnClickListener {
+            val scanner = GmsBarcodeScanning.getClient(this)
+            scanner.startScan()
+                .addOnSuccessListener { barcode ->
+                    val code = barcode.rawValue ?: return@addOnSuccessListener
+                    searchByQR(code)
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "Error al escanear: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    private fun searchByQR(code: String) {
+        val equipment = equipoRepository.getAll().find { it.codigo.equals(code, true) }
+        if (equipment != null) {
+            val intent = if (filterClientId != -1) {
+                Intent(this, EquipmentDetailActivity::class.java)
+            } else {
+                Intent(this, EquipmentFormActivity::class.java)
+            }
+            intent.putExtra("EQUIPMENT_ID", equipment.id)
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, "Equipo con código $code no encontrado", Toast.LENGTH_LONG).show()
         }
     }
 

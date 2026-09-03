@@ -265,7 +265,12 @@ class UsuarioRepository(context: Context) {
             put(DatabaseHelper.COL_USUARIO_TEL, telefono)
             put(DatabaseHelper.COL_USUARIO_IMAGEN, imagePath)
         }
-        return db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()))
+        val result = db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()))
+        if (result > 0) {
+            val user = getById(userId)
+            if (user != null) syncUserToCloud(user)
+        }
+        return result
     }
 
     private fun cursorToUsuario(cursor: Cursor): Usuario {

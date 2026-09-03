@@ -61,6 +61,14 @@
                 android:textSize="14sp" />
 
             <ImageView
+                android:id="@+id/ivScanQR"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_qr_code"
+                app:tint="@color/ube" />
+
+            <ImageView
                 android:id="@+id/ivFilter"
                 android:layout_width="22dp"
                 android:layout_height="22dp"

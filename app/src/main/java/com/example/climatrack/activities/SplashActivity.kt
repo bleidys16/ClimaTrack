@@ -25,6 +25,8 @@ class SplashActivity : BaseActivity() {
         setContentView(binding.root)
         setupEdgeToEdge(binding.root)
 
+        com.example.climatrack.utils.SyncManager.scheduleSync(this)
+
         startAnimations()
 
         Handler(Looper.getMainLooper()).postDelayed({

@@ -5,8 +5,9 @@ import android.content.Context
 import android.database.Cursor
 import com.example.climatrack.database.DatabaseHelper
 import com.example.climatrack.models.Mantenimiento
+import com.example.climatrack.utils.SyncManager
 
-class MantenimientoRepository(context: Context) {
+class MantenimientoRepository(private val context: Context) {
     private val dbHelper = DatabaseHelper(context)
 
     fun create(mantenimiento: Mantenimiento): Long {
@@ -20,8 +21,11 @@ class MantenimientoRepository(context: Context) {
             put(DatabaseHelper.COL_MANT_RECOM, mantenimiento.recomendaciones)
             put(DatabaseHelper.COL_MANT_ESTADO_EQ, mantenimiento.estadoEquipo)
             put(DatabaseHelper.COL_MANT_TIEMPO, mantenimiento.tiempoEmpleado)
+            put(DatabaseHelper.COL_SYNCED, 0)
         }
-        return db.insert(DatabaseHelper.TABLE_MANTENIMIENTOS, null, values)
+        val result = db.insert(DatabaseHelper.TABLE_MANTENIMIENTOS, null, values)
+        if (result > 0) SyncManager.startImmediateSync(context)
+        return result
     }
 
     fun update(mantenimiento: Mantenimiento): Int {
@@ -35,8 +39,11 @@ class MantenimientoRepository(context: Context) {
             put(DatabaseHelper.COL_MANT_RECOM, mantenimiento.recomendaciones)
             put(DatabaseHelper.COL_MANT_ESTADO_EQ, mantenimiento.estadoEquipo)
             put(DatabaseHelper.COL_MANT_TIEMPO, mantenimiento.tiempoEmpleado)
+            put(DatabaseHelper.COL_SYNCED, 0)
         }
-        return db.update(DatabaseHelper.TABLE_MANTENIMIENTOS, values, "${DatabaseHelper.COL_MANT_ORDEN_ID}=?", arrayOf(mantenimiento.ordenId.toString()))
+        val result = db.update(DatabaseHelper.TABLE_MANTENIMIENTOS, values, "${DatabaseHelper.COL_MANT_ORDEN_ID}=?", arrayOf(mantenimiento.ordenId.toString()))
+        if (result > 0) SyncManager.startImmediateSync(context)
+        return result
     }
 
     fun getByOrdenId(ordenId: Int): Mantenimiento? {
@@ -112,7 +119,8 @@ class MantenimientoRepository(context: Context) {
             observaciones = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_OBS)),
             recomendaciones = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_RECOM)),
             estadoEquipo = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ESTADO_EQ)),
-            tiempoEmpleado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_TIEMPO))
+            tiempoEmpleado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_TIEMPO)),
+            isSynced = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_SYNCED))
         )
     }
 }
