@@ -57,33 +57,17 @@ class ClientDashboardActivity : BaseActivity() {
     }
 
     private fun checkMaintenanceReminders() {
-        val myEquip = equipoRepository.getByCliente(sessionManager.getUserId())
-        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-        val sixMonthsAgo = java.util.Calendar.getInstance().apply { add(java.util.Calendar.MONTH, -6) }.time
+        val overdueEquipments = equipoRepository.getEquiposVencidos(sessionManager.getUserId())
 
-        var equipmentsNeedingService = 0
-        myEquip.forEach { equip ->
-            val history = ordenRepository.getOrdenesByEquipo(equip.id)
-            val lastMaintenance = history.find { it.estado == "FINALIZADA" }
-            
-            if (lastMaintenance != null) {
-                try {
-                    val date = sdf.parse(lastMaintenance.fecha)
-                    if (date != null && date.before(sixMonthsAgo)) {
-                        equipmentsNeedingService++
-                    }
-                } catch (e: Exception) { e.printStackTrace() }
-            } else {
-                // Never maintained -> Assume it needs one
-                equipmentsNeedingService++
-            }
-        }
-
-        if (equipmentsNeedingService > 0) {
+        if (overdueEquipments.isNotEmpty()) {
             binding.cardReminder.visibility = View.VISIBLE
-            binding.tvReminderText.text = if (equipmentsNeedingService == 1) 
-                "Tienes 1 equipo que requiere mantenimiento preventivo." 
-                else "Tienes $equipmentsNeedingService equipos que requieren mantenimiento preventivo."
+            binding.tvReminderText.text = if (overdueEquipments.size == 1) 
+                "Tu equipo ${overdueEquipments[0].marca} necesita mantenimiento preventivo." 
+                else "Tienes ${overdueEquipments.size} equipos que requieren mantenimiento preventivo."
+            
+            binding.cardReminder.setOnClickListener {
+                requestService()
+            }
         } else {
             binding.cardReminder.visibility = View.GONE
         }

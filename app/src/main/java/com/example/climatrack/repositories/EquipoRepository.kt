@@ -87,6 +87,30 @@ class EquipoRepository(context: Context) {
         return db.delete(DatabaseHelper.TABLE_EQUIPOS, "${DatabaseHelper.COL_EQUIPO_ID}=?", arrayOf(id.toString()))
     }
 
+    fun getEquiposVencidos(clienteId: Int): List<Equipo> {
+        val list = mutableListOf<Equipo>()
+        val db = dbHelper.readableDatabase
+        
+        // Query que busca equipos cuyo último mantenimiento fue hace más de 6 meses
+        // O que nunca han tenido mantenimiento
+        val query = "SELECT e.* FROM ${DatabaseHelper.TABLE_EQUIPOS} e " +
+                "LEFT JOIN ${DatabaseHelper.TABLE_ORDENES} o ON e.${DatabaseHelper.COL_EQUIPO_ID} = o.${DatabaseHelper.COL_ORDEN_EQUIPO_ID} " +
+                "LEFT JOIN ${DatabaseHelper.TABLE_MANTENIMIENTOS} m ON o.${DatabaseHelper.COL_ORDEN_ID} = m.${DatabaseHelper.COL_MANT_ORDEN_ID} " +
+                "WHERE e.${DatabaseHelper.COL_EQUIPO_CLIENTE_ID} = ? " +
+                "GROUP BY e.${DatabaseHelper.COL_EQUIPO_ID} " +
+                "HAVING MAX(m.${DatabaseHelper.COL_MANT_FECHA}) IS NULL OR " +
+                "MAX(m.${DatabaseHelper.COL_MANT_FECHA}) < date('now', '-6 months')"
+        
+        val cursor = db.rawQuery(query, arrayOf(clienteId.toString()))
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(cursorToEquipo(cursor))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return list
+    }
+
     private fun cursorToEquipo(cursor: Cursor): Equipo {
         val idIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_ID)
         val codIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_COD)
