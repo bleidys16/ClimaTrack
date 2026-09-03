@@ -158,6 +158,14 @@ class OrderDetailActivity : BaseActivity() {
         binding.btnStartService.setOnClickListener { startService() }
         binding.btnDownloadPdf.setOnClickListener { generateAndOpenPdf() }
 
+        binding.btnChat.setOnClickListener {
+            val intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra("ORDER_ID", orderId)
+            val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+            intent.putExtra("ORDER_NUM", info?.numero)
+            startActivity(intent)
+        }
+
         binding.btnRegisterMaint.setOnClickListener {
             Intent(this, MaintenanceActivity::class.java).also {
                 it.putExtra("ORDER_ID", orderId)

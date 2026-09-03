@@ -56,6 +56,14 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
         loadOrderDetails()
         binding.btnSubmitFeedback.setOnClickListener { submitFeedback() }
         binding.btnDownloadReceipt.setOnClickListener { generateAndOpenReceipt() }
+        
+        binding.btnChat.setOnClickListener {
+            val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+            val intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra("ORDER_ID", orderId)
+            intent.putExtra("ORDER_NUM", info?.numero)
+            startActivity(intent)
+        }
     }
 
     override fun onMapReady(map: GoogleMap) {

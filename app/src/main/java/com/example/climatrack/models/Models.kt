@@ -168,6 +168,15 @@ data class ActividadTecnico(
     val lon: Double? = null
 )
 
+data class Mensaje(
+    val id: Int = 0,
+    val ordenId: Int = 0,
+    val remitenteId: Int = 0,
+    val nombreRemitente: String = "",
+    val texto: String = "",
+    val fecha: String = ""
+)
+
 data class TecnicoStats(
     val id: Int,
     val nombre: String,

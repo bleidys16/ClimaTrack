@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 16
+        private const val DATABASE_VERSION = 17
 
         // Columna común para soporte offline/sincronización
         const val COL_SYNCED = "is_synced"
@@ -136,6 +136,15 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_UBI_LON = "longitud"
         const val COL_UBI_DIR = "direccion"
         const val COL_UBI_FECHA = "fecha"
+
+        // Tabla Chat
+        const val TABLE_MENSAJES = "mensajes"
+        const val COL_MSG_ID = "id"
+        const val COL_MSG_ORDEN_ID = "orden_id"
+        const val COL_MSG_REMITENTE_ID = "remitente_id"
+        const val COL_MSG_REMITENTE_NOMBRE = "nombre_remitente"
+        const val COL_MSG_TEXTO = "texto"
+        const val COL_MSG_FECHA = "fecha"
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
@@ -266,6 +275,15 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_ACT_LON REAL, " +
                 "FOREIGN KEY($COL_ACT_TECH_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"
 
+        val createMensajes = "CREATE TABLE $TABLE_MENSAJES (" +
+                "$COL_MSG_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "$COL_MSG_ORDEN_ID INTEGER, " +
+                "$COL_MSG_REMITENTE_ID INTEGER, " +
+                "$COL_MSG_REMITENTE_NOMBRE TEXT, " +
+                "$COL_MSG_TEXTO TEXT, " +
+                "$COL_MSG_FECHA TEXT, " +
+                "FOREIGN KEY($COL_MSG_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
+
         db?.execSQL(createUsuarios)
         db?.execSQL(createClientes)
         db?.execSQL(createEquipos)
@@ -277,6 +295,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db?.execSQL(createAprobaciones)
         db?.execSQL(createUbicaciones)
         db?.execSQL(createActividad)
+        db?.execSQL(createMensajes)
 
         insertInitialData(db)
     }

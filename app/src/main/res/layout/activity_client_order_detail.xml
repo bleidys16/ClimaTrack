@@ -388,9 +388,20 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="40dp" />
+                android:layout_height="100dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/btnChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:text="Chat con Técnico"
+        app:icon="@android:drawable/stat_notify_chat"
+        app:backgroundTint="@color/ube"
+        android:textColor="@color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
