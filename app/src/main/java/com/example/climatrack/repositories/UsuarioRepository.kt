@@ -32,6 +32,30 @@ class UsuarioRepository(context: Context) {
             .set(userMap, SetOptions.merge())
     }
 
+    fun fetchTechniciansFromCloud(onComplete: () -> Unit) {
+        firestore.collection("usuarios")
+            .whereEqualTo("rol", "Técnico")
+            .get()
+            .addOnSuccessListener { documents ->
+                val db = dbHelper.writableDatabase
+                for (doc in documents) {
+                    val id = doc.getLong("id")?.toInt() ?: continue
+                    val values = ContentValues().apply {
+                        put(DatabaseHelper.COL_USUARIO_NOMBRE, doc.getString("nombre"))
+                        put(DatabaseHelper.COL_USUARIO_EMAIL, doc.getString("email"))
+                        put(DatabaseHelper.COL_USUARIO_TEL, doc.getString("telefono"))
+                        put(DatabaseHelper.COL_USUARIO_ACTIVE, doc.getLong("isActive")?.toInt() ?: 0)
+                        put(DatabaseHelper.COL_USUARIO_IMAGEN, doc.getString("imagenPerfil"))
+                        put(DatabaseHelper.COL_USUARIO_FCM, doc.getString("fcmToken"))
+                    }
+                    db.update(DatabaseHelper.TABLE_USUARIOS, values, 
+                        "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(id.toString()))
+                }
+                onComplete()
+            }
+            .addOnFailureListener { onComplete() }
+    }
+
     fun updateFCMToken(userId: Int, token: String) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
@@ -66,6 +90,7 @@ class UsuarioRepository(context: Context) {
     fun register(usuario: Usuario): Long {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
+            put(DatabaseHelper.COL_USUARIO_ID, usuario.id)
             put(DatabaseHelper.COL_USUARIO_USER, usuario.usuario)
             put(DatabaseHelper.COL_USUARIO_PASS, usuario.password)
             put(DatabaseHelper.COL_USUARIO_NOMBRE, usuario.nombre)
@@ -77,8 +102,20 @@ class UsuarioRepository(context: Context) {
             put(DatabaseHelper.COL_USUARIO_WORK_END, usuario.workEndTime)
             put(DatabaseHelper.COL_USUARIO_IMAGEN, usuario.imagenPerfil)
             put(DatabaseHelper.COL_USUARIO_FCM, usuario.fcmToken)
+            put(DatabaseHelper.COL_USUARIO_LAT, usuario.lastLat)
+            put(DatabaseHelper.COL_USUARIO_LON, usuario.lastLon)
         }
-        return db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
+        
+        // Try update first
+        val rows = db.update(DatabaseHelper.TABLE_USUARIOS, values, 
+            "${DatabaseHelper.COL_USUARIO_ID}=? OR ${DatabaseHelper.COL_USUARIO_USER}=?", 
+            arrayOf(usuario.id.toString(), usuario.usuario))
+        
+        return if (rows == 0) {
+            db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
+        } else {
+            usuario.id.toLong()
+        }
     }
 
     fun getById(id: Int): Usuario? {
@@ -169,6 +206,9 @@ class UsuarioRepository(context: Context) {
         
         if (result > 0) {
             logActivity(userId, isActive, workStart, workEnd, lat, lon)
+            // Sync to cloud
+            val user = getById(userId)
+            if (user != null) syncUserToCloud(user)
         }
         
         return result

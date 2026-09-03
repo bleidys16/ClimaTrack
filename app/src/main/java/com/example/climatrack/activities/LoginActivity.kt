@@ -57,6 +57,25 @@ class LoginActivity : BaseActivity() {
                             val nombre = doc.getString("nombre") ?: ""
                             val rol = doc.getString("rol") ?: ""
                             
+                            // Save to local DB to ensure consistency
+                            val dbUser = com.example.climatrack.models.Usuario(
+                                id = id,
+                                usuario = doc.getString("usuario") ?: "",
+                                password = pass, // Not ideal but for local consistency
+                                nombre = nombre,
+                                rol = rol,
+                                email = doc.getString("email"),
+                                telefono = doc.getString("telefono"),
+                                isActive = doc.getLong("isActive")?.toInt() ?: 0,
+                                workStartTime = doc.getString("workStartTime"),
+                                workEndTime = doc.getString("workEndTime"),
+                                lastLat = doc.getDouble("lastLat"),
+                                lastLon = doc.getDouble("lastLon"),
+                                imagenPerfil = doc.getString("imagenPerfil"),
+                                fcmToken = doc.getString("fcmToken")
+                            )
+                            usuarioRepository.register(dbUser) // This handles upsert if we modify repository or if it's new
+
                             // 3. Save Session
                             sessionManager.saveSession(id, nombre, rol)
                             

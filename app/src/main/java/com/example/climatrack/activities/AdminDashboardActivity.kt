@@ -27,10 +27,7 @@ class AdminDashboardActivity : BaseActivity() {
         binding = ActivityAdminDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        // En AdminDashboardActivity el toolbar está dentro de AppBarLayout sin ID explícito,
-        // pero podemos obtener el AppBarLayout por tipo o simplemente usar el contenedor raíz si falla.
         val appBar = binding.root.findViewById<android.view.View>(com.example.climatrack.R.id.toolbar)?.parent as? android.view.View
-        
         setupEdgeToEdge(binding.root, appBar ?: binding.toolbar)
 
         ordenRepository = OrdenRepository(this)
@@ -150,50 +147,50 @@ class AdminDashboardActivity : BaseActivity() {
     }
 
     private fun loadData() {
-        val user = usuarioRepository.getById(sessionManager.getUserId())
-        user?.imagenPerfil?.let { path ->
-            val file = java.io.File(path)
-            if (file.exists()) {
-                binding.ivAdminAvatar.setImageURI(android.net.Uri.fromFile(file))
+        usuarioRepository.fetchTechniciansFromCloud {
+            runOnUiThread {
+                val user = usuarioRepository.getById(sessionManager.getUserId())
+                user?.imagenPerfil?.let { path ->
+                    val file = java.io.File(path)
+                    if (file.exists()) {
+                        binding.ivAdminAvatar.setImageURI(android.net.Uri.fromFile(file))
+                    }
+                }
+
+                val techs = usuarioRepository.getTechnicianStats()
+                techAdapter.updateList(techs)
+                
+                val activeCount = techs.count { it.isActive == 1 }
+                binding.tvActiveTechsCount.text = activeCount.toString()
+
+                allUnassignedOrders = ordenRepository.getUnassignedOrders()
+                filterUnassignedOrders(binding.etSearchOrders.text.toString())
+                binding.tvPendingOrdersCount.text = allUnassignedOrders.size.toString()
             }
         }
-
-        val techs = usuarioRepository.getTechnicianStats()
-        techAdapter.updateList(techs)
-        
-        val activeCount = techs.count { it.isActive == 1 }
-        binding.tvActiveTechsCount.text = activeCount.toString()
-
-        allUnassignedOrders = ordenRepository.getUnassignedOrders()
-        filterUnassignedOrders(binding.etSearchOrders.text.toString())
-        binding.tvPendingOrdersCount.text = allUnassignedOrders.size.toString()
-    }
-
-    private fun loadTechStats() {
-        // Obsoleto, integrado en loadData
-    }
-
-    private fun loadUnassignedOrders() {
-        // Obsoleto, integrado en loadData
     }
 
     private fun performAutoAssignment() {
-        val unassigned = ordenRepository.getUnassignedOrders()
-        if (unassigned.isEmpty()) {
-            Toast.makeText(this, "No hay órdenes pendientes de asignación", Toast.LENGTH_SHORT).show()
-            return
-        }
+        usuarioRepository.fetchTechniciansFromCloud {
+            runOnUiThread {
+                val unassigned = ordenRepository.getUnassignedOrders()
+                if (unassigned.isEmpty()) {
+                    Toast.makeText(this, "No hay órdenes pendientes de asignación", Toast.LENGTH_SHORT).show()
+                    return@runOnUiThread
+                }
 
-        var assignedCount = 0
-        for (order in unassigned) {
-            val techId = ordenRepository.getTechnicianWithLeastWork()
-            if (techId != -1) {
-                ordenRepository.assignTechnician(order.id, techId)
-                assignedCount++
+                var assignedCount = 0
+                for (order in unassigned) {
+                    val techId = ordenRepository.getTechnicianWithLeastWork()
+                    if (techId != -1) {
+                        ordenRepository.assignTechnician(order.id, techId)
+                        assignedCount++
+                    }
+                }
+
+                Toast.makeText(this, "Se asignaron $assignedCount órdenes automáticamente", Toast.LENGTH_LONG).show()
+                loadData()
             }
         }
-
-        Toast.makeText(this, "Se asignaron $assignedCount órdenes automáticamente", Toast.LENGTH_LONG).show()
-        loadUnassignedOrders()
     }
 }
