@@ -10,7 +10,6 @@ import com.example.climatrack.models.Evidencia
 import com.example.climatrack.models.Mantenimiento
 import com.example.climatrack.models.Orden
 import com.google.firebase.firestore.SetOptions
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 import java.io.File
 
@@ -19,7 +18,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
 
     private val dbHelper = DatabaseHelper(appContext)
     private val firestore = FirebaseHelper.db
-    private val storage = FirebaseStorage.getInstance()
+    private val storage = FirebaseHelper.storage
 
     override suspend fun doWork(): Result {
         return try {

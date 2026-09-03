@@ -18,6 +18,8 @@ class OrdenRepository(private val context: Context) {
         com.example.climatrack.utils.SyncManager.startImmediateSync(context)
     }
 
+    fun getAllInfo(): List<OrdenInfo> = getAllInfoByTecnico(-1)
+
     fun getAllInfoByTecnico(tecnicoId: Int): List<OrdenInfo> {
         val list = mutableListOf<OrdenInfo>()
         val db = dbHelper.readableDatabase
