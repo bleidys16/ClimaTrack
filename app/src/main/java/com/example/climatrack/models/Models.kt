@@ -13,7 +13,8 @@ data class Usuario(
     val workEndTime: String? = null,
     val lastLat: Double? = null,
     val lastLon: Double? = null,
-    val imagenPerfil: String? = null
+    val imagenPerfil: String? = null,
+    val fcmToken: String? = null
 )
 
 data class Cliente(

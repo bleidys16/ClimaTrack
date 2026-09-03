@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 15
+        private const val DATABASE_VERSION = 16
 
         // Columna común para soporte offline/sincronización
         const val COL_SYNCED = "is_synced"
@@ -29,6 +29,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_USUARIO_LAT = "last_lat"
         const val COL_USUARIO_LON = "last_lon"
         const val COL_USUARIO_IMAGEN = "imagen_perfil"
+        const val COL_USUARIO_FCM = "fcm_token"
 
         // Tabla Actividad Técnico (Historial)
         const val TABLE_ACTIVIDAD = "actividad_tecnico"
@@ -151,7 +152,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_USUARIO_WORK_END TEXT, " +
                 "$COL_USUARIO_LAT REAL, " +
                 "$COL_USUARIO_LON REAL, " +
-                "$COL_USUARIO_IMAGEN TEXT)"
+                "$COL_USUARIO_IMAGEN TEXT, " +
+                "$COL_USUARIO_FCM TEXT)"
 
         val createClientes = "CREATE TABLE $TABLE_CLIENTES (" +
                 "$COL_CLIENTE_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +

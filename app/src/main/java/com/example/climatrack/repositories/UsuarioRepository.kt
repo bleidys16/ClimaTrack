@@ -25,10 +25,24 @@ class UsuarioRepository(context: Context) {
             "email" to usuario.email,
             "telefono" to usuario.telefono,
             "isActive" to usuario.isActive,
-            "imagenPerfil" to usuario.imagenPerfil
+            "imagenPerfil" to usuario.imagenPerfil,
+            "fcmToken" to usuario.fcmToken
         )
         firestore.collection("usuarios").document(usuario.id.toString())
             .set(userMap, SetOptions.merge())
+    }
+
+    fun updateFCMToken(userId: Int, token: String) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DatabaseHelper.COL_USUARIO_FCM, token)
+        }
+        val result = db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()))
+        
+        if (result > 0) {
+            firestore.collection("usuarios").document(userId.toString())
+                .update("fcmToken", token)
+        }
     }
 
     fun login(usuario: String, password: String): Usuario? {
@@ -43,21 +57,7 @@ class UsuarioRepository(context: Context) {
 
         var user: Usuario? = null
         if (cursor.moveToFirst()) {
-            user = Usuario(
-                id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
-                usuario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USER)),
-                password = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASS)),
-                nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE)),
-                rol = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ROL)),
-                email = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_EMAIL)),
-                telefono = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_TEL)),
-                isActive = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ACTIVE)),
-                workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
-                workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END)),
-                lastLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT)),
-                lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON)),
-                imagenPerfil = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_IMAGEN))
-            )
+            user = cursorToUsuario(cursor)
         }
         cursor.close()
         return user
@@ -76,6 +76,7 @@ class UsuarioRepository(context: Context) {
             put(DatabaseHelper.COL_USUARIO_WORK_START, usuario.workStartTime)
             put(DatabaseHelper.COL_USUARIO_WORK_END, usuario.workEndTime)
             put(DatabaseHelper.COL_USUARIO_IMAGEN, usuario.imagenPerfil)
+            put(DatabaseHelper.COL_USUARIO_FCM, usuario.fcmToken)
         }
         return db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
     }
@@ -91,21 +92,7 @@ class UsuarioRepository(context: Context) {
         )
         var user: Usuario? = null
         if (cursor.moveToFirst()) {
-            user = Usuario(
-                id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
-                usuario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USER)),
-                password = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASS)),
-                nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE)),
-                rol = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ROL)),
-                email = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_EMAIL)),
-                telefono = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_TEL)),
-                isActive = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ACTIVE)),
-                workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
-                workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END)),
-                lastLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT)),
-                lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON)),
-                imagenPerfil = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_IMAGEN))
-            )
+            user = cursorToUsuario(cursor)
         }
         cursor.close()
         return user
@@ -123,20 +110,7 @@ class UsuarioRepository(context: Context) {
         )
         if (cursor.moveToFirst()) {
             do {
-                list.add(Usuario(
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
-                    usuario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USER)),
-                    password = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASS)),
-                    nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE)),
-                    rol = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ROL)),
-                    email = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_EMAIL)),
-                    telefono = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_TEL)),
-                    isActive = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ACTIVE)),
-                    workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
-                    workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END)),
-                    lastLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT)),
-                    lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))
-                ))
+                list.add(cursorToUsuario(cursor))
             } while (cursor.moveToNext())
         }
         cursor.close()
@@ -155,18 +129,7 @@ class UsuarioRepository(context: Context) {
         )
         if (cursor.moveToFirst()) {
             do {
-                list.add(Usuario(
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
-                    usuario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USER)),
-                    password = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASS)),
-                    nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE)),
-                    rol = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ROL)),
-                    email = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_EMAIL)),
-                    telefono = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_TEL)),
-                    isActive = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ACTIVE)),
-                    workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
-                    workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END))
-                ))
+                list.add(cursorToUsuario(cursor))
             } while (cursor.moveToNext())
         }
         cursor.close()
@@ -185,20 +148,7 @@ class UsuarioRepository(context: Context) {
         )
         if (cursor.moveToFirst()) {
             do {
-                list.add(Usuario(
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
-                    usuario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USER)),
-                    password = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASS)),
-                    nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE)),
-                    rol = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ROL)),
-                    email = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_EMAIL)),
-                    telefono = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_TEL)),
-                    isActive = 1,
-                    workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
-                    workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END)),
-                    lastLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT)),
-                    lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))
-                ))
+                list.add(cursorToUsuario(cursor))
             } while (cursor.moveToNext())
         }
         cursor.close()
@@ -230,7 +180,6 @@ class UsuarioRepository(context: Context) {
         sdf.timeZone = TimeZone.getTimeZone("America/Bogota")
         val fecha = sdf.format(Date())
         
-        // Buscar si ya hay registro para hoy
         val cursor = db.query(DatabaseHelper.TABLE_ACTIVIDAD, arrayOf(DatabaseHelper.COL_ACT_ID),
             "${DatabaseHelper.COL_ACT_TECH_ID}=? AND ${DatabaseHelper.COL_ACT_FECHA}=?",
             arrayOf(userId.toString(), fecha), null, null, null)
@@ -317,5 +266,24 @@ class UsuarioRepository(context: Context) {
             put(DatabaseHelper.COL_USUARIO_IMAGEN, imagePath)
         }
         return db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()))
+    }
+
+    private fun cursorToUsuario(cursor: Cursor): Usuario {
+        return Usuario(
+            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
+            usuario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USER)),
+            password = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASS)),
+            nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE)),
+            rol = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ROL)),
+            email = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_EMAIL)),
+            telefono = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_TEL)),
+            isActive = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ACTIVE)),
+            workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
+            workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END)),
+            lastLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT)),
+            lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON)),
+            imagenPerfil = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_IMAGEN)),
+            fcmToken = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_FCM))
+        )
     }
 }

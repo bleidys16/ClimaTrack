@@ -158,6 +158,13 @@ class DashboardActivity : BaseActivity() {
         super.onResume()
         loadStats()
         loadProfileImage()
+        updateFcmToken()
+    }
+
+    private fun updateFcmToken() {
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            usuarioRepository.updateFCMToken(sessionManager.getUserId(), token)
+        }
     }
 
     private fun loadProfileImage() {

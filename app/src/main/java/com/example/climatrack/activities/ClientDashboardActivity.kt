@@ -113,6 +113,13 @@ class ClientDashboardActivity : BaseActivity() {
         super.onResume()
         loadMyServices()
         checkMaintenanceReminders()
+        updateFcmToken()
+    }
+
+    private fun updateFcmToken() {
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            usuarioRepository.updateFCMToken(sessionManager.getUserId(), token)
+        }
     }
 
     private fun loadMyServices() {

@@ -140,6 +140,13 @@ class AdminDashboardActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         loadData()
+        updateFcmToken()
+    }
+
+    private fun updateFcmToken() {
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            usuarioRepository.updateFCMToken(sessionManager.getUserId(), token)
+        }
     }
 
     private fun loadData() {
