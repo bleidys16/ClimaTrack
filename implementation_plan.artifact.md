@@ -1,35 +1,31 @@
-# Mejora de Geolocalización para Técnicos
+# Mejora de Documentación - README.md
 
-Este plan detalla las mejoras para asegurar que la ubicación del técnico se capture de forma precisa y sea visible para él, garantizando que el administrador pueda verlo en el mapa.
-
-## User Review Required
-
-> [!IMPORTANT]
-> Se requerirá que el usuario acepte los permisos de ubicación al activar el estado "Activo" por primera vez.
+Este plan detalla la reestructuración y enriquecimiento del archivo `README.md` para proporcionar una guía completa sobre las capacidades multi-rol del proyecto, su arquitectura técnica y los pasos necesarios para su despliegue.
 
 ## Proposed Changes
 
-### [Dashboard del Técnico]
+### [Documentación]
 
-Se realizarán cambios en la interfaz y la lógica para hacer la ubicación más transparente y confiable.
+#### [MODIFY] [README.md](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/README.md)
 
-#### [MODIFY] [activity_dashboard.xml](file:///C:/Users/Aprendiz/ClimaTrack/app/src/main/res/layout/activity_dashboard.xml)
-- Añadir un contenedor de información de ubicación dentro del `cardStatus`.
-- Incluir un `TextView` para mostrar las coordenadas actuales.
-- Añadir un `ImageButton` para permitir la actualización manual de la ubicación.
+Se transformará el README en una guía profesional que incluya:
 
-#### [MODIFY] [DashboardActivity.kt](file:///C:/Users/Aprendiz/ClimaTrack/app/src/main/java/com/example/climatrack/activities/DashboardActivity.kt)
-- Implementar la solicitud de permisos de ubicación (`ACCESS_FINE_LOCATION`).
-- Reemplazar `lastLocation` por `getCurrentLocation` con alta precisión.
-- Actualizar la interfaz de usuario con las coordenadas capturadas.
-- Añadir lógica para el botón de actualización manual.
+1.  **Encabezado y Visión General**: Actualizar la descripción para incluir los tres roles principales (Administrador, Técnico, Cliente).
+2.  **Capacidades por Rol**:
+    *   **Administrador**: Gestión de personal, asignación de tareas e inteligencia de fallas.
+    *   **Técnico**: Flujo de trabajo de mantenimiento, geolocalización y evidencias.
+    *   **Cliente**: Solicitudes de servicio y seguimiento en tiempo real.
+3.  **Funcionalidades Avanzadas**: Detallar el escaneo QR, generación de PDFs, chat y sincronización offline.
+4.  **Stack Tecnológico Completo**: Incluir todas las librerías de Firebase y servicios de Google utilizados.
+5.  **Guía de Configuración Paso a Paso**:
+    *   Configuración de Firebase (Auth, Firestore, Storage).
+    *   Configuración de API Keys (Google Maps).
+    *   Configuración de Fuentes y Estilos.
+6.  **Arquitectura y Estructura**: Diagrama simplificado de la comunicación entre componentes (Repository Pattern + Firebase Sync).
 
 ## Verification Plan
 
 ### Manual Verification
-1. Iniciar sesión como técnico.
-2. Activar el switch "Activo".
-3. Verificar que aparezca un diálogo de permisos (si no se han concedido).
-4. Confirmar que las coordenadas aparezcan en pantalla debajo del switch.
-5. Presionar el botón de refrescar y verificar que las coordenadas se actualicen.
-6. Entrar como administrador y verificar que el técnico aparezca en el mapa en la posición correcta.
+- Renderizar el archivo en el IDE y verificar la legibilidad.
+- Asegurarse de que todos los enlaces a archivos del proyecto funcionen correctamente.
+- Validar que las instrucciones de configuración de Firebase sean precisas y fáciles de seguir.

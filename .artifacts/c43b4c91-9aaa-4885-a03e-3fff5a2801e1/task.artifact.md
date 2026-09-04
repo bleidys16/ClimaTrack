@@ -1,7 +1,7 @@
-# Tareas: Corrección de Navegación por Rol
+# Tareas: Mejora de Documentación README.md
 
-- [x] Implementar `navigateToHome()` en `BaseActivity.kt`
-- [x] Actualizar `OrdersActivity.kt` para usar `navigateToHome()`
-- [x] Actualizar `EquipmentActivity.kt` para usar `navigateToHome()`
-- [x] Actualizar `HistoryActivity.kt` para usar `navigateToHome()`
-- [x] Verificar navegación para Admin y Técnico
+- [x] Recopilar información técnica actualizada (Firebase, Maps, QR)
+- [x] Redactar el nuevo contenido del `README.md`
+- [x] Aplicar los cambios al archivo `README.md`
+- [x] Verificar enlaces y formato
+- [ ] Subir cambios a Git
