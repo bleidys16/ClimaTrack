@@ -1,7 +1,5 @@
-# Tareas: Mejora de Documentación README.md
+# Tareas: Sincronización de Órdenes para Administrador
 
-- [x] Recopilar información técnica actualizada (Firebase, Maps, QR)
-- [x] Redactar el nuevo contenido del `README.md`
-- [x] Aplicar los cambios al archivo `README.md`
-- [x] Verificar enlaces y formato
+- [x] Actualizar `AdminDashboardActivity.kt` para descargar órdenes desde la nube
+- [x] Verificar la actualización de la lista de órdenes sin asignar
 - [ ] Subir cambios a Git

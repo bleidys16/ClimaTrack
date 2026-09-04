@@ -148,24 +148,26 @@ class AdminDashboardActivity : BaseActivity() {
 
     private fun loadData() {
         usuarioRepository.fetchTechniciansFromCloud {
-            runOnUiThread {
-                val user = usuarioRepository.getById(sessionManager.getUserId())
-                user?.imagenPerfil?.let { path ->
-                    val file = java.io.File(path)
-                    if (file.exists()) {
-                        binding.ivAdminAvatar.setImageURI(android.net.Uri.fromFile(file))
+            ordenRepository.fetchOrdersFromCloud {
+                runOnUiThread {
+                    val user = usuarioRepository.getById(sessionManager.getUserId())
+                    user?.imagenPerfil?.let { path ->
+                        val file = java.io.File(path)
+                        if (file.exists()) {
+                            binding.ivAdminAvatar.setImageURI(android.net.Uri.fromFile(file))
+                        }
                     }
+
+                    val techs = usuarioRepository.getTechnicianStats()
+                    techAdapter.updateList(techs)
+                    
+                    val activeCount = techs.count { it.isActive == 1 }
+                    binding.tvActiveTechsCount.text = activeCount.toString()
+
+                    allUnassignedOrders = ordenRepository.getUnassignedOrders()
+                    filterUnassignedOrders(binding.etSearchOrders.text.toString())
+                    binding.tvPendingOrdersCount.text = allUnassignedOrders.size.toString()
                 }
-
-                val techs = usuarioRepository.getTechnicianStats()
-                techAdapter.updateList(techs)
-                
-                val activeCount = techs.count { it.isActive == 1 }
-                binding.tvActiveTechsCount.text = activeCount.toString()
-
-                allUnassignedOrders = ordenRepository.getUnassignedOrders()
-                filterUnassignedOrders(binding.etSearchOrders.text.toString())
-                binding.tvPendingOrdersCount.text = allUnassignedOrders.size.toString()
             }
         }
     }
