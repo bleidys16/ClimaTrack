@@ -33,7 +33,13 @@ class OrdersActivity : BaseActivity() {
         setupToolbar()
         setupRecyclerView()
         setupTabs()
-        setupBottomNavigation()
+        
+        val userRol = sessionManager.getUserRol()?.uppercase() ?: ""
+        if (userRol == "TÉCNICO" || userRol == "TECNICO") {
+            setupBottomNavigation()
+        } else {
+            binding.navContainer.visibility = View.GONE
+        }
         
         val initialTab = intent.getIntExtra("TAB_INDEX", 0)
         binding.tabs.getTabAt(initialTab)?.select()
@@ -72,8 +78,7 @@ class OrdersActivity : BaseActivity() {
         setupCustomNavigation(binding.customNav.root, R.id.menu_orders) { menuId ->
             when (menuId) {
                 R.id.menu_home -> {
-                    startActivity(Intent(this, DashboardActivity::class.java))
-                    finish()
+                    navigateToHome()
                 }
                 R.id.menu_equipment -> {
                     startActivity(Intent(this, EquipmentActivity::class.java))

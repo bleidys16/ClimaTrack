@@ -26,7 +26,14 @@ class HistoryActivity : BaseActivity() {
 
         setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
         setupToolbar()
-        setupBottomNavigation()
+        
+        val userRol = sessionManager.getUserRol()?.uppercase() ?: ""
+        if (userRol == "TÉCNICO" || userRol == "TECNICO") {
+            setupBottomNavigation()
+        } else {
+            binding.navContainer.visibility = android.view.View.GONE
+        }
+        
         loadHistory()
         setupFilters()
     }
@@ -63,8 +70,7 @@ class HistoryActivity : BaseActivity() {
         setupCustomNavigation(binding.customNav.root, R.id.menu_history) { menuId ->
             when (menuId) {
                 R.id.menu_home -> {
-                    startActivity(Intent(this, DashboardActivity::class.java))
-                    finish()
+                    navigateToHome()
                 }
                 R.id.menu_orders -> {
                     startActivity(Intent(this, OrdersActivity::class.java))

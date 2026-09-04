@@ -10,12 +10,14 @@ import com.example.climatrack.R
 import com.example.climatrack.adapters.EquipmentAdapter
 import com.example.climatrack.databinding.ActivityEquipmentBinding
 import com.example.climatrack.repositories.EquipoRepository
+import com.example.climatrack.utils.SessionManager
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 
 class EquipmentActivity : BaseActivity() {
 
     private lateinit var binding: ActivityEquipmentBinding
     private lateinit var equipoRepository: EquipoRepository
+    private lateinit var sessionManager: SessionManager
     private lateinit var adapter: EquipmentAdapter
     private var filterClientId: Int = -1
 
@@ -25,6 +27,7 @@ class EquipmentActivity : BaseActivity() {
         setContentView(binding.root)
 
         equipoRepository = EquipoRepository(this)
+        sessionManager = com.example.climatrack.utils.SessionManager(this)
         filterClientId = intent.getIntExtra("CLIENT_ID", -1)
 
         setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
@@ -32,11 +35,14 @@ class EquipmentActivity : BaseActivity() {
         setupRecyclerView()
         setupSearch()
         
-        if (filterClientId != -1) {
+        val userRol = sessionManager.getUserRol()?.uppercase() ?: ""
+        if (filterClientId != -1 || userRol == "ADMINISTRADOR") {
             binding.navContainer.visibility = android.view.View.GONE
-            binding.toolbar.title = "Mis Equipos"
-        } else {
+            if (filterClientId != -1) binding.toolbar.title = "Mis Equipos"
+        } else if (userRol == "TÉCNICO" || userRol == "TECNICO") {
             setupBottomNavigation()
+        } else {
+            binding.navContainer.visibility = android.view.View.GONE
         }
         
         setupFilterButton()
@@ -108,8 +114,7 @@ class EquipmentActivity : BaseActivity() {
         setupCustomNavigation(binding.customNav.root, R.id.menu_equipment) { menuId ->
             when (menuId) {
                 R.id.menu_home -> {
-                    startActivity(Intent(this, DashboardActivity::class.java))
-                    finish()
+                    navigateToHome()
                 }
                 R.id.menu_orders -> {
                     startActivity(Intent(this, OrdersActivity::class.java))

@@ -1,5 +1,6 @@
 package com.example.climatrack.activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.transition.TransitionManager
 import android.view.View
@@ -14,6 +15,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.example.climatrack.R
+import com.example.climatrack.utils.SessionManager
 
 open class BaseActivity : AppCompatActivity() {
 
@@ -23,7 +25,7 @@ open class BaseActivity : AppCompatActivity() {
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
 
-    override fun startActivity(intent: android.content.Intent?) {
+    override fun startActivity(intent: Intent?) {
         super.startActivity(intent)
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
@@ -31,6 +33,19 @@ open class BaseActivity : AppCompatActivity() {
     override fun finish() {
         super.finish()
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+    }
+
+    protected fun navigateToHome() {
+        val sessionManager = SessionManager(this)
+        val rol = sessionManager.getUserRol() ?: ""
+        val intent = when (rol.uppercase()) {
+            "ADMINISTRADOR" -> Intent(this, AdminDashboardActivity::class.java)
+            "CLIENTE" -> Intent(this, ClientDashboardActivity::class.java)
+            else -> Intent(this, DashboardActivity::class.java)
+        }
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     protected fun setupCustomNavigation(
