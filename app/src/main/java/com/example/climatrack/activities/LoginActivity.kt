@@ -43,6 +43,9 @@ class LoginActivity : BaseActivity() {
             return
         }
 
+        binding.btnLogin.isEnabled = false
+        Toast.makeText(this, "Validando credenciales...", Toast.LENGTH_SHORT).show()
+
         // 1. Try Firebase Auth
         FirebaseHelper.auth.signInWithEmailAndPassword(email, pass)
             .addOnSuccessListener {
@@ -51,6 +54,7 @@ class LoginActivity : BaseActivity() {
                     .whereEqualTo("email", email)
                     .get()
                     .addOnSuccessListener { documents ->
+                        binding.btnLogin.isEnabled = true
                         if (!documents.isEmpty) {
                             val doc = documents.documents[0]
                             val id = doc.getLong("id")?.toInt() ?: -1
@@ -61,7 +65,7 @@ class LoginActivity : BaseActivity() {
                             val dbUser = com.example.climatrack.models.Usuario(
                                 id = id,
                                 usuario = doc.getString("usuario") ?: "",
-                                password = pass, // Not ideal but for local consistency
+                                password = pass,
                                 nombre = nombre,
                                 rol = rol,
                                 email = doc.getString("email"),
@@ -74,24 +78,24 @@ class LoginActivity : BaseActivity() {
                                 imagenPerfil = doc.getString("imagenPerfil"),
                                 fcmToken = doc.getString("fcmToken")
                             )
-                            usuarioRepository.register(dbUser) // This handles upsert if we modify repository or if it's new
+                            usuarioRepository.register(dbUser)
 
                             // 3. Save Session
                             sessionManager.saveSession(id, nombre, rol)
                             
                             navigateToDashboard(rol)
                         } else {
-                            Toast.makeText(this, "Usuario no encontrado en la nube, intentando local...", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Sincronizando datos locales...", Toast.LENGTH_SHORT).show()
                             fallbackToLocalLogin(email, pass)
                         }
                     }
                     .addOnFailureListener {
-                        Toast.makeText(this, "Error de red en nube, intentando local...", Toast.LENGTH_SHORT).show()
+                        binding.btnLogin.isEnabled = true
                         fallbackToLocalLogin(email, pass)
                     }
             }
             .addOnFailureListener {
-                // 4. Fallback to Local Login (for existing local-only users)
+                binding.btnLogin.isEnabled = true
                 fallbackToLocalLogin(email, pass)
             }
     }

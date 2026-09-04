@@ -139,6 +139,17 @@
             app:layout_constraintTop_toBottomOf="@id/tilPassword"
             app:backgroundTint="@color/ube" />
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:indeterminateTint="@color/ube"
+            app:layout_constraintTop_toTopOf="@id/btnRegister"
+            app:layout_constraintBottom_toBottomOf="@id/btnRegister"
+            app:layout_constraintStart_toStartOf="@id/btnRegister"
+            app:layout_constraintEnd_toEndOf="@id/btnRegister" />
+
         <TextView
             android:id="@+id/tvBackToLogin"
             android:layout_width="wrap_content"
