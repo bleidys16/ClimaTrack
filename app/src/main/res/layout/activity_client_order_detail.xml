@@ -120,6 +120,19 @@
                 app:iconTint="@color/status_finished"
                 android:visibility="gone" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnApproveNow"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginTop="16dp"
+                android:text="APROBAR Y FIRMAR AHORA"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                app:backgroundTint="@color/status_finished"
+                app:icon="@android:drawable/checkbox_on_background"
+                app:iconTint="@color/white"
+                android:visibility="gone" />
+
             <!-- Technician & Equipment -->
             <TextView
                 android:layout_width="wrap_content"

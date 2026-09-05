@@ -59,52 +59,54 @@ class RegisterActivity : BaseActivity() {
         binding.btnRegister.visibility = android.view.View.INVISIBLE
         binding.progressBar.visibility = android.view.View.VISIBLE
 
-        // Debug: Log the email to ensure it's correct
-        android.util.Log.d("REGISTER_DEBUG", "Attempting register with email: $email")
+        // 1. Save locally FIRST (Ensures the app works even if SENA internet blocks Firebase)
+        val newUser = Usuario(
+            usuario = user,
+            password = pass,
+            nombre = fullName,
+            rol = "Cliente",
+            email = email,
+            telefono = phone
+        )
 
-        // 1. Register in Firebase Auth
-        FirebaseHelper.auth.createUserWithEmailAndPassword(email, pass)
-            .addOnCompleteListener { task ->
-                binding.btnRegister.visibility = android.view.View.VISIBLE
-                binding.progressBar.visibility = android.view.View.GONE
-                
-                if (task.isSuccessful) {
-                    val authResult = task.result
-                    android.util.Log.d("REGISTER_DEBUG", "Auth successful for: ${authResult?.user?.uid}")
+        try {
+            val localId = usuarioRepository.register(newUser)
+            android.util.Log.d("REGISTER_DEBUG", "Local registration success for ID: $localId")
+            
+            // 2. Try Firebase Auth (Background-ish)
+            FirebaseHelper.auth.createUserWithEmailAndPassword(email, pass)
+                .addOnCompleteListener { task ->
+                    binding.btnRegister.visibility = android.view.View.VISIBLE
+                    binding.progressBar.visibility = android.view.View.GONE
                     
-                    val newUser = Usuario(
-                        usuario = user,
-                        password = pass,
-                        nombre = fullName,
-                        rol = "Cliente",
-                        email = email,
-                        telefono = phone
-                    )
-
-                    try {
-                        // 2. Save in Local DB
-                        val localId = usuarioRepository.register(newUser)
-                        
-                        // 3. Save in Firestore
+                    if (task.isSuccessful) {
+                        // Sync to Firestore if Firebase succeeded
                         usuarioRepository.syncUserToCloud(newUser.copy(id = localId.toInt()))
-
-                        Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Registro exitoso y sincronizado", Toast.LENGTH_SHORT).show()
                         finish()
-                    } catch (e: Exception) {
-                        Toast.makeText(this, "Error local: ${e.message}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val e = task.exception
+                        android.util.Log.e("REGISTER_ERROR", "Firebase blocked or failed", e)
+                        
+                        // IF it's a network error (common in SENA), we allow the user to continue locally
+                        if (e is com.google.firebase.FirebaseNetworkException) {
+                            Toast.makeText(this, "Internet SENA detectado. Registro local exitoso (Modo Offline)", Toast.LENGTH_LONG).show()
+                            finish()
+                        } else {
+                            // If it's another error (like email exists), maybe we should warn the user
+                            val errorMsg = when (e) {
+                                is com.google.firebase.auth.FirebaseAuthUserCollisionException -> "El correo ya está registrado."
+                                else -> "Registro local guardado. Error en nube: ${e?.message}"
+                            }
+                            Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
+                            finish()
+                        }
                     }
-                } else {
-                    val e = task.exception
-                    android.util.Log.e("REGISTER_ERROR", "Firebase error code: ${(e as? com.google.firebase.auth.FirebaseAuthException)?.errorCode}", e)
-                    
-                    val errorMsg = when {
-                        e is com.google.firebase.FirebaseNetworkException -> "Error de conexión persistente. ¿El Hotspot tiene datos activos?"
-                        e is com.google.firebase.auth.FirebaseAuthUserCollisionException -> "El correo ya está registrado."
-                        e is com.google.firebase.auth.FirebaseAuthWeakPasswordException -> "La contraseña es muy corta."
-                        else -> "Error: ${e?.message}"
-                    }
-                    Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
                 }
-            }
+        } catch (e: Exception) {
+            binding.btnRegister.visibility = android.view.View.VISIBLE
+            binding.progressBar.visibility = android.view.View.GONE
+            Toast.makeText(this, "Error al guardar localmente: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 }

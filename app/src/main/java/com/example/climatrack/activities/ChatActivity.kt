@@ -35,6 +35,10 @@ class ChatActivity : BaseActivity() {
 
         setupToolbar()
         setupRecyclerView()
+        
+        // Load local messages first for instant feedback (SENA internet resilient)
+        loadLocalMessages()
+        
         listenToMessages()
 
         binding.btnSendMessage.setOnClickListener {
@@ -52,6 +56,14 @@ class ChatActivity : BaseActivity() {
         adapter = com.example.climatrack.adapters.ChatAdapter(sessionManager.getUserId())
         binding.rvChat.layoutManager = LinearLayoutManager(this)
         binding.rvChat.adapter = adapter
+    }
+
+    private fun loadLocalMessages() {
+        val localMessages = chatRepository.getMessagesLocal(orderId)
+        if (localMessages.isNotEmpty()) {
+            adapter.updateList(localMessages)
+            binding.rvChat.scrollToPosition(localMessages.size - 1)
+        }
     }
 
     private fun listenToMessages() {

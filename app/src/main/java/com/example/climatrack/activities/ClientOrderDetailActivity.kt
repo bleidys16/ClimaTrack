@@ -56,6 +56,12 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
         loadOrderDetails()
         binding.btnSubmitFeedback.setOnClickListener { submitFeedback() }
         binding.btnDownloadReceipt.setOnClickListener { generateAndOpenReceipt() }
+
+        binding.btnApproveNow.setOnClickListener {
+            val intent = Intent(this, ApprovalActivity::class.java)
+            intent.putExtra("ORDER_ID", orderId)
+            startActivity(intent)
+        }
         
         binding.btnChat.setOnClickListener {
             val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
@@ -72,21 +78,32 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
     }
 
     private fun startLiveTracking(orderNum: String) {
+        if (orderNum.isEmpty()) return
+        
         binding.tvTrackingTitle.visibility = View.VISIBLE
         binding.cardTrackingMap.visibility = View.VISIBLE
 
-        firestoreListener = FirebaseHelper.db.collection("ordenes")
-            .document(orderNum)
-            .addSnapshotListener { snapshot, e ->
-                if (e != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
+        try {
+            firestoreListener = FirebaseHelper.db.collection("ordenes")
+                .document(orderNum)
+                .addSnapshotListener { snapshot, e ->
+                    if (e != null) {
+                        android.util.Log.w("TRACKING_WARN", "Live tracking blocked or failed: ${e.message}")
+                        return@addSnapshotListener
+                    }
+                    
+                    if (snapshot == null || !snapshot.exists()) return@addSnapshotListener
 
-                val tecnicoLat = snapshot.getDouble("tecnicoLat")
-                val tecnicoLon = snapshot.getDouble("tecnicoLon")
-                
-                if (tecnicoLat != null && tecnicoLon != null) {
-                    updateMarker(tecnicoLat, tecnicoLon)
+                    val tecnicoLat = snapshot.getDouble("tecnicoLat")
+                    val tecnicoLon = snapshot.getDouble("tecnicoLon")
+                    
+                    if (tecnicoLat != null && tecnicoLon != null) {
+                        updateMarker(tecnicoLat, tecnicoLon)
+                    }
                 }
-            }
+        } catch (e: Exception) {
+            android.util.Log.e("TRACKING_ERROR", "Error setting up firestore listener", e)
+        }
     }
 
     private fun updateMarker(lat: Double, lon: Double) {
@@ -139,6 +156,10 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
 
             if (it.estado == "FINALIZADA") {
                 binding.btnDownloadReceipt.visibility = View.VISIBLE
+            }
+
+            if (it.estado == "PENDIENTE APROBACIÓN") {
+                binding.btnApproveNow.visibility = View.VISIBLE
             }
 
             if (it.estado == "EN PROCESO") {

@@ -46,56 +46,64 @@ class LoginActivity : BaseActivity() {
         binding.btnLogin.isEnabled = false
         Toast.makeText(this, "Validando credenciales...", Toast.LENGTH_SHORT).show()
 
-        // 1. Try Firebase Auth
-        FirebaseHelper.auth.signInWithEmailAndPassword(email, pass)
-            .addOnSuccessListener {
-                // 2. Fetch User Data from Firestore
-                FirebaseHelper.db.collection("usuarios")
-                    .whereEqualTo("email", email)
-                    .get()
-                    .addOnSuccessListener { documents ->
-                        binding.btnLogin.isEnabled = true
-                        if (!documents.isEmpty) {
-                            val doc = documents.documents[0]
-                            val id = doc.getLong("id")?.toInt() ?: -1
-                            val nombre = doc.getString("nombre") ?: ""
-                            val rol = doc.getString("rol") ?: ""
-                            
-                            // Save to local DB to ensure consistency
-                            val dbUser = com.example.climatrack.models.Usuario(
-                                id = id,
-                                usuario = doc.getString("usuario") ?: "",
-                                password = pass,
-                                nombre = nombre,
-                                rol = rol,
-                                email = doc.getString("email"),
-                                telefono = doc.getString("telefono"),
-                                isActive = doc.getLong("isActive")?.toInt() ?: 0,
-                                workStartTime = doc.getString("workStartTime"),
-                                workEndTime = doc.getString("workEndTime"),
-                                lastLat = doc.getDouble("lastLat"),
-                                lastLon = doc.getDouble("lastLon"),
-                                imagenPerfil = doc.getString("imagenPerfil"),
-                                fcmToken = doc.getString("fcmToken")
-                            )
-                            usuarioRepository.register(dbUser)
+        // Hybrid Strategy: Try Firebase but fallback fast if there's no route to Google
+        val auth = FirebaseHelper.auth
+        
+        auth.signInWithEmailAndPassword(email, pass)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Success! Fetch extra data from Cloud
+                    fetchCloudUserData(email, pass)
+                } else {
+                    val e = task.exception
+                    android.util.Log.w("LOGIN_WARN", "Firebase Auth failed/blocked: ${e?.message}")
+                    
+                    if (e is com.google.firebase.FirebaseNetworkException) {
+                        Toast.makeText(this, "Red restringida detectada. Accediendo modo local.", Toast.LENGTH_SHORT).show()
+                    }
+                    
+                    // Always try local fallback on failure
+                    fallbackToLocalLogin(email, pass)
+                }
+            }
+    }
 
-                            // 3. Save Session
-                            sessionManager.saveSession(id, nombre, rol)
-                            
-                            navigateToDashboard(rol)
-                        } else {
-                            Toast.makeText(this, "Sincronizando datos locales...", Toast.LENGTH_SHORT).show()
-                            fallbackToLocalLogin(email, pass)
-                        }
-                    }
-                    .addOnFailureListener {
-                        binding.btnLogin.isEnabled = true
-                        fallbackToLocalLogin(email, pass)
-                    }
+    private fun fetchCloudUserData(email: String, pass: String) {
+        FirebaseHelper.db.collection("usuarios")
+            .whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { documents ->
+                binding.btnLogin.isEnabled = true
+                if (!documents.isEmpty) {
+                    val doc = documents.documents[0]
+                    val id = doc.getLong("id")?.toInt() ?: -1
+                    val nombre = doc.getString("nombre") ?: ""
+                    val rol = doc.getString("rol") ?: ""
+                    
+                    val dbUser = com.example.climatrack.models.Usuario(
+                        id = id,
+                        usuario = doc.getString("usuario") ?: "",
+                        password = pass,
+                        nombre = nombre,
+                        rol = rol,
+                        email = doc.getString("email"),
+                        telefono = doc.getString("telefono"),
+                        isActive = doc.getLong("isActive")?.toInt() ?: 0,
+                        workStartTime = doc.getString("workStartTime"),
+                        workEndTime = doc.getString("workEndTime"),
+                        lastLat = doc.getDouble("lastLat"),
+                        lastLon = doc.getDouble("lastLon"),
+                        imagenPerfil = doc.getString("imagenPerfil"),
+                        fcmToken = doc.getString("fcmToken")
+                    )
+                    usuarioRepository.register(dbUser)
+                    sessionManager.saveSession(id, nombre, rol)
+                    navigateToDashboard(rol)
+                } else {
+                    fallbackToLocalLogin(email, pass)
+                }
             }
             .addOnFailureListener {
-                binding.btnLogin.isEnabled = true
                 fallbackToLocalLogin(email, pass)
             }
     }

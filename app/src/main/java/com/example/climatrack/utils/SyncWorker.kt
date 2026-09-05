@@ -21,14 +21,30 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
     private val storage = FirebaseHelper.storage
 
     override suspend fun doWork(): Result {
-        return try {
+        var hasFailures = false
+        
+        try {
             syncOrders()
-            syncMaintenance()
-            syncEvidences()
-            Result.success()
         } catch (e: Exception) {
-            Result.retry()
+            android.util.Log.e("SYNC_ERROR", "Order sync failed", e)
+            hasFailures = true
         }
+
+        try {
+            syncMaintenance()
+        } catch (e: Exception) {
+            android.util.Log.e("SYNC_ERROR", "Maintenance sync failed", e)
+            hasFailures = true
+        }
+
+        try {
+            syncEvidences()
+        } catch (e: Exception) {
+            android.util.Log.e("SYNC_ERROR", "Evidence sync failed", e)
+            hasFailures = true
+        }
+
+        return if (hasFailures) Result.retry() else Result.success()
     }
 
     private suspend fun syncOrders() {
