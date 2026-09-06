@@ -323,11 +323,11 @@ class OrdenRepository(private val context: Context) {
 
     fun getTechnicianWithLeastWork(): Int {
         val db = dbHelper.readableDatabase
-        // Robust check for Technician role (handles accents and case)
+        // Robust check for Technician role
         val query = "SELECT u.${DatabaseHelper.COL_USUARIO_ID}, COUNT(o.${DatabaseHelper.COL_ORDEN_ID}) as workload " +
                     "FROM ${DatabaseHelper.TABLE_USUARIOS} u " +
                     "LEFT JOIN ${DatabaseHelper.TABLE_ORDENES} o ON u.${DatabaseHelper.COL_USUARIO_ID} = o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} " +
-                    "WHERE UPPER(u.${DatabaseHelper.COL_USUARIO_ROL}) LIKE 'T%CNICO%' " +
+                    "WHERE u.${DatabaseHelper.COL_USUARIO_ROL} LIKE 'T%cnico%' " +
                     "GROUP BY u.${DatabaseHelper.COL_USUARIO_ID} " +
                     "ORDER BY workload ASC LIMIT 1"
         

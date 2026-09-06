@@ -170,7 +170,8 @@ class UsuarioRepository(context: Context) {
     fun getAllTecnicos(): List<Usuario> {
         val list = mutableListOf<Usuario>()
         val db = dbHelper.readableDatabase
-        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE UPPER(${DatabaseHelper.COL_USUARIO_ROL}) LIKE 'T%CNICO%'"
+        // Most robust role check for all technician variants
+        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE ${DatabaseHelper.COL_USUARIO_ROL} LIKE 'T%cnico%'"
         val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {
@@ -184,7 +185,7 @@ class UsuarioRepository(context: Context) {
     fun getAllClientes(): List<Usuario> {
         val list = mutableListOf<Usuario>()
         val db = dbHelper.readableDatabase
-        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE UPPER(${DatabaseHelper.COL_USUARIO_ROL}) = 'CLIENTE'"
+        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE ${DatabaseHelper.COL_USUARIO_ROL} LIKE 'Cliente%'"
         val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {
@@ -198,7 +199,7 @@ class UsuarioRepository(context: Context) {
     fun getActiveTechnicians(): List<Usuario> {
         val list = mutableListOf<Usuario>()
         val db = dbHelper.readableDatabase
-        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE UPPER(${DatabaseHelper.COL_USUARIO_ROL}) LIKE 'T%CNICO%' AND ${DatabaseHelper.COL_USUARIO_ACTIVE}=1"
+        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE ${DatabaseHelper.COL_USUARIO_ROL} LIKE 'T%cnico%' AND ${DatabaseHelper.COL_USUARIO_ACTIVE}=1"
         val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {
@@ -265,12 +266,13 @@ class UsuarioRepository(context: Context) {
     fun getTechnicianStats(): List<TecnicoStats> {
         val list = mutableListOf<TecnicoStats>()
         val db = dbHelper.readableDatabase
+        // Flexible role matching
         val query = "SELECT u.${DatabaseHelper.COL_USUARIO_ID}, u.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
                 "u.${DatabaseHelper.COL_USUARIO_ACTIVE}, u.${DatabaseHelper.COL_USUARIO_EMAIL}, u.${DatabaseHelper.COL_USUARIO_TEL}, " +
                 "(SELECT COUNT(*) FROM ${DatabaseHelper.TABLE_ORDENES} o WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} AND o.${DatabaseHelper.COL_ORDEN_ESTADO} = 'FINALIZADA') as count, " +
                 "(SELECT AVG(${DatabaseHelper.COL_ORDEN_CALIFICACION}) FROM ${DatabaseHelper.TABLE_ORDENES} o WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} AND o.${DatabaseHelper.COL_ORDEN_CALIFICACION} > 0) as avg_rating " +
                 "FROM ${DatabaseHelper.TABLE_USUARIOS} u " +
-                "WHERE u.${DatabaseHelper.COL_USUARIO_ROL} = 'Técnico'"
+                "WHERE u.${DatabaseHelper.COL_USUARIO_ROL} LIKE 'T%cnico%'"
         
         val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {

@@ -49,22 +49,25 @@ class TechnicianMapActivity : BaseActivity(), OnMapReadyCallback {
                 googleMap?.clear()
                 val techs = usuarioRepository.getActiveTechnicians()
                 
+                android.util.Log.d("MAP_DEBUG", "Found ${techs.size} total techs with active=1")
+
                 if (techs.isEmpty()) {
-                    Toast.makeText(this, "No hay técnicos activos en este momento", Toast.LENGTH_LONG).show()
-                    val defaultPos = LatLng(4.6243, -74.0636)
+                    Toast.makeText(this, "No hay técnicos con jornada activa ahora", Toast.LENGTH_LONG).show()
+                    val defaultPos = LatLng(10.9639, -74.7964) 
                     googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(defaultPos, 6f))
                     return@runOnUiThread
                 }
 
                 var firstPos: LatLng? = null
-                var count = 0
+                var countWithGps = 0
                 for (tech in techs) {
                     val lat = tech.lastLat
                     val lon = tech.lastLon
-                    if (lat != null && lon != null) {
+                    
+                    if (lat != null && lon != null && lat != 0.0 && lon != 0.0) {
                         val pos = LatLng(lat, lon)
                         if (firstPos == null) firstPos = pos
-                        count++
+                        countWithGps++
                         
                         googleMap?.addMarker(
                             MarkerOptions()
@@ -77,10 +80,12 @@ class TechnicianMapActivity : BaseActivity(), OnMapReadyCallback {
                 }
 
                 if (firstPos != null) {
-                    googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(firstPos, 12f))
-                    Toast.makeText(this, "Se encontraron $count técnicos activos", Toast.LENGTH_SHORT).show()
+                    googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(firstPos, 14f))
+                    Toast.makeText(this, "Mostrando $countWithGps técnicos de ${techs.size} activos", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "Técnicos activos sin ubicación registrada", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Hay ${techs.size} técnicos activos pero ninguno ha reportado GPS aún", Toast.LENGTH_LONG).show()
+                    val defaultPos = LatLng(10.9639, -74.7964)
+                    googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(defaultPos, 6f))
                 }
             }
         }
