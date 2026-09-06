@@ -46,6 +46,9 @@
     <string name="save_error">No fue posible guardar la información</string>
     <string name="load_error">No fue posible cargar la información</string>
 
+    <string name="start_diagnostic">INICIAR DIAGNÓSTICO EN SITIO</string>
+    <string name="send_quote">ENVIAR COTIZACIÓN FINAL</string>
+    <string name="diagnostic_required">Debe registrar un diagnóstico y al menos una evidencia para cotizar.</string>
     <string name="client_approval">Aprobación del cliente</string>
     <string name="service_summary">Resumen del servicio</string>
     <string name="client_name_label">Nombre del cliente *</string>

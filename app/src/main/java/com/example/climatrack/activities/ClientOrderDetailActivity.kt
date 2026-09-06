@@ -3,9 +3,11 @@ package com.example.climatrack.activities
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import coil.load
 import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityClientOrderDetailBinding
 import com.example.climatrack.repositories.MantenimientoRepository
@@ -144,6 +146,7 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
             // Status color logic
             val (containerColor, textColor) = when (it.estado) {
                 "PENDIENTE" -> R.color.status_pending_container to R.color.status_pending
+                "EN DIAGNÓSTICO" -> R.color.status_in_progress_container to R.color.status_in_progress
                 "PENDIENTE APROBACIÓN" -> R.color.status_in_progress_container to R.color.status_in_progress
                 "APROBADA" -> R.color.status_finished_container to R.color.status_finished
                 "EN PROCESO" -> R.color.status_in_progress_container to R.color.status_in_progress
@@ -167,6 +170,7 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
             }
 
             setupFeedbackUI(it)
+            loadEvidences()
         }
 
         mant?.let { m ->
@@ -190,6 +194,34 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
                     binding.llPartsContainer.addView(partBinding.root)
                 }
             }
+        }
+    }
+
+    private fun loadEvidences() {
+        val evidences = servicioRepository.getEvidenciasByOrden(orderId)
+        if (evidences.isNotEmpty()) {
+            binding.tvEvidencesTitle.visibility = View.VISIBLE
+            binding.cardEvidences.visibility = View.VISIBLE
+            binding.llEvidencesContainer.removeAllViews()
+            
+            evidences.forEach { evidence ->
+                val imageView = ImageView(this).apply {
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        300, 300
+                    ).apply {
+                        setMargins(8, 8, 8, 8)
+                    }
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    load(evidence.rutaFoto) {
+                        crossfade(true)
+                        placeholder(R.drawable.ic_nav_equipment)
+                    }
+                }
+                binding.llEvidencesContainer.addView(imageView)
+            }
+        } else {
+            binding.tvEvidencesTitle.visibility = View.GONE
+            binding.cardEvidences.visibility = View.GONE
         }
     }
 

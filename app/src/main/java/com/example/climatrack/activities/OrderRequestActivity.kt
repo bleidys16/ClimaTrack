@@ -62,7 +62,10 @@ class OrderRequestActivity : BaseActivity() {
         val myEquip = equipoRepository.getByCliente(sessionManager.getUserId())
         val baseModels = mutableListOf<String>()
         
-        myEquip.forEach { baseModels.add("${it.marca} ${it.modelo} (Mío)") }
+        myEquip.forEach { 
+            val name = it.nombre ?: "${it.marca} ${it.modelo}"
+            baseModels.add("$name (Mío)") 
+        }
         baseModels.addAll(listOf("LG Dual Inverter", "Samsung 360 Cassette", "Midea MS-18K", "York YXC-48", "Otro (Ingresar manualmente)"))
         
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, baseModels)

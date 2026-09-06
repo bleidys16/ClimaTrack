@@ -35,7 +35,13 @@ class EquipmentAdapter(
         fun bind(equipment: Equipo) {
             binding.tvEquipCode.text = equipment.codigo
             binding.tvEquipType.text = equipment.tipo
-            binding.tvEquipBrandModel.text = "${equipment.marca} ${equipment.modelo}"
+            
+            val displayName = if (equipment.nombre.isNullOrEmpty()) {
+                "${equipment.marca} ${equipment.modelo}"
+            } else {
+                "${equipment.nombre} (${equipment.marca})"
+            }
+            binding.tvEquipBrandModel.text = displayName
             binding.tvEquipStatus.text = equipment.estado
 
             // Photo loading

@@ -431,6 +431,40 @@
 
             </GridLayout>
 
+            <!-- Technician Evidences -->
+            <TextView
+                android:id="@+id/tvEvidencesTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:fontFamily="@font/geist_bold"
+                android:text="Evidencias Capturadas"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardEvidences"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:cardCornerRadius="12dp"
+                app:strokeColor="@color/cadet_grey"
+                app:strokeWidth="0.5dp"
+                android:visibility="gone">
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp">
+                    <LinearLayout
+                        android:id="@+id/llEvidencesContainer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+            </com.google.android.material.card.MaterialCardView>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="120dp" />

@@ -8,12 +8,14 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import coil.load
 import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityOrderDetailBinding
 import com.example.climatrack.repositories.MantenimientoRepository
@@ -26,6 +28,7 @@ class OrderDetailActivity : BaseActivity() {
     private lateinit var binding: ActivityOrderDetailBinding
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var mantenimientoRepository: MantenimientoRepository
+    private lateinit var servicioRepository: com.example.climatrack.repositories.ServicioRepository
     private var orderId: Int = -1
     private val handler = Handler(Looper.getMainLooper())
     private var isTracking = false
@@ -47,6 +50,7 @@ class OrderDetailActivity : BaseActivity() {
 
         ordenRepository = OrdenRepository(this)
         mantenimientoRepository = MantenimientoRepository(this)
+        servicioRepository = com.example.climatrack.repositories.ServicioRepository(this)
         orderId = intent.getIntExtra("ORDER_ID", -1)
 
         if (orderId == -1) {
@@ -79,6 +83,7 @@ class OrderDetailActivity : BaseActivity() {
 
             val (containerColor, textColor) = when (it.estado) {
                 "PENDIENTE" -> R.color.status_pending_container to R.color.status_pending
+                "EN DIAGNÓSTICO" -> R.color.status_in_progress_container to R.color.status_in_progress
                 "PENDIENTE APROBACIÓN" -> R.color.status_in_progress_container to R.color.status_in_progress
                 "APROBADA" -> R.color.status_finished_container to R.color.status_finished
                 "EN PROCESO" -> R.color.status_in_progress_container to R.color.status_in_progress
@@ -90,6 +95,7 @@ class OrderDetailActivity : BaseActivity() {
             binding.tvStatus.setTextColor(ContextCompat.getColor(this, textColor))
             
             updateUIVisibility(it.estado)
+            loadEvidences()
         }
     }
 
@@ -107,6 +113,15 @@ class OrderDetailActivity : BaseActivity() {
         when (estado) {
             "PENDIENTE" -> {
                 binding.btnSendQuote.visibility = View.VISIBLE
+                binding.btnSendQuote.text = getString(R.string.start_diagnostic)
+            }
+            "EN DIAGNÓSTICO" -> {
+                binding.btnSendQuote.visibility = View.VISIBLE
+                binding.btnSendQuote.text = getString(R.string.send_quote)
+                binding.btnRegisterMaint.isEnabled = true
+                binding.btnSpareParts.isEnabled = true
+                binding.btnEvidence.isEnabled = true
+                binding.btnLocation.isEnabled = true
             }
             "APROBADA" -> {
                 binding.btnStartService.visibility = View.VISIBLE
@@ -126,6 +141,34 @@ class OrderDetailActivity : BaseActivity() {
                 binding.btnDownloadPdf.visibility = View.VISIBLE
                 stopTracking()
             }
+        }
+    }
+
+    private fun loadEvidences() {
+        val evidences = servicioRepository.getEvidenciasByOrden(orderId)
+        if (evidences.isNotEmpty()) {
+            binding.tvEvidencesTitle.visibility = View.VISIBLE
+            binding.cardEvidences.visibility = View.VISIBLE
+            binding.llEvidencesContainer.removeAllViews()
+            
+            evidences.forEach { evidence ->
+                val imageView = ImageView(this).apply {
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        300, 300
+                    ).apply {
+                        setMargins(8, 8, 8, 8)
+                    }
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    load(evidence.rutaFoto) {
+                        crossfade(true)
+                        placeholder(R.drawable.ic_nav_equipment)
+                    }
+                }
+                binding.llEvidencesContainer.addView(imageView)
+            }
+        } else {
+            binding.tvEvidencesTitle.visibility = View.GONE
+            binding.cardEvidences.visibility = View.GONE
         }
     }
 
@@ -153,7 +196,14 @@ class OrderDetailActivity : BaseActivity() {
     }
 
     private fun setupButtons() {
-        binding.btnSendQuote.setOnClickListener { showQuoteDialog() }
+        binding.btnSendQuote.setOnClickListener {
+            val currentStatus = binding.tvStatus.text.toString()
+            if (currentStatus == "PENDIENTE") {
+                startDiagnostic()
+            } else {
+                validateAndShowQuoteDialog()
+            }
+        }
         binding.btnStartService.setOnClickListener { startService() }
         binding.btnDownloadPdf.setOnClickListener { generateAndOpenPdf() }
 
@@ -201,6 +251,24 @@ class OrderDetailActivity : BaseActivity() {
         }
 
         binding.btnFinishOrder.setOnClickListener { confirmFinish() }
+    }
+
+    private fun startDiagnostic() {
+        ordenRepository.updateEstado(orderId, "EN DIAGNÓSTICO")
+        Toast.makeText(this, "Diagnóstico iniciado en sitio", Toast.LENGTH_SHORT).show()
+        loadOrderData()
+    }
+
+    private fun validateAndShowQuoteDialog() {
+        val mant = mantenimientoRepository.getByOrdenId(orderId)
+        val evidences = servicioRepository.getEvidenciasByOrden(orderId)
+
+        if (mant == null || evidences.isEmpty()) {
+            Toast.makeText(this, getString(R.string.diagnostic_required), Toast.LENGTH_LONG).show()
+            return
+        }
+
+        showQuoteDialog()
     }
 
     private fun showQuoteDialog() {

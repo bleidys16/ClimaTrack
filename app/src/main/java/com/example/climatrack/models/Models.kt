@@ -28,6 +28,7 @@ data class Cliente(
 data class Equipo(
     val id: Int = 0,
     val codigo: String = "",
+    val nombre: String? = null,
     val tipo: String = "",
     val marca: String = "",
     val modelo: String = "",

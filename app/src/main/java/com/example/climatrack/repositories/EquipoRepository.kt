@@ -13,6 +13,7 @@ class EquipoRepository(context: Context) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseHelper.COL_EQUIPO_COD, equipo.codigo)
+            put(DatabaseHelper.COL_EQUIPO_NOMBRE, equipo.nombre)
             put(DatabaseHelper.COL_EQUIPO_TIPO, equipo.tipo)
             put(DatabaseHelper.COL_EQUIPO_MARCA, equipo.marca)
             put(DatabaseHelper.COL_EQUIPO_MODELO, equipo.modelo)
@@ -69,6 +70,7 @@ class EquipoRepository(context: Context) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseHelper.COL_EQUIPO_COD, equipo.codigo)
+            put(DatabaseHelper.COL_EQUIPO_NOMBRE, equipo.nombre)
             put(DatabaseHelper.COL_EQUIPO_TIPO, equipo.tipo)
             put(DatabaseHelper.COL_EQUIPO_MARCA, equipo.marca)
             put(DatabaseHelper.COL_EQUIPO_MODELO, equipo.modelo)
@@ -114,6 +116,7 @@ class EquipoRepository(context: Context) {
     private fun cursorToEquipo(cursor: Cursor): Equipo {
         val idIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_ID)
         val codIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_COD)
+        val nomIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_NOMBRE)
         val tipoIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_TIPO)
         val marcaIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_MARCA)
         val modelIdx = cursor.getColumnIndex(DatabaseHelper.COL_EQUIPO_MODELO)
@@ -127,6 +130,7 @@ class EquipoRepository(context: Context) {
         return Equipo(
             id = if (idIdx != -1) cursor.getInt(idIdx) else 0,
             codigo = if (codIdx != -1) cursor.getString(codIdx) else "",
+            nombre = if (nomIdx != -1) cursor.getString(nomIdx) else null,
             tipo = if (tipoIdx != -1) cursor.getString(tipoIdx) else "",
             marca = if (marcaIdx != -1) cursor.getString(marcaIdx) else "",
             modelo = if (modelIdx != -1) cursor.getString(modelIdx) else "",

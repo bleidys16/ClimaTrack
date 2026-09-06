@@ -56,7 +56,7 @@ class EquipmentDetailActivity : BaseActivity() {
     private fun loadEquipmentData() {
         val equip = equipoRepository.getById(equipmentId)
         equip?.let {
-            binding.tvEquipTitle.text = "${it.marca} ${it.modelo}"
+            binding.tvEquipTitle.text = it.nombre ?: "${it.marca} ${it.modelo}"
             binding.tvEquipCode.text = "Código: ${it.codigo}"
             binding.tvBrand.text = "Marca: ${it.marca}"
             binding.tvModel.text = "Modelo: ${it.modelo}"
