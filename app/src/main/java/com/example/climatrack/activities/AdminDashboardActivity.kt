@@ -20,7 +20,9 @@ class AdminDashboardActivity : BaseActivity() {
     private lateinit var sessionManager: SessionManager
     private lateinit var techAdapter: TechnicianAdapter
     private lateinit var ordersAdapter: OrdersAdapter
+    private lateinit var assignedOrdersAdapter: OrdersAdapter
     private var allUnassignedOrders: List<com.example.climatrack.models.OrdenInfo> = emptyList()
+    private var allAssignedOrders: List<com.example.climatrack.models.OrdenInfo> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,10 +98,15 @@ class AdminDashboardActivity : BaseActivity() {
     }
 
     private fun filterUnassignedOrders(query: String) {
-        val filtered = allUnassignedOrders.filter {
+        val filteredUnassigned = allUnassignedOrders.filter {
             it.numero.contains(query, true) || it.clienteNombre.contains(query, true)
         }
-        ordersAdapter.updateList(filtered)
+        ordersAdapter.updateList(filteredUnassigned)
+
+        val filteredAssigned = allAssignedOrders.filter {
+            it.numero.contains(query, true) || it.clienteNombre.contains(query, true)
+        }
+        assignedOrdersAdapter.updateList(filteredAssigned)
     }
 
     private fun setupRecyclerViews() {
@@ -116,6 +123,14 @@ class AdminDashboardActivity : BaseActivity() {
         }
         binding.rvUnassignedOrders.layoutManager = LinearLayoutManager(this)
         binding.rvUnassignedOrders.adapter = ordersAdapter
+
+        assignedOrdersAdapter = OrdersAdapter(emptyList()) { order ->
+            val intent = Intent(this, OrderDetailActivity::class.java)
+            intent.putExtra("ORDER_ID", order.id)
+            startActivity(intent)
+        }
+        binding.rvAssignedOrders.layoutManager = LinearLayoutManager(this)
+        binding.rvAssignedOrders.adapter = assignedOrdersAdapter
     }
 
     private fun showAssignDialog(orderId: Int) {
@@ -176,8 +191,10 @@ class AdminDashboardActivity : BaseActivity() {
         binding.tvActiveTechsCount.text = activeCount.toString()
 
         allUnassignedOrders = ordenRepository.getUnassignedOrders()
+        allAssignedOrders = ordenRepository.getAssignedActiveOrders()
         filterUnassignedOrders(binding.etSearchOrders.text.toString())
-        binding.tvPendingOrdersCount.text = allUnassignedOrders.size.toString()
+        val totalPending = allUnassignedOrders.size + allAssignedOrders.size
+        binding.tvPendingOrdersCount.text = totalPending.toString()
     }
 
     private fun performAutoAssignment() {

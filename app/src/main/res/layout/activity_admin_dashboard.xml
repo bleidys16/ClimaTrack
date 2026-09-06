@@ -256,6 +256,31 @@
                 android:nestedScrollingEnabled="false"
                 android:paddingTop="8dp" />
 
+            <!-- Assigned/Active Orders Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="24dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Órdenes Asignadas / En Proceso"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    android:fontFamily="@font/geist_bold" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvAssignedOrders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:paddingTop="8dp" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
