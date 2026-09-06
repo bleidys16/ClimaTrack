@@ -34,22 +34,30 @@ class UsuarioRepository(context: Context) {
 
     fun fetchTechniciansFromCloud(onComplete: () -> Unit) {
         firestore.collection("usuarios")
-            .whereEqualTo("rol", "Técnico")
-            .get()
+            .get() // Fetch ALL users to ensure cross-device consistency for names
             .addOnSuccessListener { documents ->
                 val db = dbHelper.writableDatabase
                 for (doc in documents) {
                     val id = doc.getLong("id")?.toInt() ?: continue
                     val values = ContentValues().apply {
-                        put(DatabaseHelper.COL_USUARIO_NOMBRE, doc.getString("nombre"))
+                        put(DatabaseHelper.COL_USUARIO_ID, id)
+                        put(DatabaseHelper.COL_USUARIO_USER, doc.getString("usuario") ?: "user_$id")
+                        put(DatabaseHelper.COL_USUARIO_NOMBRE, doc.getString("nombre") ?: "Usuario $id")
+                        put(DatabaseHelper.COL_USUARIO_ROL, doc.getString("rol") ?: "Cliente")
                         put(DatabaseHelper.COL_USUARIO_EMAIL, doc.getString("email"))
                         put(DatabaseHelper.COL_USUARIO_TEL, doc.getString("telefono"))
                         put(DatabaseHelper.COL_USUARIO_ACTIVE, doc.getLong("isActive")?.toInt() ?: 0)
                         put(DatabaseHelper.COL_USUARIO_IMAGEN, doc.getString("imagenPerfil"))
                         put(DatabaseHelper.COL_USUARIO_FCM, doc.getString("fcmToken"))
+                        put(DatabaseHelper.COL_USUARIO_PASS, "********") // Dummy pass for synced users
                     }
-                    db.update(DatabaseHelper.TABLE_USUARIOS, values, 
+                    
+                    val count = db.update(DatabaseHelper.TABLE_USUARIOS, values, 
                         "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(id.toString()))
+                    
+                    if (count == 0) {
+                        db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
+                    }
                 }
                 onComplete()
             }

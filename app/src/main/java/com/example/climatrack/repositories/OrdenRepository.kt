@@ -23,9 +23,10 @@ class OrdenRepository(private val context: Context) {
         val list = mutableListOf<OrdenInfo>()
         val db = dbHelper.readableDatabase
         val query = "SELECT o.${DatabaseHelper.COL_ORDEN_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, o.${DatabaseHelper.COL_ORDEN_FECHA}, " +
-                "COALESCE(c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Cliente Externo') as cliente_nombre, " +
+                "COALESCE(u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, 'Usuario Sincronizado') as cliente_nombre, " +
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
-                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
+                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, " +
+                "COALESCE(u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Por asignar') as tecnico_nombre, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
                 "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
@@ -163,9 +164,10 @@ class OrdenRepository(private val context: Context) {
         val list = mutableListOf<OrdenInfo>()
         val db = dbHelper.readableDatabase
         val query = "SELECT o.${DatabaseHelper.COL_ORDEN_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, o.${DatabaseHelper.COL_ORDEN_FECHA}, " +
-                "COALESCE(c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Cliente Externo') as cliente_nombre, " +
+                "COALESCE(u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, 'Usuario Sincronizado') as cliente_nombre, " +
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
-                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
+                "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, " +
+                "COALESCE(u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Por asignar') as tecnico_nombre, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
                 "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
@@ -384,6 +386,10 @@ class OrdenRepository(private val context: Context) {
                                 put(DatabaseHelper.COL_ORDEN_FIRMA, orden.firmaBase64)
                                 put(DatabaseHelper.COL_ORDEN_CALIFICACION, orden.calificacion)
                                 put(DatabaseHelper.COL_ORDEN_COMENTARIO, orden.comentario)
+                                put(DatabaseHelper.COL_ORDEN_LAT, orden.latitudCliente)
+                                put(DatabaseHelper.COL_ORDEN_LON, orden.longitudCliente)
+                                put(DatabaseHelper.COL_ORDEN_TECH_LAT, orden.tecnicoLat)
+                                put(DatabaseHelper.COL_ORDEN_TECH_LON, orden.tecnicoLon)
                                 put(DatabaseHelper.COL_SYNCED, 1)
                             }
 

@@ -107,20 +107,28 @@ class ClientDashboardActivity : BaseActivity() {
     }
 
     private fun loadMyServices() {
-        val user = usuarioRepository.getById(sessionManager.getUserId())
-        user?.imagenPerfil?.let { path ->
-            val file = java.io.File(path)
-            if (file.exists()) {
-                binding.ivClientAvatar.setImageURI(android.net.Uri.fromFile(file))
-            }
-        }
-
         val clienteId = sessionManager.getUserId()
-        val orders = ordenRepository.getOrdenesByCliente(clienteId)
-        adapter.updateList(orders)
         
-        if (orders.isEmpty()) {
-            Toast.makeText(this, "No tienes servicios registrados", Toast.LENGTH_SHORT).show()
+        // 1. First load from local DB for fast response
+        val localOrders = ordenRepository.getOrdenesByCliente(clienteId)
+        adapter.updateList(localOrders)
+
+        // 2. Fetch from Cloud to get updates (like technician assignment)
+        usuarioRepository.fetchTechniciansFromCloud {
+            ordenRepository.fetchOrdersFromCloud {
+                runOnUiThread {
+                    val updatedOrders = ordenRepository.getOrdenesByCliente(clienteId)
+                    adapter.updateList(updatedOrders)
+                    
+                    val user = usuarioRepository.getById(clienteId)
+                    user?.imagenPerfil?.let { path ->
+                        val file = java.io.File(path)
+                        if (file.exists()) {
+                            binding.ivClientAvatar.setImageURI(android.net.Uri.fromFile(file))
+                        }
+                    }
+                }
+            }
         }
     }
 }
