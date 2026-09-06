@@ -147,29 +147,37 @@ class AdminDashboardActivity : BaseActivity() {
     }
 
     private fun loadData() {
+        // 1. Refresh UI from local data immediately
+        refreshLocalUI()
+
+        // 2. Sync with Cloud and refresh again when done
         usuarioRepository.fetchTechniciansFromCloud {
             ordenRepository.fetchOrdersFromCloud {
                 runOnUiThread {
-                    val user = usuarioRepository.getById(sessionManager.getUserId())
-                    user?.imagenPerfil?.let { path ->
-                        val file = java.io.File(path)
-                        if (file.exists()) {
-                            binding.ivAdminAvatar.setImageURI(android.net.Uri.fromFile(file))
-                        }
-                    }
-
-                    val techs = usuarioRepository.getTechnicianStats()
-                    techAdapter.updateList(techs)
-                    
-                    val activeCount = techs.count { it.isActive == 1 }
-                    binding.tvActiveTechsCount.text = activeCount.toString()
-
-                    allUnassignedOrders = ordenRepository.getUnassignedOrders()
-                    filterUnassignedOrders(binding.etSearchOrders.text.toString())
-                    binding.tvPendingOrdersCount.text = allUnassignedOrders.size.toString()
+                    refreshLocalUI()
                 }
             }
         }
+    }
+
+    private fun refreshLocalUI() {
+        val user = usuarioRepository.getById(sessionManager.getUserId())
+        user?.imagenPerfil?.let { path ->
+            val file = java.io.File(path)
+            if (file.exists()) {
+                binding.ivAdminAvatar.setImageURI(android.net.Uri.fromFile(file))
+            }
+        }
+
+        val techs = usuarioRepository.getTechnicianStats()
+        techAdapter.updateList(techs)
+        
+        val activeCount = techs.count { it.isActive == 1 }
+        binding.tvActiveTechsCount.text = activeCount.toString()
+
+        allUnassignedOrders = ordenRepository.getUnassignedOrders()
+        filterUnassignedOrders(binding.etSearchOrders.text.toString())
+        binding.tvPendingOrdersCount.text = allUnassignedOrders.size.toString()
     }
 
     private fun performAutoAssignment() {
@@ -187,10 +195,16 @@ class AdminDashboardActivity : BaseActivity() {
                     if (techId != -1) {
                         ordenRepository.assignTechnician(order.id, techId)
                         assignedCount++
+                    } else {
+                        android.util.Log.e("AUTO_ASSIGN", "No se encontró técnico disponible para la orden ${order.numero}")
                     }
                 }
 
-                Toast.makeText(this, "Se asignaron $assignedCount órdenes automáticamente", Toast.LENGTH_LONG).show()
+                if (assignedCount > 0) {
+                    Toast.makeText(this, "Se asignaron $assignedCount órdenes automáticamente", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, "No se encontraron técnicos registrados para asignar", Toast.LENGTH_LONG).show()
+                }
                 loadData()
             }
         }

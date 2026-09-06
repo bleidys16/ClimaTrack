@@ -162,13 +162,8 @@ class UsuarioRepository(context: Context) {
     fun getAllTecnicos(): List<Usuario> {
         val list = mutableListOf<Usuario>()
         val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            DatabaseHelper.TABLE_USUARIOS,
-            null,
-            "${DatabaseHelper.COL_USUARIO_ROL}=?",
-            arrayOf("Técnico"),
-            null, null, null
-        )
+        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE UPPER(${DatabaseHelper.COL_USUARIO_ROL}) LIKE 'T%CNICO%'"
+        val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {
                 list.add(cursorToUsuario(cursor))
@@ -181,13 +176,8 @@ class UsuarioRepository(context: Context) {
     fun getAllClientes(): List<Usuario> {
         val list = mutableListOf<Usuario>()
         val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            DatabaseHelper.TABLE_USUARIOS,
-            null,
-            "${DatabaseHelper.COL_USUARIO_ROL}=?",
-            arrayOf("Cliente"),
-            null, null, null
-        )
+        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE UPPER(${DatabaseHelper.COL_USUARIO_ROL}) = 'CLIENTE'"
+        val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {
                 list.add(cursorToUsuario(cursor))

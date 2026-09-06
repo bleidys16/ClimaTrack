@@ -208,7 +208,7 @@ class OrdenRepository(private val context: Context) {
         val list = mutableListOf<OrdenInfo>()
         val db = dbHelper.readableDatabase
         val query = "SELECT o.${DatabaseHelper.COL_ORDEN_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, o.${DatabaseHelper.COL_ORDEN_FECHA}, " +
-                "COALESCE(c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Cliente Externo') as cliente_nombre, " +
+                "COALESCE(u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, 'Usuario Sincronizado') as cliente_nombre, " +
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, " +
                 "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
@@ -216,7 +216,8 @@ class OrdenRepository(private val context: Context) {
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
                 "JOIN ${DatabaseHelper.TABLE_EQUIPOS} e ON o.${DatabaseHelper.COL_ORDEN_EQUIPO_ID} = e.${DatabaseHelper.COL_EQUIPO_ID} " +
-                "WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} IS NULL"
+                "WHERE (o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} IS NULL OR o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = -1) " +
+                "AND o.${DatabaseHelper.COL_ORDEN_ESTADO} = 'SIN ASIGNAR'"
         
         val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
@@ -266,16 +267,20 @@ class OrdenRepository(private val context: Context) {
         val values = ContentValues().apply {
             put(DatabaseHelper.COL_ORDEN_TECNICO_ID, tecnicoId)
             put(DatabaseHelper.COL_ORDEN_ESTADO, "PENDIENTE")
+            put(DatabaseHelper.COL_SYNCED, 0)
         }
-        return db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId.toString()))
+        val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId.toString()))
+        if (result > 0) syncOrderToCloud()
+        return result
     }
 
     fun getTechnicianWithLeastWork(): Int {
         val db = dbHelper.readableDatabase
+        // Robust check for Technician role (handles accents and case)
         val query = "SELECT u.${DatabaseHelper.COL_USUARIO_ID}, COUNT(o.${DatabaseHelper.COL_ORDEN_ID}) as workload " +
                     "FROM ${DatabaseHelper.TABLE_USUARIOS} u " +
                     "LEFT JOIN ${DatabaseHelper.TABLE_ORDENES} o ON u.${DatabaseHelper.COL_USUARIO_ID} = o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} " +
-                    "WHERE u.${DatabaseHelper.COL_USUARIO_ROL} = 'Técnico' " +
+                    "WHERE UPPER(u.${DatabaseHelper.COL_USUARIO_ROL}) LIKE 'T%CNICO%' " +
                     "GROUP BY u.${DatabaseHelper.COL_USUARIO_ID} " +
                     "ORDER BY workload ASC LIMIT 1"
         

@@ -42,7 +42,8 @@ class OrdersAdapter(
             // Color del estado
             val context = binding.root.context
             val (containerColor, textColor) = when (order.estado) {
-                "PENDIENTE" -> R.color.status_pending_container to R.color.status_pending
+                "SIN ASIGNAR" -> R.color.status_pending_container to R.color.status_pending
+                "PENDIENTE" -> R.color.status_finished_container to R.color.status_finished // Changed to differentiate
                 "EN PROCESO" -> R.color.status_in_progress_container to R.color.status_in_progress
                 "FINALIZADA" -> R.color.status_finished_container to R.color.status_finished
                 "CANCELADA" -> R.color.status_error_container to R.color.status_error
