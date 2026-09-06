@@ -2,11 +2,12 @@ package com.example.climatrack.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
@@ -173,7 +174,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     }
 
     private fun checkGpsAndGetLocation() {
-        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             showGpsDisabledDialog()
         } else {
@@ -213,14 +214,31 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private fun getAddress(lat: Double, lon: Double) {
         val geocoder = Geocoder(this, Locale.getDefault())
-        try {
-            val addresses = geocoder.getFromLocation(lat, lon, 1)
-            if (!addresses.isNullOrEmpty()) {
-                currentAddress = addresses[0].getAddressLine(0)
-                binding.tvAddress.text = currentAddress
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            geocoder.getFromLocation(lat, lon, 1, object : Geocoder.GeocodeListener {
+                override fun onGeocode(addresses: MutableList<Address>) {
+                    if (addresses.isNotEmpty()) {
+                        runOnUiThread {
+                            currentAddress = addresses[0].getAddressLine(0)
+                            binding.tvAddress.text = currentAddress
+                        }
+                    }
+                }
+                override fun onError(errorMessage: String?) {
+                    super.onError(errorMessage)
+                }
+            })
+        } else {
+            try {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocation(lat, lon, 1)
+                if (!addresses.isNullOrEmpty()) {
+                    currentAddress = addresses[0].getAddressLine(0)
+                    binding.tvAddress.text = currentAddress
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
         }
     }
 

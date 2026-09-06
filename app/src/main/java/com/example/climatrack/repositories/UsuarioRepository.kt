@@ -91,7 +91,9 @@ class UsuarioRepository(context: Context) {
     fun register(usuario: Usuario): Long {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
-            put(DatabaseHelper.COL_USUARIO_ID, usuario.id)
+            if (usuario.id != 0 && usuario.id != -1) {
+                put(DatabaseHelper.COL_USUARIO_ID, usuario.id)
+            }
             put(DatabaseHelper.COL_USUARIO_USER, usuario.usuario)
             put(DatabaseHelper.COL_USUARIO_PASS, usuario.password)
             put(DatabaseHelper.COL_USUARIO_NOMBRE, usuario.nombre)
@@ -107,15 +109,28 @@ class UsuarioRepository(context: Context) {
             put(DatabaseHelper.COL_USUARIO_LON, usuario.lastLon)
         }
         
-        // Try update first
-        val rows = db.update(DatabaseHelper.TABLE_USUARIOS, values, 
-            "${DatabaseHelper.COL_USUARIO_ID}=? OR ${DatabaseHelper.COL_USUARIO_USER}=?", 
-            arrayOf(usuario.id.toString(), usuario.usuario))
+        // Try update first if id is known
+        val rows = if (usuario.id != 0 && usuario.id != -1) {
+            db.update(DatabaseHelper.TABLE_USUARIOS, values, 
+                "${DatabaseHelper.COL_USUARIO_ID}=?", 
+                arrayOf(usuario.id.toString()))
+        } else {
+            db.update(DatabaseHelper.TABLE_USUARIOS, values,
+                "${DatabaseHelper.COL_USUARIO_USER}=?",
+                arrayOf(usuario.usuario))
+        }
         
         return if (rows == 0) {
             db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
         } else {
-            usuario.id.toLong()
+            if (usuario.id != 0 && usuario.id != -1) usuario.id.toLong() else {
+                // Get the ID of the updated user
+                val cursor = db.query(DatabaseHelper.TABLE_USUARIOS, arrayOf(DatabaseHelper.COL_USUARIO_ID),
+                    "${DatabaseHelper.COL_USUARIO_USER}=?", arrayOf(usuario.usuario), null, null, null)
+                val id = if (cursor.moveToFirst()) cursor.getLong(0) else -1L
+                cursor.close()
+                id
+            }
         }
     }
 

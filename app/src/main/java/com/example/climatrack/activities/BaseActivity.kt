@@ -1,6 +1,7 @@
 package com.example.climatrack.activities
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.transition.TransitionManager
 import android.view.View
@@ -22,17 +23,31 @@ open class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        applyFadeTransition()
     }
 
     override fun startActivity(intent: Intent?) {
         super.startActivity(intent)
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        applyFadeTransition()
     }
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        applyFadeTransition()
+    }
+
+    private fun applyFadeTransition() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(
+                OVERRIDE_TRANSITION_OPEN,
+                R.anim.fade_in,
+                R.anim.fade_out,
+                0
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        }
     }
 
     protected fun navigateToHome() {

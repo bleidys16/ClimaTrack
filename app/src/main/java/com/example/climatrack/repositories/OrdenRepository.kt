@@ -7,13 +7,12 @@ import com.example.climatrack.database.DatabaseHelper
 import com.example.climatrack.models.Orden
 import com.example.climatrack.models.OrdenInfo
 import com.example.climatrack.utils.FirebaseHelper
-import com.google.firebase.firestore.SetOptions
 
 class OrdenRepository(private val context: Context) {
     private val dbHelper = DatabaseHelper(context)
     private val firestore = FirebaseHelper.db
 
-    fun syncOrderToCloud(id: Int) {
+    fun syncOrderToCloud() {
         // We'll let SyncManager handle background sync
         com.example.climatrack.utils.SyncManager.startImmediateSync(context)
     }
@@ -63,25 +62,6 @@ class OrdenRepository(private val context: Context) {
         return list
     }
 
-    fun getAllByTecnico(tecnicoId: Int): List<Orden> {
-        val list = mutableListOf<Orden>()
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            DatabaseHelper.TABLE_ORDENES,
-            null,
-            "${DatabaseHelper.COL_ORDEN_TECNICO_ID}=?",
-            arrayOf(tecnicoId.toString()),
-            null, null, null
-        )
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(cursorToOrden(cursor))
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        return list
-    }
-
     fun getById(id: Int): Orden? {
         val db = dbHelper.readableDatabase
         val cursor = db.query(
@@ -105,7 +85,7 @@ class OrdenRepository(private val context: Context) {
             put(DatabaseHelper.COL_ORDEN_ESTADO, nuevoEstado)
         }
         val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
-        if (result > 0) syncOrderToCloud(id)
+        if (result > 0) syncOrderToCloud()
         return result
     }
 
@@ -116,7 +96,7 @@ class OrdenRepository(private val context: Context) {
             put(DatabaseHelper.COL_ORDEN_ESTADO, "PENDIENTE APROBACIÓN")
         }
         val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
-        if (result > 0) syncOrderToCloud(id)
+        if (result > 0) syncOrderToCloud()
         return result
     }
 
@@ -127,7 +107,7 @@ class OrdenRepository(private val context: Context) {
             put(DatabaseHelper.COL_ORDEN_ESTADO, "FINALIZADA")
         }
         val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
-        if (result > 0) syncOrderToCloud(id)
+        if (result > 0) syncOrderToCloud()
         return result
     }
 
@@ -138,7 +118,7 @@ class OrdenRepository(private val context: Context) {
             put(DatabaseHelper.COL_ORDEN_COMENTARIO, comentario)
         }
         val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
-        if (result > 0) syncOrderToCloud(id)
+        if (result > 0) syncOrderToCloud()
         return result
     }
 
@@ -151,8 +131,7 @@ class OrdenRepository(private val context: Context) {
         val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id.toString()))
         if (result > 0) {
             // Update only specific fields in Firestore for performance
-            val orden = getById(id)
-            if (orden != null) {
+            getById(id)?.let { orden ->
                 firestore.collection("ordenes").document(orden.numero)
                     .update("tecnicoLat", lat, "tecnicoLon", lon)
             }
@@ -176,7 +155,7 @@ class OrdenRepository(private val context: Context) {
             put(DatabaseHelper.COL_ORDEN_DIR_EXACTA, orden.direccionExacta)
         }
         val result = db.insert(DatabaseHelper.TABLE_ORDENES, null, values)
-        if (result > 0) syncOrderToCloud(result.toInt())
+        if (result > 0) syncOrderToCloud()
         return result
     }
 
@@ -376,29 +355,46 @@ class OrdenRepository(private val context: Context) {
             .addOnSuccessListener { documents ->
                 val db = dbHelper.writableDatabase
                 for (doc in documents) {
-                    val orden = doc.toObject(Orden::class.java)
-                    if (orden != null) {
-                        val values = ContentValues().apply {
-                            put(DatabaseHelper.COL_ORDEN_NUM, orden.numero)
-                            put(DatabaseHelper.COL_ORDEN_FECHA, orden.fecha)
-                            put(DatabaseHelper.COL_ORDEN_CLIENTE_ID, orden.clienteId)
-                            put(DatabaseHelper.COL_ORDEN_EQUIPO_ID, orden.equipoId)
-                            put(DatabaseHelper.COL_ORDEN_TECNICO_ID, orden.tecnicoId)
-                            put(DatabaseHelper.COL_ORDEN_TIPO, orden.tipoServicio)
-                            put(DatabaseHelper.COL_ORDEN_DESC, orden.descripcion)
-                            put(DatabaseHelper.COL_ORDEN_ESTADO, orden.estado)
-                            put(DatabaseHelper.COL_ORDEN_PRECIO, orden.precioServicio)
-                            put(DatabaseHelper.COL_ORDEN_DIR_EXACTA, orden.direccionExacta)
-                            put(DatabaseHelper.COL_ORDEN_FIRMA, orden.firmaBase64)
-                            put(DatabaseHelper.COL_ORDEN_CALIFICACION, orden.calificacion)
-                            put(DatabaseHelper.COL_ORDEN_COMENTARIO, orden.comentario)
+                    doc.toObject(Orden::class.java)?.let { orden ->
+                        // CRITICAL: Check if local version is NOT synced yet to avoid overwriting local assignment
+                        val localCursor = db.query(DatabaseHelper.TABLE_ORDENES, arrayOf(DatabaseHelper.COL_SYNCED),
+                            "${DatabaseHelper.COL_ORDEN_NUM}=?", arrayOf(orden.numero), null, null, null)
+                        
+                        var shouldUpdate = true
+                        if (localCursor.moveToFirst()) {
+                            val isSynced = localCursor.getInt(0)
+                            if (isSynced == 0) {
+                                shouldUpdate = false // Keep local version
+                            }
                         }
-                        
-                        val count = db.update(DatabaseHelper.TABLE_ORDENES, values, 
-                            "${DatabaseHelper.COL_ORDEN_NUM}=?", arrayOf(orden.numero))
-                        
-                        if (count == 0) {
-                            db.insert(DatabaseHelper.TABLE_ORDENES, null, values)
+                        localCursor.close()
+
+                        if (shouldUpdate) {
+                            val values = ContentValues().apply {
+                                put(DatabaseHelper.COL_ORDEN_NUM, orden.numero)
+                                put(DatabaseHelper.COL_ORDEN_FECHA, orden.fecha)
+                                put(DatabaseHelper.COL_ORDEN_CLIENTE_ID, orden.clienteId)
+                                put(DatabaseHelper.COL_ORDEN_EQUIPO_ID, orden.equipoId)
+                                put(DatabaseHelper.COL_ORDEN_TECNICO_ID, orden.tecnicoId)
+                                put(DatabaseHelper.COL_ORDEN_TIPO, orden.tipoServicio)
+                                put(DatabaseHelper.COL_ORDEN_DESC, orden.descripcion)
+                                put(DatabaseHelper.COL_ORDEN_ESTADO, orden.estado)
+                                put(DatabaseHelper.COL_ORDEN_PRECIO, orden.precioServicio)
+                                put(DatabaseHelper.COL_ORDEN_DIR_EXACTA, orden.direccionExacta)
+                                put(DatabaseHelper.COL_ORDEN_FIRMA, orden.firmaBase64)
+                                put(DatabaseHelper.COL_ORDEN_CALIFICACION, orden.calificacion)
+                                put(DatabaseHelper.COL_ORDEN_COMENTARIO, orden.comentario)
+                                put(DatabaseHelper.COL_SYNCED, 1)
+                            }
+
+                            val count = db.update(
+                                DatabaseHelper.TABLE_ORDENES, values,
+                                "${DatabaseHelper.COL_ORDEN_NUM}=?", arrayOf(orden.numero)
+                            )
+
+                            if (count == 0) {
+                                db.insert(DatabaseHelper.TABLE_ORDENES, null, values)
+                            }
                         }
                     }
                 }

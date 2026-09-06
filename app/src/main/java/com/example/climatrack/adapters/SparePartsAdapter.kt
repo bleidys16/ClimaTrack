@@ -3,6 +3,7 @@ package com.example.climatrack.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.climatrack.R
 import com.example.climatrack.databinding.ItemSparePartBinding
 import com.example.climatrack.models.DetalleRepuestoInfo
 import java.text.NumberFormat
@@ -31,12 +32,13 @@ class SparePartsAdapter(
 
     inner class ViewHolder(private val binding: ItemSparePartBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: DetalleRepuestoInfo) {
+            val context = binding.root.context
             binding.tvPartCode.text = item.repuestoCodigo
             binding.tvPartName.text = item.repuestoNombre
-            binding.tvPartQty.text = "Cantidad: ${item.cantidad}"
+            binding.tvPartQty.text = context.getString(R.string.quantity_display, item.cantidad)
             binding.tvPartUnit.text = item.repuestoUnidad ?: "Unidad"
             
-            val formatter = NumberFormat.getCurrencyInstance(Locale("es", "CO"))
+            val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CO"))
             binding.tvPartPrice.text = formatter.format(item.precio * item.cantidad)
 
             binding.ivMenuMore.setOnClickListener {

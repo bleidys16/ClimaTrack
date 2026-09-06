@@ -16,6 +16,9 @@
     </string-array>
     <string name="welcome_back">¡Bienvenido de nuevo!</string>
     <string name="order_num_label">Orden: %s</string>
+    <string name="client_display">Cliente: %s</string>
+    <string name="equipment_display">Equipo: %s</string>
+    <string name="quantity_display">Cantidad: %d</string>
     <string name="orders_summary">Resumen de órdenes</string>
     <string name="quick_access">Accesos rápidos</string>
     <string name="pending">Pendientes</string>

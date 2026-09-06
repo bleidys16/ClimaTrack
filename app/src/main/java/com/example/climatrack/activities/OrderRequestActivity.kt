@@ -3,7 +3,9 @@ package com.example.climatrack.activities
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -115,29 +117,64 @@ class OrderRequestActivity : BaseActivity() {
 
     private fun getAddress(latitude: Double, longitude: Double) {
         val geocoder = Geocoder(this, Locale.getDefault())
-        try {
-            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
-            if (!addresses.isNullOrEmpty()) {
-                val address = addresses[0].getAddressLine(0)
-                binding.etExactAddress.setText(address)
-                Toast.makeText(this, "Dirección autocompletada", Toast.LENGTH_SHORT).show()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            geocoder.getFromLocation(latitude, longitude, 1, object : Geocoder.GeocodeListener {
+                override fun onGeocode(addresses: MutableList<Address>) {
+                    if (addresses.isNotEmpty()) {
+                        runOnUiThread {
+                            val address = addresses[0].getAddressLine(0)
+                            binding.etExactAddress.setText(address)
+                            Toast.makeText(this@OrderRequestActivity, "Dirección autocompletada", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            })
+        } else {
+            try {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+                if (!addresses.isNullOrEmpty()) {
+                    val address = addresses[0].getAddressLine(0)
+                    binding.etExactAddress.setText(address)
+                    Toast.makeText(this, "Dirección autocompletada", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
         }
     }
 
     private fun submitRequest() {
         val desc = binding.etDescription.text.toString().trim()
         val addr = binding.etExactAddress.text.toString().trim()
-        val selectedModel = binding.spinnerModel.text.toString()
+        val selectedModelText = binding.spinnerModel.text.toString()
         val manualModel = binding.etManualModel.text.toString().trim()
 
-        val finalModel = if (selectedModel.contains("Otro")) manualModel else selectedModel
+        val finalModel = if (selectedModelText.contains("Otro")) manualModel else selectedModelText
 
         if (desc.isEmpty() || addr.isEmpty() || finalModel.isEmpty()) {
             Toast.makeText(this, "Complete todos los campos, incluyendo el modelo", Toast.LENGTH_SHORT).show()
             return
+        }
+
+        // If the equipment is NOT one of user's own (based on selectedEquipmentId), create a placeholder equipment
+        val myEquip = equipoRepository.getByCliente(sessionManager.getUserId())
+        val isExisting = myEquip.any { it.id == selectedEquipmentId }
+        
+        var equipmentIdToUse = selectedEquipmentId
+        
+        if (!isExisting || selectedModelText.contains("Otro")) {
+            // Create a new equipment record for this user
+            val newEquip = com.example.climatrack.models.Equipo(
+                codigo = "TEMP-" + System.currentTimeMillis().toString().takeLast(4),
+                tipo = "Aire Acondicionado",
+                marca = if (finalModel.contains(" ")) finalModel.split(" ")[0] else "Genérica",
+                modelo = finalModel,
+                clienteId = sessionManager.getUserId(),
+                estado = "OPERATIVO",
+                ubicacion = addr
+            )
+            equipmentIdToUse = equipoRepository.create(newEquip).toInt()
         }
 
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -149,10 +186,10 @@ class OrderRequestActivity : BaseActivity() {
             numero = orderNum,
             fecha = date,
             clienteId = sessionManager.getUserId(),
-            equipoId = selectedEquipmentId,
+            equipoId = equipmentIdToUse,
             tecnicoId = null,
             tipoServicio = "CORRECTIVO",
-            descripcion = "Modelo: $finalModel\n\n$desc",
+            descripcion = desc,
             estado = "SIN ASIGNAR",
             direccionExacta = addr,
             latitudCliente = lat,

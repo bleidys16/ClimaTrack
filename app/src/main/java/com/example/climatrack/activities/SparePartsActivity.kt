@@ -2,7 +2,6 @@ package com.example.climatrack.activities
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Toast
@@ -74,9 +73,9 @@ class SparePartsActivity : BaseActivity() {
         val ordenRepo = OrdenRepository(this)
         val info = ordenRepo.getAllInfoByTecnico(-1).find { it.id == orderId }
         info?.let {
-            binding.tvOrderNumDisplay.text = "Orden: ${it.numero}"
-            binding.tvClientDisplay.text = "Cliente: ${it.clienteNombre}"
-            binding.tvEquipDisplay.text = "Equipo: ${it.equipoNombre}"
+            binding.tvOrderNumDisplay.text = getString(R.string.order_num_label, it.numero)
+            binding.tvClientDisplay.text = getString(R.string.client_display, it.clienteNombre)
+            binding.tvEquipDisplay.text = getString(R.string.equipment_display, it.equipoNombre)
             binding.tvStatusDisplay.text = it.estado
         }
 
@@ -96,7 +95,7 @@ class SparePartsActivity : BaseActivity() {
         
         // Calculate Total
         val total = list.sumOf { it.precio * it.cantidad }
-        val formatter = NumberFormat.getCurrencyInstance(Locale("es", "CO"))
+        val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CO"))
         binding.tvTotalValue.text = formatter.format(total)
     }
 
@@ -122,13 +121,14 @@ class SparePartsActivity : BaseActivity() {
             .setView(dialogBinding.root)
             .setPositiveButton("Agregar") { _, _ ->
                 val qty = dialogBinding.etQuantity.text.toString().toIntOrNull() ?: 0
-                if (selectedPart != null && qty > 0) {
+                val part = selectedPart
+                if (part != null && qty > 0) {
                     val detail = DetalleRepuesto(
                         mantenimientoId = mantenimientoId,
-                        repuestoId = selectedPart!!.id,
+                        repuestoId = part.id,
                         cantidad = qty,
                         observacion = dialogBinding.etObs.text.toString(),
-                        precioHistorico = selectedPart!!.precio
+                        precioHistorico = part.precio
                     )
                     servicioRepository.addRepuesto(detail)
                     loadPartsList()

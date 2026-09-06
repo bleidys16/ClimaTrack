@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 18
+        private const val DATABASE_VERSION = 22
 
         // Columna común para soporte offline/sincronización
         const val COL_SYNCED = "is_synced"
@@ -149,7 +149,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
-        val createUsuarios = "CREATE TABLE $TABLE_USUARIOS (" +
+        val createUsuarios = "CREATE TABLE IF NOT EXISTS $TABLE_USUARIOS (" +
                 "$COL_USUARIO_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_USUARIO_USER TEXT NOT NULL UNIQUE, " +
                 "$COL_USUARIO_PASS TEXT NOT NULL, " +
@@ -165,14 +165,14 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_USUARIO_IMAGEN TEXT, " +
                 "$COL_USUARIO_FCM TEXT)"
 
-        val createClientes = "CREATE TABLE $TABLE_CLIENTES (" +
+        val createClientes = "CREATE TABLE IF NOT EXISTS $TABLE_CLIENTES (" +
                 "$COL_CLIENTE_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_CLIENTE_NOMBRE TEXT NOT NULL, " +
                 "$COL_CLIENTE_TEL TEXT, " +
                 "$COL_CLIENTE_DIR TEXT, " +
                 "$COL_CLIENTE_EMAIL TEXT)"
 
-        val createEquipos = "CREATE TABLE $TABLE_EQUIPOS (" +
+        val createEquipos = "CREATE TABLE IF NOT EXISTS $TABLE_EQUIPOS (" +
                 "$COL_EQUIPO_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_EQUIPO_COD TEXT NOT NULL UNIQUE, " +
                 "$COL_EQUIPO_NOMBRE TEXT, " +
@@ -187,7 +187,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_EQUIPO_IMAGEN TEXT, " +
                 "FOREIGN KEY($COL_EQUIPO_CLIENTE_ID) REFERENCES $TABLE_CLIENTES($COL_CLIENTE_ID))"
 
-        val createOrdenes = "CREATE TABLE $TABLE_ORDENES (" +
+        val createOrdenes = "CREATE TABLE IF NOT EXISTS $TABLE_ORDENES (" +
                 "$COL_ORDEN_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_ORDEN_NUM TEXT NOT NULL UNIQUE, " +
                 "$COL_ORDEN_FECHA TEXT NOT NULL, " +
@@ -211,7 +211,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "FOREIGN KEY($COL_ORDEN_EQUIPO_ID) REFERENCES $TABLE_EQUIPOS($COL_EQUIPO_ID), " +
                 "FOREIGN KEY($COL_ORDEN_TECNICO_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"
 
-        val createMantenimientos = "CREATE TABLE $TABLE_MANTENIMIENTOS (" +
+        val createMantenimientos = "CREATE TABLE IF NOT EXISTS $TABLE_MANTENIMIENTOS (" +
                 "$COL_MANT_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_MANT_ORDEN_ID INTEGER, " +
                 "$COL_MANT_FECHA TEXT NOT NULL, " +
@@ -224,14 +224,14 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_SYNCED INTEGER DEFAULT 0, " +
                 "FOREIGN KEY($COL_MANT_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
 
-        val createRepuestos = "CREATE TABLE $TABLE_REPUESTOS (" +
+        val createRepuestos = "CREATE TABLE IF NOT EXISTS $TABLE_REPUESTOS (" +
                 "$COL_REP_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_REP_NOMBRE TEXT NOT NULL, " +
                 "$COL_REP_COD TEXT NOT NULL UNIQUE, " +
                 "$COL_REP_UNIDAD TEXT, " +
                 "$COL_REP_PRECIO REAL DEFAULT 0)"
 
-        val createDetalleRepuestos = "CREATE TABLE $TABLE_DETALLE_REPUESTOS (" +
+        val createDetalleRepuestos = "CREATE TABLE IF NOT EXISTS $TABLE_DETALLE_REPUESTOS (" +
                 "$COL_DET_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_DET_MANT_ID INTEGER, " +
                 "$COL_DET_REP_ID INTEGER, " +
@@ -242,7 +242,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "FOREIGN KEY($COL_DET_MANT_ID) REFERENCES $TABLE_MANTENIMIENTOS($COL_MANT_ID), " +
                 "FOREIGN KEY($COL_DET_REP_ID) REFERENCES $TABLE_REPUESTOS($COL_REP_ID))"
 
-        val createEvidencias = "CREATE TABLE $TABLE_EVIDENCIAS (" +
+        val createEvidencias = "CREATE TABLE IF NOT EXISTS $TABLE_EVIDENCIAS (" +
                 "$COL_EVI_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_EVI_ORDEN_ID INTEGER, " +
                 "$COL_EVI_RUTA TEXT, " +
@@ -250,7 +250,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_SYNCED INTEGER DEFAULT 0, " +
                 "FOREIGN KEY($COL_EVI_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
 
-        val createAprobaciones = "CREATE TABLE $TABLE_APROBACIONES (" +
+        val createAprobaciones = "CREATE TABLE IF NOT EXISTS $TABLE_APROBACIONES (" +
                 "$COL_APROB_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_APROB_ORDEN_ID INTEGER, " +
                 "$COL_APROB_CLIENTE TEXT, " +
@@ -258,7 +258,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_APROB_FECHA TEXT, " +
                 "FOREIGN KEY($COL_APROB_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
 
-        val createUbicaciones = "CREATE TABLE $TABLE_UBICACIONES (" +
+        val createUbicaciones = "CREATE TABLE IF NOT EXISTS $TABLE_UBICACIONES (" +
                 "$COL_UBI_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_UBI_ORDEN_ID INTEGER, " +
                 "$COL_UBI_LAT REAL, " +
@@ -267,7 +267,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_UBI_FECHA TEXT, " +
                 "FOREIGN KEY($COL_UBI_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
 
-        val createActividad = "CREATE TABLE $TABLE_ACTIVIDAD (" +
+        val createActividad = "CREATE TABLE IF NOT EXISTS $TABLE_ACTIVIDAD (" +
                 "$COL_ACT_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_ACT_TECH_ID INTEGER, " +
                 "$COL_ACT_FECHA TEXT NOT NULL, " +
@@ -277,7 +277,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_ACT_LON REAL, " +
                 "FOREIGN KEY($COL_ACT_TECH_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"
 
-        val createMensajes = "CREATE TABLE $TABLE_MENSAJES (" +
+        val createMensajes = "CREATE TABLE IF NOT EXISTS $TABLE_MENSAJES (" +
                 "$COL_MSG_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COL_MSG_ORDEN_ID INTEGER, " +
                 "$COL_MSG_REMITENTE_ID INTEGER, " +
@@ -303,6 +303,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+        db?.execSQL("DROP TABLE IF EXISTS $TABLE_MENSAJES")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_ACTIVIDAD")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_UBICACIONES")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_APROBACIONES")
