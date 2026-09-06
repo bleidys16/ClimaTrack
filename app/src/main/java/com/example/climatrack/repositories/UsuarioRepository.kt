@@ -26,7 +26,11 @@ class UsuarioRepository(context: Context) {
             "telefono" to usuario.telefono,
             "isActive" to usuario.isActive,
             "imagenPerfil" to usuario.imagenPerfil,
-            "fcmToken" to usuario.fcmToken
+            "fcmToken" to usuario.fcmToken,
+            "lastLat" to usuario.lastLat,
+            "lastLon" to usuario.lastLon,
+            "workStartTime" to usuario.workStartTime,
+            "workEndTime" to usuario.workEndTime
         )
         firestore.collection("usuarios").document(usuario.id.toString())
             .set(userMap, SetOptions.merge())
@@ -49,6 +53,10 @@ class UsuarioRepository(context: Context) {
                         put(DatabaseHelper.COL_USUARIO_ACTIVE, doc.getLong("isActive")?.toInt() ?: 0)
                         put(DatabaseHelper.COL_USUARIO_IMAGEN, doc.getString("imagenPerfil"))
                         put(DatabaseHelper.COL_USUARIO_FCM, doc.getString("fcmToken"))
+                        put(DatabaseHelper.COL_USUARIO_LAT, doc.getDouble("lastLat"))
+                        put(DatabaseHelper.COL_USUARIO_LON, doc.getDouble("lastLon"))
+                        put(DatabaseHelper.COL_USUARIO_WORK_START, doc.getString("workStartTime"))
+                        put(DatabaseHelper.COL_USUARIO_WORK_END, doc.getString("workEndTime"))
                         put(DatabaseHelper.COL_USUARIO_PASS, "********") // Dummy pass for synced users
                     }
                     
@@ -190,13 +198,8 @@ class UsuarioRepository(context: Context) {
     fun getActiveTechnicians(): List<Usuario> {
         val list = mutableListOf<Usuario>()
         val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            DatabaseHelper.TABLE_USUARIOS,
-            null,
-            "${DatabaseHelper.COL_USUARIO_ROL}=? AND ${DatabaseHelper.COL_USUARIO_ACTIVE}=1",
-            arrayOf("Técnico"),
-            null, null, null
-        )
+        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE UPPER(${DatabaseHelper.COL_USUARIO_ROL}) LIKE 'T%CNICO%' AND ${DatabaseHelper.COL_USUARIO_ACTIVE}=1"
+        val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {
                 list.add(cursorToUsuario(cursor))
