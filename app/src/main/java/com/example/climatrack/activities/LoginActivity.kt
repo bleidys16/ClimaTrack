@@ -3,7 +3,6 @@ package com.example.climatrack.activities
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityLoginBinding
 import com.example.climatrack.repositories.UsuarioRepository
@@ -94,7 +93,7 @@ class LoginActivity : BaseActivity() {
                         lastLat = doc.getDouble("lastLat"),
                         lastLon = doc.getDouble("lastLon"),
                         imagenPerfil = doc.getString("imagenPerfil"),
-                        fcmToken = doc.getString("fcmToken")
+                        fcmToken = doc.getString("fcmToken"),
                     )
                     usuarioRepository.register(dbUser)
                     sessionManager.saveSession(id, nombre, rol)

@@ -49,8 +49,15 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
 
     private suspend fun syncOrders() {
         val db = dbHelper.readableDatabase
-        val cursor = db.query(DatabaseHelper.TABLE_ORDENES, null, 
-            "${DatabaseHelper.COL_SYNCED} = 0", null, null, null, null)
+        val cursor = db.query(
+            DatabaseHelper.TABLE_ORDENES,
+            null,
+            "${DatabaseHelper.COL_SYNCED} = 0",
+            null,
+            null,
+            null,
+            null,
+        )
         
         if (cursor.moveToFirst()) {
             do {
@@ -141,7 +148,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
                         ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ORDEN_ID)),
                         rutaFoto = downloadUrl,
                         fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_FECHA)),
-                        isSynced = 1
+                        isSynced = 1,
                     )
 
                     firestore.collection("evidencias").document(id.toString()).set(evidence, SetOptions.merge()).await()

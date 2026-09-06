@@ -1,7 +1,6 @@
 package com.example.climatrack.activities
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.climatrack.databinding.ActivityChatBinding
 import com.example.climatrack.models.Mensaje
@@ -85,7 +84,7 @@ class ChatActivity : BaseActivity() {
             remitenteId = sessionManager.getUserId(),
             nombreRemitente = sessionManager.getUserName() ?: "Usuario",
             texto = text,
-            fecha = now
+            fecha = now,
         )
 
         chatRepository.sendMessage(msg)

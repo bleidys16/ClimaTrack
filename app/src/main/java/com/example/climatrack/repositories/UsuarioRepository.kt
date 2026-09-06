@@ -69,13 +69,14 @@ class UsuarioRepository(context: Context) {
         }
     }
 
-    fun login(usuario: String, password: String): Usuario? {
+    fun login(identifier: String, password: String): Usuario? {
         val db = dbHelper.readableDatabase
+        // Allow login with either username OR email
         val cursor: Cursor = db.query(
             DatabaseHelper.TABLE_USUARIOS,
             null,
-            "${DatabaseHelper.COL_USUARIO_USER}=? AND ${DatabaseHelper.COL_USUARIO_PASS}=?",
-            arrayOf(usuario, password),
+            "(${DatabaseHelper.COL_USUARIO_USER}=? OR ${DatabaseHelper.COL_USUARIO_EMAIL}=?) AND ${DatabaseHelper.COL_USUARIO_PASS}=?",
+            arrayOf(identifier, identifier, password),
             null, null, null
         )
 

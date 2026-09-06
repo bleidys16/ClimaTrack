@@ -92,7 +92,7 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
                         return@addSnapshotListener
                     }
                     
-                    if (snapshot == null || !snapshot.exists()) return@addSnapshotListener
+                    if ((snapshot == null) || !snapshot.exists()) return@addSnapshotListener
 
                     val tecnicoLat = snapshot.getDouble("tecnicoLat")
                     val tecnicoLon = snapshot.getDouble("tecnicoLon")
@@ -101,8 +101,8 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
                         updateMarker(tecnicoLat, tecnicoLon)
                     }
                 }
-        } catch (e: Exception) {
-            android.util.Log.e("TRACKING_ERROR", "Error setting up firestore listener", e)
+        } catch (ignored: Exception) {
+            android.util.Log.e("TRACKING_ERROR", "Error setting up firestore listener", ignored)
         }
     }
 
@@ -113,7 +113,7 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
                 MarkerOptions()
                     .position(pos)
                     .title("Tu Técnico")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)),
             )
             googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 15f))
         } else {
@@ -133,7 +133,7 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
         val mant = mantenimientoRepository.getByOrdenId(orderId)
 
         info?.let {
-            binding.tvOrderNum.text = "Orden: ${it.numero}"
+            binding.tvOrderNum.text = getString(R.string.order_num_label, it.numero)
             binding.tvStatus.text = it.estado
             binding.tvServiceType.text = "Servicio: ${it.tipoServicio}"
             binding.tvDate.text = "Fecha: ${it.fecha}"
@@ -229,7 +229,7 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
             return
         }
 
-        val result = ordenRepository.updateFeedback(orderId, rating, if (comment.isEmpty()) null else comment)
+        val result = ordenRepository.updateFeedback(orderId, rating, comment.ifEmpty { null })
         if (result > 0) {
             Toast.makeText(this, "¡Gracias por tu calificación!", Toast.LENGTH_SHORT).show()
             loadOrderDetails()
@@ -253,14 +253,14 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
     }
 
     private fun openPdf(file: java.io.File) {
-        val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
+        val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "application/pdf")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         try {
             startActivity(intent)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Toast.makeText(this, "No hay lector de PDF instalado", Toast.LENGTH_SHORT).show()
         }
     }

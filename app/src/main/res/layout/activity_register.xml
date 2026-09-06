@@ -116,6 +116,8 @@
             android:hint="Contraseña"
             app:endIconMode="password_toggle"
             app:endIconTint="@color/cadet_grey"
+            app:helperText="Mínimo 6 caracteres"
+            app:helperTextTextColor="@color/cadet_grey"
             app:startIconDrawable="@drawable/ic_lock_modern"
             app:startIconTint="@color/cadet_grey"
             app:layout_constraintTop_toBottomOf="@id/tilPhone">

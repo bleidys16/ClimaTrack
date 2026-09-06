@@ -1,7 +1,8 @@
 package com.example.climatrack.activities
 
-import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import com.example.climatrack.databinding.ActivityRegisterBinding
 import com.example.climatrack.models.Usuario
@@ -56,6 +57,11 @@ class RegisterActivity : BaseActivity() {
             return
         }
 
+        if (pass.length < 6) {
+            Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         binding.btnRegister.visibility = android.view.View.INVISIBLE
         binding.progressBar.visibility = android.view.View.VISIBLE
 
@@ -66,44 +72,51 @@ class RegisterActivity : BaseActivity() {
             nombre = fullName,
             rol = "Cliente",
             email = email,
-            telefono = phone
+            telefono = phone,
         )
 
         try {
             val localId = usuarioRepository.register(newUser)
             android.util.Log.d("REGISTER_DEBUG", "Local registration success for ID: $localId")
             
-            // 2. Try Firebase Auth (Background-ish)
+            // Add a timeout safety for Firebase (Background-ish)
+            val firebaseHandler = Handler(Looper.getMainLooper())
+            val firebaseTimeout = Runnable {
+                if (binding.progressBar.visibility == android.view.View.VISIBLE) {
+                    binding.btnRegister.visibility = android.view.View.VISIBLE
+                    binding.progressBar.visibility = android.view.View.GONE
+                    Toast.makeText(this, "Firebase lento. Registro local exitoso.", Toast.LENGTH_LONG).show()
+                    finish()
+                }
+            }
+            firebaseHandler.postDelayed(firebaseTimeout, 8000)
+
             FirebaseHelper.auth.createUserWithEmailAndPassword(email, pass)
                 .addOnCompleteListener { task ->
+                    firebaseHandler.removeCallbacks(firebaseTimeout)
                     binding.btnRegister.visibility = android.view.View.VISIBLE
                     binding.progressBar.visibility = android.view.View.GONE
                     
                     if (task.isSuccessful) {
-                        // Sync to Firestore if Firebase succeeded
                         usuarioRepository.syncUserToCloud(newUser.copy(id = localId.toInt()))
                         Toast.makeText(this, "Registro exitoso y sincronizado", Toast.LENGTH_SHORT).show()
                         finish()
                     } else {
                         val e = task.exception
-                        android.util.Log.e("REGISTER_ERROR", "Firebase blocked or failed", e)
+                        android.util.Log.e("REGISTER_ERROR", "Firebase failure", e)
                         
-                        // IF it's a network error (common in SENA), we allow the user to continue locally
-                        if (e is com.google.firebase.FirebaseNetworkException) {
-                            Toast.makeText(this, "Internet SENA detectado. Registro local exitoso (Modo Offline)", Toast.LENGTH_LONG).show()
-                            finish()
-                        } else {
-                            // If it's another error (like email exists), maybe we should warn the user
-                            val errorMsg = when (e) {
-                                is com.google.firebase.auth.FirebaseAuthUserCollisionException -> "El correo ya está registrado."
-                                else -> "Registro local guardado. Error en nube: ${e?.message}"
-                            }
-                            Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
-                            finish()
+                        // Treat almost any cloud error as "continue local" to avoid blocking user
+                        val errorMsg = when (e) {
+                            is com.google.firebase.auth.FirebaseAuthUserCollisionException -> "El correo ya está registrado."
+                            is com.google.firebase.FirebaseNetworkException -> "Modo Offline: Registro local exitoso."
+                            else -> "Registro local guardado (Error nube: ${e?.message})"
                         }
+                        Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
+                        finish()
                     }
                 }
-        } catch (e: Exception) {
+        }
+catch (e: Exception) {
             binding.btnRegister.visibility = android.view.View.VISIBLE
             binding.progressBar.visibility = android.view.View.GONE
             Toast.makeText(this, "Error al guardar localmente: ${e.message}", Toast.LENGTH_SHORT).show()

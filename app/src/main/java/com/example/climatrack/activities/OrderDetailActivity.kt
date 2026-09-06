@@ -3,7 +3,6 @@ package com.example.climatrack.activities
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -70,7 +69,7 @@ class OrderDetailActivity : BaseActivity() {
     private fun loadOrderData() {
         val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
         info?.let {
-            binding.tvOrderNum.text = "Orden: ${it.numero}"
+            binding.tvOrderNum.text = getString(R.string.order_num_label, it.numero)
             binding.tvStatus.text = it.estado
             binding.tvClientInfo.text = "Cliente: ${it.clienteNombre}"
             binding.tvEquipInfo.text = "Equipo: ${it.equipoNombre}"
@@ -268,14 +267,14 @@ class OrderDetailActivity : BaseActivity() {
     }
 
     private fun openPdf(file: java.io.File) {
-        val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
+        val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "application/pdf")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         try {
             startActivity(intent)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Toast.makeText(this, "No hay lector de PDF instalado", Toast.LENGTH_SHORT).show()
         }
     }

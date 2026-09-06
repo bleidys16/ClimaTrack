@@ -3,7 +3,6 @@ package com.example.climatrack.activities
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.climatrack.R
 import com.example.climatrack.adapters.OrdersAdapter
@@ -35,7 +34,7 @@ class OrdersActivity : BaseActivity() {
         setupTabs()
         
         val userRol = sessionManager.getUserRol()?.uppercase() ?: ""
-        if (userRol == "TÉCNICO" || userRol == "TECNICO") {
+        if ((userRol == "TÉCNICO") || (userRol == "TECNICO")) {
             setupBottomNavigation()
         } else {
             binding.navContainer.visibility = View.GONE
@@ -55,13 +54,14 @@ class OrdersActivity : BaseActivity() {
     }
 
     private fun setupTabs() {
-        binding.tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        binding.tabs.addOnTabSelectedListener(
+            object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 filterOrders(tab?.position ?: 0)
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
-        })
+        },)
     }
 
     private fun filterOrders(position: Int) {

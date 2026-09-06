@@ -18,7 +18,7 @@ object SyncManager {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             "climatrack_sync",
             ExistingPeriodicWorkPolicy.KEEP,
-            syncRequest
+            syncRequest,
         )
     }
 
