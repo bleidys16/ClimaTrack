@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Ingresa tus credenciales de técnico"
+            android:text="@string/login_info"
             android:textColor="@color/cadet_grey"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"

@@ -56,4 +56,5 @@
     <string name="service_summary">Resumen del servicio</string>
     <string name="client_name_label">Nombre del cliente *</string>
     <string name="client_accept_label">Aceptación del servicio</string>
+    <string name="login_info">Ingresa tus credenciales para acceder</string>
 </resources>

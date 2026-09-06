@@ -34,10 +34,10 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun performLogin() {
-        val email = binding.etUser.text.toString().trim()
+        val identifier = binding.etUser.text.toString().trim()
         val pass = binding.etPassword.text.toString().trim()
 
-        if (email.isEmpty() || pass.isEmpty()) {
+        if (identifier.isEmpty() || pass.isEmpty()) {
             Toast.makeText(this, getString(R.string.error_empty_fields), Toast.LENGTH_SHORT).show()
             return
         }
@@ -45,24 +45,49 @@ class LoginActivity : BaseActivity() {
         binding.btnLogin.isEnabled = false
         Toast.makeText(this, "Validando credenciales...", Toast.LENGTH_SHORT).show()
 
-        // Hybrid Strategy: Try Firebase but fallback fast if there's no route to Google
-        val auth = FirebaseHelper.auth
-        
-        auth.signInWithEmailAndPassword(email, pass)
+        // 1. Si parece un correo, intentamos Firebase directamente
+        if (identifier.contains("@")) {
+            loginWithFirebase(identifier, pass)
+        } else {
+            // 2. Si es un nombre de usuario, buscamos el correo asociado en Firestore primero
+            FirebaseHelper.db.collection("usuarios")
+                .whereEqualTo("usuario", identifier)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (!documents.isEmpty) {
+                        val email = documents.documents[0].getString("email")
+                        if (email != null) {
+                            loginWithFirebase(email, pass)
+                        } else {
+                            fallbackToLocalLogin(identifier, pass)
+                        }
+                    } else {
+                        // Si no está en Firestore, intentamos local
+                        fallbackToLocalLogin(identifier, pass)
+                    }
+                }
+                .addOnFailureListener {
+                    // Si falla Firestore (posible bloqueo de red), intentamos local
+                    fallbackToLocalLogin(identifier, pass)
+                }
+        }
+    }
+
+    private fun loginWithFirebase(email: String, pass: String) {
+        FirebaseHelper.auth.signInWithEmailAndPassword(email, pass)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Success! Fetch extra data from Cloud
                     fetchCloudUserData(email, pass)
                 } else {
                     val e = task.exception
-                    android.util.Log.w("LOGIN_WARN", "Firebase Auth failed/blocked: ${e?.message}")
+                    android.util.Log.w("LOGIN_WARN", "Firebase Auth failed: ${e?.message}")
                     
                     if (e is com.google.firebase.FirebaseNetworkException) {
-                        Toast.makeText(this, "Red restringida detectada. Accediendo modo local.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Red restringida. Accediendo modo local.", Toast.LENGTH_SHORT).show()
                     }
                     
-                    // Always try local fallback on failure
-                    fallbackToLocalLogin(email, pass)
+                    // Fallback a local usando el identificador original
+                    fallbackToLocalLogin(binding.etUser.text.toString().trim(), pass)
                 }
             }
     }
