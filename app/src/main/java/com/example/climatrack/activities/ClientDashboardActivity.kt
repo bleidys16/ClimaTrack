@@ -23,7 +23,7 @@ class ClientDashboardActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityClientDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupEdgeToEdge(binding.root, binding.toolbar)
+        setupEdgeToEdge(binding.root, binding.appBarLayout)
 
         sessionManager = SessionManager(this)
         ordenRepository = OrdenRepository(this)

@@ -48,8 +48,7 @@ class DashboardActivity : BaseActivity() {
         ordenRepository = OrdenRepository(this)
         usuarioRepository = UsuarioRepository(this)
 
-        val appBar = binding.root.findViewById<android.view.View>(R.id.toolbar)?.parent as? android.view.View
-        setupEdgeToEdge(binding.root, appBar ?: binding.toolbar, binding.navContainer)
+        setupEdgeToEdge(binding.root, binding.appBarLayout, binding.navContainer)
         setupUI()
         setupStatusLogic()
         setupBottomNavigation()
@@ -195,7 +194,9 @@ class DashboardActivity : BaseActivity() {
         user?.imagenPerfil?.let { path ->
             val file = java.io.File(path)
             if (file.exists()) {
-                binding.ivUserAvatar.setImageURI(android.net.Uri.fromFile(file))
+                val uri = android.net.Uri.fromFile(file)
+                binding.ivUserAvatar.setImageURI(uri)
+                binding.ivToolbarAvatar.setImageURI(uri)
             }
         }
     }
@@ -204,6 +205,10 @@ class DashboardActivity : BaseActivity() {
         binding.tvWelcome.text = "Hola Técnico"
 
         binding.ivUserAvatar.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
+
+        binding.ivToolbarAvatar.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
 

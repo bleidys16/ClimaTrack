@@ -29,8 +29,7 @@ class AdminDashboardActivity : BaseActivity() {
         binding = ActivityAdminDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        val appBar = binding.root.findViewById<android.view.View>(com.example.climatrack.R.id.toolbar)?.parent as? android.view.View
-        setupEdgeToEdge(binding.root, appBar ?: binding.toolbar)
+        setupEdgeToEdge(binding.root, binding.appBarLayout)
 
         ordenRepository = OrdenRepository(this)
         usuarioRepository = UsuarioRepository(this)

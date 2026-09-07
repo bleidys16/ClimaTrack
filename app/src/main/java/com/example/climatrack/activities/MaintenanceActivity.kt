@@ -37,6 +37,7 @@ class MaintenanceActivity : BaseActivity() {
         }
 
         setupToolbar()
+        setupEdgeToEdge(binding.root, binding.appBarLayout)
         setupPickers()
         loadOrderInfo()
         loadExistingData()

@@ -6,6 +6,7 @@
     android:background="@color/chinese_black">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/chinese_black"
@@ -15,7 +16,8 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="wrap_content"
+            android:minHeight="64dp"
             android:background="@color/chinese_black"
             app:titleTextColor="@color/white">
 
@@ -38,7 +40,7 @@
                         android:layout_height="36dp"
                         android:layout_marginEnd="12dp"
                         android:padding="1dp"
-                        android:src="@drawable/person_profile"
+                        android:src="@drawable/perfil_tecnico"
                         app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
                         app:strokeColor="@color/ube"
                         app:strokeWidth="1.5dp" />
@@ -284,7 +286,7 @@
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
                 android:paddingTop="8dp"
-                android:paddingBottom="100dp"
+                android:paddingBottom="120dp"
                 android:clipToPadding="false" />
 
         </LinearLayout>
