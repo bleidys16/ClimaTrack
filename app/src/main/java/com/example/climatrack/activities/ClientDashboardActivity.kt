@@ -4,11 +4,17 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.climatrack.adapters.OrdersAdapter
+import com.example.climatrack.adapters.ReceiptsAdapter
 import com.example.climatrack.databinding.ActivityClientDashboardBinding
+import com.example.climatrack.models.OrdenInfo
+import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.repositories.OrdenRepository
+import com.example.climatrack.utils.PdfGenerator
 import com.example.climatrack.utils.SessionManager
+import com.google.android.material.tabs.TabLayout
 
 class ClientDashboardActivity : BaseActivity() {
 
@@ -17,7 +23,10 @@ class ClientDashboardActivity : BaseActivity() {
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var usuarioRepository: com.example.climatrack.repositories.UsuarioRepository
     private lateinit var equipoRepository: com.example.climatrack.repositories.EquipoRepository
-    private lateinit var adapter: OrdersAdapter
+    private lateinit var mantenimientoRepository: MantenimientoRepository
+    private lateinit var ordersAdapter: OrdersAdapter
+    private lateinit var receiptsAdapter: ReceiptsAdapter
+    private var allOrders: List<OrdenInfo> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,8 +38,10 @@ class ClientDashboardActivity : BaseActivity() {
         ordenRepository = OrdenRepository(this)
         usuarioRepository = com.example.climatrack.repositories.UsuarioRepository(this)
         equipoRepository = com.example.climatrack.repositories.EquipoRepository(this)
+        mantenimientoRepository = MantenimientoRepository(this)
 
-        setupRecyclerView()
+        setupRecyclerViews()
+        setupTabLayout()
 
         binding.btnRequestService.setOnClickListener {
             requestService()
@@ -73,8 +84,8 @@ class ClientDashboardActivity : BaseActivity() {
         }
     }
 
-    private fun setupRecyclerView() {
-        adapter = OrdersAdapter(emptyList()) { order ->
+    private fun setupRecyclerViews() {
+        ordersAdapter = OrdersAdapter(emptyList()) { order ->
             if (order.estado == "PENDIENTE APROBACIÓN") {
                 val intent = Intent(this, ApprovalActivity::class.java)
                 intent.putExtra("ORDER_ID", order.id)
@@ -85,8 +96,58 @@ class ClientDashboardActivity : BaseActivity() {
                 startActivity(intent)
             }
         }
+
+        receiptsAdapter = ReceiptsAdapter(emptyList()) { order ->
+            generateAndOpenReceipt(order)
+        }
+
         binding.rvClientOrders.layoutManager = LinearLayoutManager(this)
-        binding.rvClientOrders.adapter = adapter
+        binding.rvClientOrders.adapter = ordersAdapter
+    }
+
+    private fun setupTabLayout() {
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                updateUIForTab(tab?.position ?: 0)
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+    }
+
+    private fun updateUIForTab(position: Int) {
+        if (position == 0) {
+            binding.tvMyServices.text = "Mis Servicios Recientes"
+            binding.rvClientOrders.adapter = ordersAdapter
+            ordersAdapter.updateList(allOrders)
+        } else {
+            binding.tvMyServices.text = "Mis Comprobantes de Pago"
+            binding.rvClientOrders.adapter = receiptsAdapter
+            receiptsAdapter.updateList(allOrders.filter { it.estado == "FINALIZADA" })
+        }
+    }
+
+    private fun generateAndOpenReceipt(order: OrdenInfo) {
+        val mant = mantenimientoRepository.getByOrdenId(order.id)
+        val pdfFile = PdfGenerator(this).generateClientReport(order, mant)
+        if (pdfFile != null) {
+            openPdf(pdfFile)
+        } else {
+            Toast.makeText(this, "Error al generar comprobante", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openPdf(file: java.io.File) {
+        val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/pdf")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(intent)
+        } catch (_: Exception) {
+            Toast.makeText(this, "No hay lector de PDF instalado", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun requestService() {
@@ -110,15 +171,15 @@ class ClientDashboardActivity : BaseActivity() {
         val clienteId = sessionManager.getUserId()
         
         // 1. First load from local DB for fast response
-        val localOrders = ordenRepository.getOrdenesByCliente(clienteId)
-        adapter.updateList(localOrders)
+        allOrders = ordenRepository.getOrdenesByCliente(clienteId)
+        updateUIForTab(binding.tabLayout.selectedTabPosition)
 
         // 2. Fetch from Cloud to get updates (like technician assignment)
         usuarioRepository.fetchTechniciansFromCloud {
             ordenRepository.fetchOrdersFromCloud {
                 runOnUiThread {
-                    val updatedOrders = ordenRepository.getOrdenesByCliente(clienteId)
-                    adapter.updateList(updatedOrders)
+                    allOrders = ordenRepository.getOrdenesByCliente(clienteId)
+                    updateUIForTab(binding.tabLayout.selectedTabPosition)
                     
                     val user = usuarioRepository.getById(clienteId)
                     user?.imagenPerfil?.let { path ->
