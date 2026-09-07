@@ -49,7 +49,7 @@ class OrderRequestActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityOrderRequestBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupEdgeToEdge(binding.root)
+        setupEdgeToEdge(binding.root, binding.appBarLayout)
 
         ordenRepository = OrdenRepository(this)
         equipoRepository = EquipoRepository(this)
@@ -57,9 +57,16 @@ class OrderRequestActivity : BaseActivity() {
         sessionManager = SessionManager(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        setupToolbar()
         setupModelSpinner()
         binding.btnGetGps.setOnClickListener { checkPermissions() }
         binding.btnSubmitRequest.setOnClickListener { submitRequest() }
+    }
+
+    private fun setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
+        }
     }
 
     private fun setupModelSpinner() {
