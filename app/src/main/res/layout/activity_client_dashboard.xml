@@ -140,23 +140,45 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@android:color/transparent"
+            app:layout_constraintTop_toBottomOf="@id/cardRequest"
+            app:tabIndicatorColor="@color/ube"
+            app:tabSelectedTextColor="@color/white"
+            app:tabTextColor="@color/cadet_grey">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Servicios" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Comprobantes" />
+        </com.google.android.material.tabs.TabLayout>
+
         <TextView
             android:id="@+id/tvMyServices"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="Mis Servicios Recientes"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:fontFamily="@font/geist_bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cardRequest" />
+            app:layout_constraintTop_toBottomOf="@id/tabLayout" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvClientOrders"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:paddingBottom="100dp"
             android:clipToPadding="false"
             app:layout_constraintBottom_toBottomOf="parent"

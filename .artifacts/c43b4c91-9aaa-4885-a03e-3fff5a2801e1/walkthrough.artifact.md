@@ -1,18 +1,29 @@
-# Walkthrough - Sincronización de Órdenes en Panel de Administrador
+# Walkthrough - Apartado de Comprobantes para Clientes
 
-Se ha corregido el problema donde el administrador no podía ver las órdenes creadas por los clientes desde otros dispositivos en tiempo real.
+Se ha implementado una nueva funcionalidad que permite a los clientes visualizar y descargar los comprobantes de pago (PDF) de sus servicios finalizados directamente desde el Dashboard.
 
 ## Cambios Realizados
 
-### [AdminDashboardActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/AdminDashboardActivity.kt)
-- Se actualizó el método `loadData()` para que ahora realice una doble sincronización con la nube:
-    1. Descarga la información actualizada de los **técnicos**.
-    2. Descarga todas las **órdenes** registradas en Firebase Firestore.
-- Una vez finalizada la descarga de ambos, se actualiza la interfaz de usuario, garantizando que las órdenes creadas por clientes aparezcan inmediatamente en la lista de "Órdenes sin asignar".
+### [activity_client_dashboard.xml](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/layout/activity_client_dashboard.xml)
+- Se añadió un sistema de pestañas (`TabLayout`) para alternar entre la lista de **Servicios** (todas las órdenes) y la de **Comprobantes** (solo servicios finalizados).
+
+### [item_receipt.xml](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/layout/item_receipt.xml)
+- Se creó un diseño de tarjeta optimizado para recibos, resaltando el costo total y un botón de descarga con un icono intuitivo.
+
+### [ReceiptsAdapter.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/adapters/ReceiptsAdapter.kt)
+- Se desarrolló un nuevo adaptador para manejar la visualización de los comprobantes y la lógica de interacción con el botón de descarga.
+
+### [ClientDashboardActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/ClientDashboardActivity.kt)
+- Se integró la lógica para cambiar dinámicamente entre el listado de servicios y el de comprobantes.
+- Se implementó la generación y apertura automática del PDF usando `PdfGenerator` y `FileProvider`.
 
 ## Verificación
 
-> [!IMPORTANT]
-> A partir de ahora, cada vez que el administrador entre al Dashboard o este se refresque, la aplicación consultará a la nube por nuevas solicitudes de servicio, permitiendo una gestión multi-dispositivo fluida.
+> [!TIP]
+> 1. Inicia sesión como Cliente.
+> 2. Verás dos pestañas: **SERVICIOS** y **COMPROBANTES**.
+> 3. En **COMPROBANTES**, solo aparecerán los servicios que ya han sido **FINALIZADOS**.
+> 4. Presiona el botón del icono de documento a la derecha para generar y abrir tu comprobante oficial en PDF.
 
-render_diffs(file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/AdminDashboardActivity.kt)
+render_diffs(file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/ClientDashboardActivity.kt)
+render_diffs(file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/layout/activity_client_dashboard.xml)
