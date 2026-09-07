@@ -81,7 +81,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
                     calificacion = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CALIFICACION)),
                     comentario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_COMENTARIO)),
                     tecnicoLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LAT)),
-                    tecnicoLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON))
+                    tecnicoLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON)),
+                    clienteEmail = getEmailForUser(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)))
                 )
 
                 firestore.collection("ordenes").document(orderNum).set(order, SetOptions.merge()).await()
@@ -161,5 +162,14 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
             } while (cursor.moveToNext())
         }
         cursor.close()
+    }
+
+    private fun getEmailForUser(userId: Int): String? {
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(DatabaseHelper.TABLE_USUARIOS, arrayOf(DatabaseHelper.COL_USUARIO_EMAIL),
+            "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()), null, null, null)
+        val email = if (cursor.moveToFirst()) cursor.getString(0) else null
+        cursor.close()
+        return email
     }
 }

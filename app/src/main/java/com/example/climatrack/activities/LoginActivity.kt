@@ -43,32 +43,40 @@ class LoginActivity : BaseActivity() {
         }
 
         binding.btnLogin.isEnabled = false
-        Toast.makeText(this, "Validando credenciales...", Toast.LENGTH_SHORT).show()
+        
+        // 1. Intentar Login Local PRIMERO para velocidad y soporte offline
+        val usuarioLocal = usuarioRepository.login(identifier, pass)
+        if (usuarioLocal != null) {
+            binding.btnLogin.isEnabled = true
+            sessionManager.saveSession(usuarioLocal.id, usuarioLocal.nombre, usuarioLocal.rol)
+            navigateToDashboard(usuarioLocal.rol)
+            return
+        }
 
-        // 1. Si parece un correo, intentamos Firebase directamente
+        // 2. Si no está local, intentar Firebase
+        Toast.makeText(this, "Buscando en la nube...", Toast.LENGTH_SHORT).show()
         if (identifier.contains("@")) {
             loginWithFirebase(identifier, pass)
         } else {
-            // 2. Si es un nombre de usuario, buscamos el correo asociado en Firestore primero
             FirebaseHelper.db.collection("usuarios")
                 .whereEqualTo("usuario", identifier)
                 .get()
                 .addOnSuccessListener { documents ->
                     if (!documents.isEmpty) {
                         val email = documents.documents[0].getString("email")
-                        if (email != null) {
-                            loginWithFirebase(email, pass)
-                        } else {
-                            fallbackToLocalLogin(identifier, pass)
+                        if (email != null) loginWithFirebase(email, pass)
+                        else {
+                            binding.btnLogin.isEnabled = true
+                            Toast.makeText(this, "Usuario sin correo registrado", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        // Si no está en Firestore, intentamos local
-                        fallbackToLocalLogin(identifier, pass)
+                        binding.btnLogin.isEnabled = true
+                        Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show()
                     }
                 }
                 .addOnFailureListener {
-                    // Si falla Firestore (posible bloqueo de red), intentamos local
-                    fallbackToLocalLogin(identifier, pass)
+                    binding.btnLogin.isEnabled = true
+                    Toast.makeText(this, "Error de red", Toast.LENGTH_SHORT).show()
                 }
         }
     }
@@ -133,12 +141,13 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun fallbackToLocalLogin(email: String, pass: String) {
+        binding.btnLogin.isEnabled = true
         val usuario = usuarioRepository.login(email, pass)
         if (usuario != null) {
             sessionManager.saveSession(usuario.id, usuario.nombre, usuario.rol)
             navigateToDashboard(usuario.rol)
         } else {
-            Toast.makeText(this, "Error de acceso", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Credenciales incorrectas", Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -57,13 +57,15 @@ class UsuarioRepository(context: Context) {
                         put(DatabaseHelper.COL_USUARIO_LON, doc.getDouble("lastLon"))
                         put(DatabaseHelper.COL_USUARIO_WORK_START, doc.getString("workStartTime"))
                         put(DatabaseHelper.COL_USUARIO_WORK_END, doc.getString("workEndTime"))
-                        put(DatabaseHelper.COL_USUARIO_PASS, "********") // Dummy pass for synced users
+                        // NO sobreescribir la contraseña local con asteriscos si el usuario ya existe
                     }
                     
+                    // Solo incluimos la contraseña si es un usuario NUEVO
                     val count = db.update(DatabaseHelper.TABLE_USUARIOS, values, 
                         "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(id.toString()))
                     
                     if (count == 0) {
+                        values.put(DatabaseHelper.COL_USUARIO_PASS, "123456") // Password por defecto para nuevos
                         db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
                     }
                 }

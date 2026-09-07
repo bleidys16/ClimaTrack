@@ -20,7 +20,7 @@
             app:navigationIcon="@drawable/ic_back_modern" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.google.android.gms.maps.MapView
+    <org.osmdroid.views.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

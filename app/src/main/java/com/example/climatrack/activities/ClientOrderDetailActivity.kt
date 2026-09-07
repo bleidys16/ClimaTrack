@@ -2,6 +2,7 @@ package com.example.climatrack.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
@@ -14,29 +15,35 @@ import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.utils.FirebaseHelper
 import com.example.climatrack.utils.PdfGenerator
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.firestore.ListenerRegistration
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.tileprovider.tilesource.XYTileSource
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Marker
 import java.util.*
 
-class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
+class ClientOrderDetailActivity : BaseActivity() {
 
     private lateinit var binding: ActivityClientOrderDetailBinding
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private var orderId: Int = -1
-    private var googleMap: GoogleMap? = null
     private var techMarker: Marker? = null
     private var firestoreListener: ListenerRegistration? = null
     private lateinit var servicioRepository: com.example.climatrack.repositories.ServicioRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        val ctx = applicationContext
+        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
+        Configuration.getInstance().userAgentValue = "ClimaTrackApp/1.0 (climatrack_client_contact@example.com) Android"
+        
+        val basePath = java.io.File(cacheDir.absolutePath, "osmdroid")
+        Configuration.getInstance().osmdroidBasePath = basePath
+        Configuration.getInstance().osmdroidTileCache = java.io.File(basePath, "tiles")
+
         binding = ActivityClientOrderDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupEdgeToEdge(binding.root, binding.toolbar)
@@ -51,11 +58,10 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
             return
         }
 
-        binding.mapViewTracking.onCreate(savedInstanceState)
-        binding.mapViewTracking.getMapAsync(this)
-
+        setupMap()
         setupToolbar()
         loadOrderDetails()
+        
         binding.btnSubmitFeedback.setOnClickListener { submitFeedback() }
         binding.btnDownloadReceipt.setOnClickListener { generateAndOpenReceipt() }
 
@@ -74,9 +80,15 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
         }
     }
 
-    override fun onMapReady(map: GoogleMap) {
-        googleMap = map
-        googleMap?.uiSettings?.isZoomControlsEnabled = true
+    private fun setupMap() {
+        val esriTileSource = XYTileSource(
+            "EsriWorldStreet",
+            0, 18, 256, ".png",
+            arrayOf("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/"),
+            "© Esri, USGS, NOAA"
+        )
+        binding.mapViewTracking.setTileSource(esriTileSource)
+        binding.mapViewTracking.setMultiTouchControls(true)
     }
 
     private fun startLiveTracking(orderNum: String) {
@@ -99,7 +111,7 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
                     val tecnicoLat = snapshot.getDouble("tecnicoLat")
                     val tecnicoLon = snapshot.getDouble("tecnicoLon")
                     
-                    if (tecnicoLat != null && tecnicoLon != null) {
+                    if (tecnicoLat != null && tecnicoLon != null && tecnicoLat != 0.0) {
                         updateMarker(tecnicoLat, tecnicoLon)
                     }
                 }
@@ -109,19 +121,17 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
     }
 
     private fun updateMarker(lat: Double, lon: Double) {
-        val pos = LatLng(lat, lon)
+        val pos = GeoPoint(lat, lon)
         if (techMarker == null) {
-            techMarker = googleMap?.addMarker(
-                MarkerOptions()
-                    .position(pos)
-                    .title("Tu Técnico")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)),
-            )
-            googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 15f))
+            techMarker = Marker(binding.mapViewTracking)
+            techMarker?.title = "Tu Técnico"
+            binding.mapViewTracking.overlays.add(techMarker)
+            binding.mapViewTracking.controller.setZoom(15.0)
+            binding.mapViewTracking.controller.setCenter(pos)
         } else {
             techMarker?.position = pos
-            googleMap?.animateCamera(CameraUpdateFactory.newLatLng(pos))
         }
+        binding.mapViewTracking.invalidate()
     }
 
     private fun setupToolbar() {
@@ -245,6 +255,7 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
                 binding.tilComment.visibility = View.VISIBLE
                 binding.btnSubmitFeedback.visibility = View.VISIBLE
                 binding.tvSavedComment.visibility = View.GONE
+                binding.btnSubmitFeedback.text = "CALIFICAR SERVICIO"
             }
         } else {
             binding.tvFeedbackTitle.visibility = View.GONE
@@ -309,12 +320,6 @@ class ClientOrderDetailActivity : BaseActivity(), OnMapReadyCallback {
 
     override fun onDestroy() {
         super.onDestroy()
-        binding.mapViewTracking.onDestroy()
         firestoreListener?.remove()
-    }
-
-    override fun onLowMemory() {
-        super.onLowMemory()
-        binding.mapViewTracking.onLowMemory()
     }
 }

@@ -115,12 +115,10 @@ open class BaseActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
             
-            // Si se proporciona una vista superior (Toolbar o AppBarLayout), le aplicamos el padding a ella.
-            // Si no, se lo aplicamos a la vista raíz para que todo el contenido baje.
-            if (topView != null) {
-                topView.updatePadding(top = systemBars.top)
-            } else {
-                v.updatePadding(top = systemBars.top)
+            // Aplicamos un margen superior al contenedor del Toolbar para que baje
+            // lo suficiente y no sea tapado por el notch o la barra de estado.
+            topView?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                topMargin = systemBars.top
             }
             
             val bottomInset = if (ime.bottom > 0) ime.bottom else systemBars.bottom

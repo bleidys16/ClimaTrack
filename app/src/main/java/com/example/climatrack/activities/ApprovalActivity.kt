@@ -2,13 +2,16 @@ package com.example.climatrack.activities
 
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.example.climatrack.databinding.ActivityApprovalBinding
-import com.example.climatrack.models.Aprobacion
 import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.repositories.ServicioRepository
-import java.text.SimpleDateFormat
+import com.example.climatrack.utils.PdfGenerator
+import com.example.climatrack.utils.SessionManager
+import java.io.ByteArrayOutputStream
 import java.util.*
 
 class ApprovalActivity : BaseActivity() {
@@ -17,19 +20,19 @@ class ApprovalActivity : BaseActivity() {
     private lateinit var servicioRepository: ServicioRepository
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private lateinit var ordenRepository: OrdenRepository
-    private lateinit var sessionManager: com.example.climatrack.utils.SessionManager
+    private lateinit var sessionManager: SessionManager
     private var orderId: Int = -1
+    private var isAccepted: Boolean? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityApprovalBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupEdgeToEdge(binding.root, binding.toolbar)
 
         servicioRepository = ServicioRepository(this)
         mantenimientoRepository = MantenimientoRepository(this)
         ordenRepository = OrdenRepository(this)
-        sessionManager = com.example.climatrack.utils.SessionManager(this)
+        sessionManager = SessionManager(this)
         
         orderId = intent.getIntExtra("ORDER_ID", -1)
 
@@ -41,16 +44,29 @@ class ApprovalActivity : BaseActivity() {
         setupToolbar()
         loadOrderInfo()
         loadSummary()
-        
-        binding.btnClearSignature.setOnClickListener { binding.signatureView.clear() }
+
+        binding.btnAccept.setOnClickListener {
+            isAccepted = true
+            binding.tvCancelMessage.visibility = View.GONE
+            Toast.makeText(this, "Servicio Aceptado", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnReject.setOnClickListener {
+            isAccepted = false
+            binding.tvCancelMessage.visibility = View.VISIBLE
+            Toast.makeText(this, "Servicio Rechazado", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnClearSignature.setOnClickListener {
+            binding.signatureView.clear()
+        }
+
         binding.btnSaveApproval.setOnClickListener { saveApproval() }
         binding.ivToolbarSave.setOnClickListener { saveApproval() }
     }
 
     private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
+        binding.toolbar.setNavigationOnClickListener { finish() }
     }
 
     private fun loadOrderInfo() {
@@ -64,64 +80,92 @@ class ApprovalActivity : BaseActivity() {
     }
 
     private fun loadSummary() {
+        val info = ordenRepository.getById(orderId)
+        val mant = mantenimientoRepository.getByOrdenId(orderId)
+        val parts = mant?.let { servicioRepository.getRepuestosByMantenimiento(it.id) } ?: emptyList()
+
+        val sb = StringBuilder()
+        sb.append("TIPO SERVICIO: ${info?.tipoServicio}\n")
+        sb.append("FECHA/HORA: ${mant?.fecha ?: "--"}\n")
+        sb.append("DIAGNÓSTICO: ${mant?.diagnostico ?: "--"}\n")
+        sb.append("TRABAJO: ${mant?.trabajoRealizado ?: "--"}\n\n")
+        
+        val priceMant = info?.precioMantenimiento ?: 0.0
+        sb.append("MANTENIMIENTO: $${String.format(Locale.getDefault(), "%.2f", priceMant)}\n")
+        
+        if (parts.isNotEmpty()) {
+            sb.append("\nREPUESTOS:\n")
+            parts.forEach { 
+                sb.append("- ${it.repuestoNombre} (x${it.cantidad}) : $${String.format(Locale.getDefault(), "%.2f", it.precio * it.cantidad)}\n")
+            }
+        }
+
+        val totalParts = parts.sumOf { it.precio * it.cantidad }
+        val grandTotal = priceMant + totalParts
+
+        binding.tvSummary.text = sb.toString()
+        binding.tvPriceDisplay.text = "TOTAL COTIZACIÓN: $${String.format(Locale.getDefault(), "%.2f", grandTotal)}"
+    }
+
+    private fun saveApproval() {
+        if (isAccepted == null) {
+            Toast.makeText(this, "Por favor seleccione si el cliente acepta o rechaza", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (isAccepted == true) {
+            val clientName = binding.etClientName.text.toString().trim()
+            if (clientName.isEmpty()) {
+                Toast.makeText(this, "Ingrese el nombre del cliente", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            if (binding.signatureView.isEmpty()) {
+                Toast.makeText(this, "Se requiere la firma del cliente", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            val signatureBase64 = encodeBitmapToBase64(binding.signatureView.getSignatureBitmap())
+            val obs = binding.etObservations.text.toString().trim()
+
+            // Update order: Status to "EN PROCESO", save signature, observation
+            val db = com.example.climatrack.database.DatabaseHelper(this).writableDatabase
+            val values = android.content.ContentValues().apply {
+                put(com.example.climatrack.database.DatabaseHelper.COL_ORDEN_ESTADO, "EN PROCESO")
+                put(com.example.climatrack.database.DatabaseHelper.COL_ORDEN_FIRMA, signatureBase64)
+                put(com.example.climatrack.database.DatabaseHelper.COL_ORDEN_OBS_CLI, obs)
+            }
+            db.update(com.example.climatrack.database.DatabaseHelper.TABLE_ORDENES, values, 
+                "${com.example.climatrack.database.DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId.toString()))
+
+            // Generar Comprobante
+            generateFinalReport()
+
+            Toast.makeText(this, "Cotización aprobada. Trabajo en proceso.", Toast.LENGTH_LONG).show()
+            finish()
+        } else {
+            // RECHAZADO: Cancelar orden
+            ordenRepository.updateEstado(orderId, "CANCELADA")
+            Toast.makeText(this, "Orden cancelada por el cliente", Toast.LENGTH_LONG).show()
+            finish()
+        }
+    }
+
+    private fun generateFinalReport() {
         val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val mant = mantenimientoRepository.getByOrdenId(orderId)
         info?.let {
-            if (it.estado == "PENDIENTE APROBACIÓN") {
-                binding.tvSummaryTitle.text = "Detalles de la Cotización"
-                binding.tvSummary.text = "• Problema: ${it.descripcion}\n• Servicio solicitado: ${it.tipoServicio}"
-                binding.tvPriceDisplay.text = "Costo del Servicio: $${String.format(Locale.getDefault(), "%.2f", it.precioServicio)}"
-                binding.btnSaveApproval.text = "CONFIRMAR Y APROBAR COTIZACIÓN"
-            } else {
-                binding.tvSummaryTitle.text = "Resumen del Servicio Realizado"
-                val mant = mantenimientoRepository.getByOrdenId(orderId)
-                if (mant != null) {
-                    binding.tvSummary.text = "• Trabajo: ${mant.trabajoRealizado}\n• Diagnóstico: ${mant.diagnostico}"
-                    binding.tvPriceDisplay.text = "Costo Final: $${String.format(Locale.getDefault(), "%.2f", it.precioServicio)}"
-                }
-                binding.btnSaveApproval.text = "GUARDAR CONFORMIDAD FINAL"
+            val pdfFile = PdfGenerator(this).generateTechnicalReport(it, mant)
+            if (pdfFile != null) {
+                // Simular envío de correo
+                android.util.Log.d("APPROVAL", "Reporte generado en: ${pdfFile.absolutePath}")
             }
         }
     }
 
-    private fun saveApproval() {
-        val clientName = binding.etClientName.text.toString().trim()
-        val accepted = if (binding.swAccept.isChecked) 1 else 0
-
-        if (clientName.isEmpty() || accepted == 0) {
-            Toast.makeText(this, "Debe ingresar el nombre y aceptar los términos", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
-        val nextStatus = if (info?.estado == "PENDIENTE APROBACIÓN") "APROBADA" else "FINALIZADA"
-
-        // Save signature as Base64
-        val signatureBitmap = binding.signatureView.getSignatureBitmap()
-        val signatureBase64 = encodeBitmapToBase64(signatureBitmap)
-
-        val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-        val aprobacion = Aprobacion(
-            ordenId = orderId,
-            cliente = clientName,
-            aceptado = accepted,
-            fecha = date
-        )
-
-        val result = servicioRepository.addAprobacion(aprobacion)
-        if (result > 0) {
-            ordenRepository.saveFirma(orderId, signatureBase64)
-            ordenRepository.updateEstado(orderId, nextStatus)
-            Toast.makeText(this, "Confirmación enviada correctamente", Toast.LENGTH_SHORT).show()
-            finish()
-        } else {
-            Toast.makeText(this, "Error al registrar aprobación", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private fun encodeBitmapToBase64(bitmap: Bitmap): String {
-        val outputStream = java.io.ByteArrayOutputStream()
+        val outputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-        val byteArray = outputStream.toByteArray()
-        return android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT)
+        return android.util.Base64.encodeToString(outputStream.toByteArray(), android.util.Base64.DEFAULT)
     }
 }

@@ -14,60 +14,62 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"
+            android:layout_height="64dp"
             app:titleTextColor="@color/white">
+
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingVertical="8dp">
+                    android:orientation="horizontal">
+
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/ivAdminAvatar"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/person_profile"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="12dp"
                         android:padding="1dp"
-                        app:strokeColor="@color/ube"
-                        app:strokeWidth="1dp"
+                        android:src="@drawable/person_profile"
                         app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
-                        android:layout_marginEnd="8dp" />
+                        app:strokeColor="@color/ube"
+                        app:strokeWidth="1.5dp" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/geist_bold"
                         android:text="Admin"
                         android:textColor="@color/ube"
-                        android:textSize="20sp"
-                        android:fontFamily="@font/geist_bold"/>
+                        android:textSize="20sp" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Dashboard"
-                        android:textColor="@color/white"
-                        android:textSize="20sp"
+                        android:layout_marginStart="4dp"
                         android:fontFamily="@font/geist_bold"
-                        android:layout_marginStart="4dp"/>
+                        android:text="Panel"
+                        android:textColor="@color/white"
+                        android:textSize="20sp" />
                 </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
+                <ImageButton
                     android:id="@+id/btnLogout"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:text="SALIR"
-                    android:textColor="@color/status_canceled"
-                    android:textSize="12sp"
-                    app:icon="@drawable/ic_nav_logout"
-                    app:iconTint="@color/status_canceled" />
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_nav_logout"
+                    app:tint="@color/status_canceled" />
+
             </LinearLayout>
+
         </com.google.android.material.appbar.MaterialToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -279,7 +281,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
-                android:paddingTop="8dp" />
+                android:paddingTop="8dp"
+                android:paddingBottom="100dp"
+                android:clipToPadding="false" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

@@ -1,23 +1,19 @@
 package com.example.climatrack.activities
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.climatrack.R
 import com.example.climatrack.adapters.SparePartsAdapter
 import com.example.climatrack.databinding.ActivitySparePartsBinding
 import com.example.climatrack.databinding.DialogAddSparePartBinding
 import com.example.climatrack.models.DetalleRepuesto
 import com.example.climatrack.models.Repuesto
 import com.example.climatrack.repositories.MantenimientoRepository
-import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.repositories.RepuestoRepository
 import com.example.climatrack.repositories.ServicioRepository
-import java.text.NumberFormat
 import java.util.*
 
 class SparePartsActivity : BaseActivity() {
@@ -27,7 +23,7 @@ class SparePartsActivity : BaseActivity() {
     private lateinit var servicioRepository: ServicioRepository
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private lateinit var adapter: SparePartsAdapter
-    
+
     private var orderId: Int = -1
     private var mantenimientoId: Int = -1
 
@@ -35,15 +31,16 @@ class SparePartsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySparePartsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupEdgeToEdge(binding.root, binding.toolbar)
 
         repuestoRepository = RepuestoRepository(this)
         servicioRepository = ServicioRepository(this)
         mantenimientoRepository = MantenimientoRepository(this)
         
         orderId = intent.getIntExtra("ORDER_ID", -1)
+        mantenimientoId = mantenimientoRepository.getByOrdenId(orderId)?.id ?: -1
 
-        if (orderId == -1) {
+        if (mantenimientoId == -1) {
+            Toast.makeText(this, "Debe registrar primero el mantenimiento", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -51,69 +48,56 @@ class SparePartsActivity : BaseActivity() {
         setupToolbar()
         setupRecyclerView()
         loadOrderInfo()
-        
+        loadPartsList()
+
         binding.ivAddSparePart.setOnClickListener { showAddDialog() }
     }
 
     private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
+        binding.toolbar.setNavigationOnClickListener { finish() }
     }
 
     private fun setupRecyclerView() {
-        adapter = SparePartsAdapter(emptyList()) { item ->
-            confirmDelete(item.id)
+        adapter = SparePartsAdapter(emptyList()) { partInfo ->
+            confirmDelete(partInfo.id)
         }
         binding.rvSpareParts.layoutManager = LinearLayoutManager(this)
         binding.rvSpareParts.adapter = adapter
     }
 
     private fun loadOrderInfo() {
-        val ordenRepo = OrdenRepository(this)
-        val info = ordenRepo.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val ordenRepository = com.example.climatrack.repositories.OrdenRepository(this)
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
         info?.let {
-            binding.tvOrderNumDisplay.text = getString(R.string.order_num_label, it.numero)
-            binding.tvClientDisplay.text = getString(R.string.client_display, it.clienteNombre)
-            binding.tvEquipDisplay.text = getString(R.string.equipment_display, it.equipoNombre)
+            binding.tvOrderNumDisplay.text = "Orden: ${it.numero}"
+            binding.tvEquipDisplay.text = "Equipo: ${it.equipoNombre}"
+            binding.tvClientDisplay.text = "Cliente: ${it.clienteNombre}"
             binding.tvStatusDisplay.text = it.estado
-        }
-
-        val mant = mantenimientoRepository.getByOrdenId(orderId)
-        if (mant != null) {
-            mantenimientoId = mant.id
-            loadPartsList()
-        } else {
-            Toast.makeText(this, "Debe registrar mantenimiento primero", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun loadPartsList() {
-        if (mantenimientoId == -1) return
-        val list = servicioRepository.getRepuestosByMantenimiento(mantenimientoId)
-        adapter.updateList(list)
+        val parts = servicioRepository.getRepuestosByMantenimiento(mantenimientoId)
+        adapter.updateList(parts)
         
-        // Calculate Total
-        val total = list.sumOf { it.precio * it.cantidad }
-        val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CO"))
-        binding.tvTotalValue.text = formatter.format(total)
+        val total = parts.sumOf { it.precio * it.cantidad }
+        binding.tvTotalValue.text = "$${String.format(Locale.getDefault(), "%.2f", total)}"
     }
 
     private fun showAddDialog() {
-        if (mantenimientoId == -1) {
-            Toast.makeText(this, "Registre el mantenimiento antes de agregar repuestos", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val dialogBinding = DialogAddSparePartBinding.inflate(layoutInflater)
+        val parts = repuestoRepository.getAll()
+        val partNames = parts.map { it.nombre }
+        
+        val adapterDropdown = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, partNames)
+        val autoComplete = dialogBinding.tilSelectPart.editText as AutoCompleteTextView
+        autoComplete.setAdapter(adapterDropdown)
+        autoComplete.setTextColor(resources.getColor(com.example.climatrack.R.color.white, null))
 
-        val dialogBinding = DialogAddSparePartBinding.inflate(LayoutInflater.from(this))
-        val spareParts = repuestoRepository.getAll()
-        val adapterParts = ArrayAdapter(this, android.R.layout.simple_list_item_1, spareParts.map { it.nombre })
-        
-        (dialogBinding.tilSelectPart.editText as? AutoCompleteTextView)?.setAdapter(adapterParts)
-        
         var selectedPart: Repuesto? = null
-        (dialogBinding.tilSelectPart.editText as? AutoCompleteTextView)?.setOnItemClickListener { _, _, position, _ ->
-            selectedPart = spareParts[position]
+        autoComplete.setOnItemClickListener { _, _, position, _ ->
+            selectedPart = parts[position]
+            dialogBinding.etUnitPrice.setText(selectedPart?.precio?.toString() ?: "")
         }
 
         AlertDialog.Builder(this)
@@ -121,31 +105,34 @@ class SparePartsActivity : BaseActivity() {
             .setView(dialogBinding.root)
             .setPositiveButton("Agregar") { _, _ ->
                 val qty = dialogBinding.etQuantity.text.toString().toIntOrNull() ?: 0
+                val price = dialogBinding.etUnitPrice.text.toString().toDoubleOrNull() ?: 0.0
                 val part = selectedPart
-                if (part != null && qty > 0) {
+                
+                if (part != null && qty > 0 && price > 0) {
                     val detail = DetalleRepuesto(
                         mantenimientoId = mantenimientoId,
                         repuestoId = part.id,
                         cantidad = qty,
-                        observacion = dialogBinding.etObs.text.toString(),
-                        precioHistorico = part.precio
+                        precioUnitario = price,
+                        precioHistorico = price * qty,
+                        observacion = dialogBinding.etObs.text.toString()
                     )
                     servicioRepository.addRepuesto(detail)
                     loadPartsList()
                 } else {
-                    Toast.makeText(this, "Seleccione un repuesto y cantidad válida", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Datos inválidos", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
 
-    private fun confirmDelete(detalleId: Int) {
+    private fun confirmDelete(partId: Int) {
         AlertDialog.Builder(this)
-            .setTitle("Eliminar Registro")
-            .setMessage("¿Desea eliminar este repuesto de la lista?")
+            .setTitle("Eliminar repuesto")
+            .setMessage("¿Desea quitar este repuesto de la lista?")
             .setPositiveButton("Eliminar") { _, _ ->
-                servicioRepository.deleteRepuesto(detalleId)
+                servicioRepository.deleteRepuesto(partId)
                 loadPartsList()
             }
             .setNegativeButton("Cancelar", null)

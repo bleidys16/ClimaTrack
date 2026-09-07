@@ -191,6 +191,8 @@
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
                     android:hint="Fecha *"
+                    app:boxStrokeColor="@color/ube"
+                    app:hintTextColor="@color/ube"
                     app:endIconDrawable="@android:drawable/ic_menu_my_calendar"
                     app:endIconMode="custom">
                     <com.google.android.material.textfield.TextInputEditText
@@ -206,6 +208,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="0.8"
                     android:hint="Hora"
+                    app:boxStrokeColor="@color/ube"
+                    app:hintTextColor="@color/ube"
                     app:endIconDrawable="@android:drawable/ic_menu_recent_history"
                     app:endIconMode="custom">
                     <com.google.android.material.textfield.TextInputEditText
@@ -222,7 +226,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Diagnóstico *"
+                android:hint="Diagnóstico realizado *"
+                app:boxStrokeColor="@color/ube"
+                app:hintTextColor="@color/ube"
                 app:counterEnabled="true"
                 app:counterMaxLength="250">
                 <com.google.android.material.textfield.TextInputEditText
@@ -241,6 +247,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:hint="Trabajo realizado *"
+                app:boxStrokeColor="@color/ube"
+                app:hintTextColor="@color/ube"
                 app:counterEnabled="true"
                 app:counterMaxLength="500">
                 <com.google.android.material.textfield.TextInputEditText
@@ -253,82 +261,14 @@
                     android:textColor="@color/white" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Observations Section -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:hint="Observaciones"
-                app:counterEnabled="true"
-                app:counterMaxLength="250">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etObservations"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="top"
-                    android:inputType="textMultiLine"
-                    android:lines="2"
-                    android:textColor="@color/white" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Status and Time Spent Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal"
-                android:baselineAligned="false">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:hint="Estado Equipo *">
-                    <AutoCompleteTextView
-                        android:id="@+id/spnEquipStatus"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="none"
-                        android:textColor="@color/white" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Tiempo">
-                    <AutoCompleteTextView
-                        android:id="@+id/spnTimeSpent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="none"
-                        android:textColor="@color/white" />
-                </com.google.android.material.textfield.TextInputLayout>
-            </LinearLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="Técnico">
-                <AutoCompleteTextView
-                    android:id="@+id/spnTecnico"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:textColor="@color/white" />
-            </com.google.android.material.textfield.TextInputLayout>
-
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPrice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Precio del Servicio ($)">
+                android:hint="Costo de mantenimiento ($) *"
+                app:boxStrokeColor="@color/ube"
+                app:hintTextColor="@color/ube">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPrice"
                     android:layout_width="match_parent"

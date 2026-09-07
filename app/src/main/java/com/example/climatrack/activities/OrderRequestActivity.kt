@@ -29,6 +29,7 @@ class OrderRequestActivity : BaseActivity() {
     private lateinit var binding: ActivityOrderRequestBinding
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var equipoRepository: EquipoRepository
+    private lateinit var usuarioRepository: com.example.climatrack.repositories.UsuarioRepository
     private lateinit var sessionManager: SessionManager
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     
@@ -52,6 +53,7 @@ class OrderRequestActivity : BaseActivity() {
 
         ordenRepository = OrdenRepository(this)
         equipoRepository = EquipoRepository(this)
+        usuarioRepository = com.example.climatrack.repositories.UsuarioRepository(this)
         sessionManager = SessionManager(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -193,7 +195,8 @@ class OrderRequestActivity : BaseActivity() {
             estado = "SIN ASIGNAR",
             direccionExacta = addr,
             latitudCliente = lat,
-            longitudCliente = lon
+            longitudCliente = lon,
+            clienteEmail = usuarioRepository.getById(sessionManager.getUserId())?.email
         )
 
         val result = ordenRepository.create(newOrder)

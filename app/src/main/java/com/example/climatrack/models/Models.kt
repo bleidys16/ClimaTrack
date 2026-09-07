@@ -59,7 +59,10 @@ data class Orden(
     val calificacion: Int = 0, // 1-5
     val comentario: String? = null,
     val tecnicoLat: Double? = null,
-    val tecnicoLon: Double? = null
+    val tecnicoLon: Double? = null,
+    val clienteEmail: String? = null,
+    val precioMantenimiento: Double = 0.0,
+    val observacionCliente: String? = null
 )
 
 data class OrdenInfo(
@@ -80,7 +83,12 @@ data class OrdenInfo(
     val comentario: String? = null,
     val firmaBase64: String? = null,
     val tecnicoLat: Double? = null,
-    val tecnicoLon: Double? = null
+    val tecnicoLon: Double? = null,
+    val latitudCliente: Double? = null,
+    val longitudCliente: Double? = null,
+    val clienteEmail: String? = null,
+    val precioMantenimiento: Double = 0.0,
+    val observacionCliente: String? = null
 )
 
 data class Mantenimiento(
@@ -121,6 +129,7 @@ data class DetalleRepuesto(
     val cantidad: Int = 0,
     val observacion: String? = null,
     val precioHistorico: Double = 0.0,
+    val precioUnitario: Double = 0.0,
     val isSynced: Int = 0
 )
 

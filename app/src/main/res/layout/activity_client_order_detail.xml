@@ -357,7 +357,7 @@
                 app:strokeWidth="0.5dp"
                 app:strokeColor="@color/ube"
                 android:visibility="gone">
-                <com.google.android.gms.maps.MapView
+                <org.osmdroid.views.MapView
                     android:id="@+id/mapViewTracking"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />

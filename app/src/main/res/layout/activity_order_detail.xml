@@ -106,32 +106,6 @@
                         android:textSize="14sp" />
 
                     <TextView
-                        android:id="@+id/tvAddressInfo"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/geist"
-                        android:text="Dirección: Calle 123"
-                        android:textColor="@color/cadet_grey"
-                        android:textSize="14sp"
-                        app:drawableStartCompat="@android:drawable/ic_menu_mylocation"
-                        android:drawablePadding="8dp"
-                        app:drawableTint="@color/cadet_grey" />
-
-                    <TextView
-                        android:id="@+id/tvProblemInfo"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/geist"
-                        android:text="Problema: No enfría"
-                        android:textColor="@color/cadet_grey"
-                        android:textSize="14sp"
-                        app:drawableStartCompat="@android:drawable/ic_menu_help"
-                        android:drawablePadding="8dp"
-                        app:drawableTint="@color/cadet_grey" />
-
-                    <TextView
                         android:id="@+id/tvServiceType"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -278,7 +252,7 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnLocation"
+                    android:id="@+id/btnUbicacion"
                     android:layout_width="0dp"
                     android:layout_height="100dp"
                     android:layout_columnWeight="1"

@@ -217,31 +217,51 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="Aceptación del servicio *"
+                android:text="Respuesta del cliente *"
                 android:textColor="@color/cadet_grey"
                 android:textSize="12sp"
                 android:fontFamily="@font/geist_medium" />
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:cardBackgroundColor="@color/status_finished_container"
-                app:cardCornerRadius="12dp"
-                app:strokeWidth="0dp">
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/swAccept"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="8dp"
-                    android:text="El cliente acepta el servicio realizado"
-                    android:textColor="@color/status_finished"
-                    android:fontFamily="@font/geist_bold"
-                    android:textSize="13sp"
-                    app:thumbTint="@color/status_finished"
-                    app:trackTint="@color/status_finished" />
-            </com.google.android.material.card.MaterialCardView>
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAccept"
+                    android:layout_width="0dp"
+                    android:layout_height="60dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="ACEPTAR"
+                    app:backgroundTint="@color/status_finished"
+                    app:icon="@android:drawable/checkbox_on_background"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnReject"
+                    android:layout_width="0dp"
+                    android:layout_height="60dp"
+                    android:layout_weight="1"
+                    android:text="RECHAZAR"
+                    app:backgroundTint="@color/status_error"
+                    app:icon="@android:drawable/ic_delete"
+                    app:cornerRadius="12dp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvCancelMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="ORDEN CANCELADA"
+                android:textColor="@color/status_error"
+                android:gravity="center"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="18sp"
+                android:visibility="gone" />
 
             <!-- Firma del cliente -->
             <LinearLayout
@@ -291,14 +311,15 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSaveApproval"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="64dp"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="100dp"
-                android:text="✓ GUARDAR APROBACIÓN"
+                android:text="CONFIRMAR COTIZACIÓN Y APROBACIÓN"
                 android:fontFamily="@font/geist_bold"
-                android:textSize="15sp"
-                app:backgroundTint="@color/status_finished"
-                android:textColor="@color/white" />
+                android:textSize="14sp"
+                app:backgroundTint="@color/ube"
+                android:textColor="@color/white"
+                app:cornerRadius="16dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

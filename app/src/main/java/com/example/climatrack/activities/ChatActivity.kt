@@ -2,12 +2,10 @@ package com.example.climatrack.activities
 
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.climatrack.adapters.ChatAdapter
 import com.example.climatrack.databinding.ActivityChatBinding
-import com.example.climatrack.models.Mensaje
 import com.example.climatrack.repositories.ChatRepository
 import com.example.climatrack.utils.SessionManager
-import java.text.SimpleDateFormat
-import java.util.*
 
 class ChatActivity : BaseActivity() {
 
@@ -15,60 +13,48 @@ class ChatActivity : BaseActivity() {
     private lateinit var chatRepository: ChatRepository
     private lateinit var sessionManager: SessionManager
     private var orderId: Int = -1
-    private lateinit var adapter: com.example.climatrack.adapters.ChatAdapter
+    private lateinit var adapter: ChatAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupEdgeToEdge(binding.root, binding.toolbar)
 
         chatRepository = ChatRepository(this)
         sessionManager = SessionManager(this)
         orderId = intent.getIntExtra("ORDER_ID", -1)
-
-        if (orderId == -1) {
-            finish()
-            return
-        }
+        val orderNum = intent.getStringExtra("ORDER_NUM")
 
         setupToolbar()
+        binding.toolbar.title = "Chat Orden: $orderNum"
         setupRecyclerView()
-        
-        // Load local messages first for instant feedback (SENA internet resilient)
         loadLocalMessages()
-        
         listenToMessages()
 
-        binding.btnSendMessage.setOnClickListener {
-            sendMessage()
-        }
+        binding.btnSendMessage.setOnClickListener { sendMessage() }
     }
 
     private fun setupToolbar() {
         binding.toolbar.setNavigationOnClickListener { finish() }
-        val orderNum = intent.getStringExtra("ORDER_NUM")
-        binding.toolbar.title = "Chat Orden: $orderNum"
     }
 
     private fun setupRecyclerView() {
-        adapter = com.example.climatrack.adapters.ChatAdapter(sessionManager.getUserId())
+        adapter = ChatAdapter(sessionManager.getUserId())
         binding.rvChat.layoutManager = LinearLayoutManager(this)
         binding.rvChat.adapter = adapter
     }
 
     private fun loadLocalMessages() {
         val localMessages = chatRepository.getMessagesLocal(orderId)
-        if (localMessages.isNotEmpty()) {
-            adapter.updateList(localMessages)
-            binding.rvChat.scrollToPosition(localMessages.size - 1)
-        }
+        adapter.updateList(localMessages)
     }
 
     private fun listenToMessages() {
         chatRepository.listenToMessages(orderId) { messages ->
             adapter.updateList(messages)
-            binding.rvChat.scrollToPosition(messages.size - 1)
+            if (messages.isNotEmpty()) {
+                binding.rvChat.scrollToPosition(messages.size - 1)
+            }
         }
     }
 
@@ -76,18 +62,16 @@ class ChatActivity : BaseActivity() {
         val text = binding.etMessage.text.toString().trim()
         if (text.isEmpty()) return
 
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-        val now = sdf.format(Date())
-
-        val msg = Mensaje(
+        val msg = com.example.climatrack.models.Mensaje(
             ordenId = orderId,
             remitenteId = sessionManager.getUserId(),
-            nombreRemitente = sessionManager.getUserName() ?: "Usuario",
+            nombreRemitente = "Usuario", // Simplifying
             texto = text,
-            fecha = now,
+            fecha = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
         )
 
         chatRepository.sendMessage(msg)
-        binding.etMessage.text.clear()
+        binding.etMessage.setText("")
+        loadLocalMessages()
     }
 }

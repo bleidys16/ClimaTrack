@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.code.scanner)
+    implementation(libs.osmdroid.android)
     implementation(libs.coil)
     
     // Firebase

@@ -28,7 +28,9 @@ class OrdenRepository(private val context: Context) {
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, " +
                 "COALESCE(u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Por asignar') as tecnico_nombre, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA}, " +
+                "o.${DatabaseHelper.COL_ORDEN_TECH_LAT}, o.${DatabaseHelper.COL_ORDEN_TECH_LON}, o.${DatabaseHelper.COL_ORDEN_LAT}, o.${DatabaseHelper.COL_ORDEN_LON}, " +
+                "u_cli.${DatabaseHelper.COL_USUARIO_EMAIL}, o.${DatabaseHelper.COL_ORDEN_PRECIO_MANT}, o.${DatabaseHelper.COL_ORDEN_OBS_CLI} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -55,7 +57,14 @@ class OrdenRepository(private val context: Context) {
                     direccion = cursor.getString(12),
                     calificacion = cursor.getInt(13),
                     comentario = cursor.getString(14),
-                    firmaBase64 = cursor.getString(15)
+                    firmaBase64 = cursor.getString(15),
+                    tecnicoLat = if (cursor.isNull(16)) null else cursor.getDouble(16),
+                    tecnicoLon = if (cursor.isNull(17)) null else cursor.getDouble(17),
+                    latitudCliente = if (cursor.isNull(18)) null else cursor.getDouble(18),
+                    longitudCliente = if (cursor.isNull(19)) null else cursor.getDouble(19),
+                    clienteEmail = cursor.getString(20),
+                    precioMantenimiento = cursor.getDouble(21),
+                    observacionCliente = cursor.getString(22)
                 ))
             } while (cursor.moveToNext())
         }
@@ -169,7 +178,8 @@ class OrdenRepository(private val context: Context) {
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, " +
                 "COALESCE(u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Por asignar') as tecnico_nombre, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA}, " +
+                "o.${DatabaseHelper.COL_ORDEN_TECH_LAT}, o.${DatabaseHelper.COL_ORDEN_TECH_LON}, o.${DatabaseHelper.COL_ORDEN_LAT}, o.${DatabaseHelper.COL_ORDEN_LON} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -196,7 +206,11 @@ class OrdenRepository(private val context: Context) {
                     direccion = cursor.getString(12),
                     calificacion = cursor.getInt(13),
                     comentario = cursor.getString(14),
-                    firmaBase64 = cursor.getString(15)
+                    firmaBase64 = cursor.getString(15),
+                    tecnicoLat = if (cursor.isNull(16)) null else cursor.getDouble(16),
+                    tecnicoLon = if (cursor.isNull(17)) null else cursor.getDouble(17),
+                    latitudCliente = if (cursor.isNull(18)) null else cursor.getDouble(18),
+                    longitudCliente = if (cursor.isNull(19)) null else cursor.getDouble(19)
                 ))
             } while (cursor.moveToNext())
         }
@@ -211,7 +225,8 @@ class OrdenRepository(private val context: Context) {
                 "COALESCE(u_cli.${DatabaseHelper.COL_USUARIO_NOMBRE}, c.${DatabaseHelper.COL_CLIENTE_NOMBRE}, 'Usuario Sincronizado') as cliente_nombre, " +
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA}, " +
+                "o.${DatabaseHelper.COL_ORDEN_TECH_LAT}, o.${DatabaseHelper.COL_ORDEN_TECH_LON}, o.${DatabaseHelper.COL_ORDEN_LAT}, o.${DatabaseHelper.COL_ORDEN_LON} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -234,7 +249,11 @@ class OrdenRepository(private val context: Context) {
                     direccion = cursor.getString(8),
                     calificacion = cursor.getInt(9),
                     comentario = cursor.getString(10),
-                    firmaBase64 = cursor.getString(11)
+                    firmaBase64 = cursor.getString(11),
+                    tecnicoLat = if (cursor.isNull(12)) null else cursor.getDouble(12),
+                    tecnicoLon = if (cursor.isNull(13)) null else cursor.getDouble(13),
+                    latitudCliente = if (cursor.isNull(14)) null else cursor.getDouble(14),
+                    longitudCliente = if (cursor.isNull(15)) null else cursor.getDouble(15)
                 ))
             } while (cursor.moveToNext())
         }
@@ -251,7 +270,8 @@ class OrdenRepository(private val context: Context) {
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, " +
                 "COALESCE(u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, 'Por asignar') as tecnico_nombre, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA}, " +
+                "o.${DatabaseHelper.COL_ORDEN_TECH_LAT}, o.${DatabaseHelper.COL_ORDEN_TECH_LON}, o.${DatabaseHelper.COL_ORDEN_LAT}, o.${DatabaseHelper.COL_ORDEN_LON} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -281,7 +301,11 @@ class OrdenRepository(private val context: Context) {
                     direccion = cursor.getString(12),
                     calificacion = cursor.getInt(13),
                     comentario = cursor.getString(14),
-                    firmaBase64 = cursor.getString(15)
+                    firmaBase64 = cursor.getString(15),
+                    tecnicoLat = if (cursor.isNull(16)) null else cursor.getDouble(16),
+                    tecnicoLon = if (cursor.isNull(17)) null else cursor.getDouble(17),
+                    latitudCliente = if (cursor.isNull(18)) null else cursor.getDouble(18),
+                    longitudCliente = if (cursor.isNull(19)) null else cursor.getDouble(19)
                 ))
             } while (cursor.moveToNext())
         }
@@ -348,7 +372,8 @@ class OrdenRepository(private val context: Context) {
                 "e.${DatabaseHelper.COL_EQUIPO_MARCA} || ' ' || e.${DatabaseHelper.COL_EQUIPO_MODELO} as equipo, " +
                 "o.${DatabaseHelper.COL_ORDEN_TIPO}, o.${DatabaseHelper.COL_ORDEN_ESTADO}, u_tech.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
                 "o.${DatabaseHelper.COL_ORDEN_PRECIO}, e.${DatabaseHelper.COL_EQUIPO_MARCA}, e.${DatabaseHelper.COL_EQUIPO_MODELO}, " +
-                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA} " +
+                "o.${DatabaseHelper.COL_ORDEN_DESC}, o.${DatabaseHelper.COL_ORDEN_DIR_EXACTA}, o.${DatabaseHelper.COL_ORDEN_CALIFICACION}, o.${DatabaseHelper.COL_ORDEN_COMENTARIO}, o.${DatabaseHelper.COL_ORDEN_FIRMA}, " +
+                "o.${DatabaseHelper.COL_ORDEN_TECH_LAT}, o.${DatabaseHelper.COL_ORDEN_TECH_LON}, o.${DatabaseHelper.COL_ORDEN_LAT}, o.${DatabaseHelper.COL_ORDEN_LON} " +
                 "FROM ${DatabaseHelper.TABLE_ORDENES} o " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_CLIENTES} c ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = c.${DatabaseHelper.COL_CLIENTE_ID} " +
                 "LEFT JOIN ${DatabaseHelper.TABLE_USUARIOS} u_cli ON o.${DatabaseHelper.COL_ORDEN_CLIENTE_ID} = u_cli.${DatabaseHelper.COL_USUARIO_ID} " +
@@ -376,7 +401,11 @@ class OrdenRepository(private val context: Context) {
                     direccion = cursor.getString(12),
                     calificacion = cursor.getInt(13),
                     comentario = cursor.getString(14),
-                    firmaBase64 = cursor.getString(15)
+                    firmaBase64 = cursor.getString(15),
+                    tecnicoLat = if (cursor.isNull(16)) null else cursor.getDouble(16),
+                    tecnicoLon = if (cursor.isNull(17)) null else cursor.getDouble(17),
+                    latitudCliente = if (cursor.isNull(18)) null else cursor.getDouble(18),
+                    longitudCliente = if (cursor.isNull(19)) null else cursor.getDouble(19)
                 ))
             } while (cursor.moveToNext())
         }
@@ -408,26 +437,25 @@ class OrdenRepository(private val context: Context) {
             .get()
             .addOnSuccessListener { documents ->
                 val db = dbHelper.writableDatabase
-                for (doc in documents) {
-                    doc.toObject(Orden::class.java)?.let { orden ->
-                        // CRITICAL: Check if local version is NOT synced yet to avoid overwriting local assignment
-                        val localCursor = db.query(DatabaseHelper.TABLE_ORDENES, arrayOf(DatabaseHelper.COL_SYNCED),
-                            "${DatabaseHelper.COL_ORDEN_NUM}=?", arrayOf(orden.numero), null, null, null)
-                        
-                        var shouldUpdate = true
-                        if (localCursor.moveToFirst()) {
-                            val isSynced = localCursor.getInt(0)
-                            if (isSynced == 0) {
-                                shouldUpdate = false // Keep local version
+                db.beginTransaction()
+                try {
+                    for (doc in documents) {
+                        doc.toObject(Orden::class.java)?.let { orden ->
+                            // 1. Vincular clienteId local usando el clienteEmail de la nube
+                            var localClientId = orden.clienteId
+                            if (orden.clienteEmail != null) {
+                                val uCursor = db.query(DatabaseHelper.TABLE_USUARIOS, arrayOf(DatabaseHelper.COL_USUARIO_ID),
+                                    "${DatabaseHelper.COL_USUARIO_EMAIL}=?", arrayOf(orden.clienteEmail), null, null, null)
+                                if (uCursor.moveToFirst()) {
+                                    localClientId = uCursor.getInt(0)
+                                }
+                                uCursor.close()
                             }
-                        }
-                        localCursor.close()
 
-                        if (shouldUpdate) {
                             val values = ContentValues().apply {
                                 put(DatabaseHelper.COL_ORDEN_NUM, orden.numero)
                                 put(DatabaseHelper.COL_ORDEN_FECHA, orden.fecha)
-                                put(DatabaseHelper.COL_ORDEN_CLIENTE_ID, orden.clienteId)
+                                put(DatabaseHelper.COL_ORDEN_CLIENTE_ID, localClientId)
                                 put(DatabaseHelper.COL_ORDEN_EQUIPO_ID, orden.equipoId)
                                 put(DatabaseHelper.COL_ORDEN_TECNICO_ID, orden.tecnicoId)
                                 put(DatabaseHelper.COL_ORDEN_TIPO, orden.tipoServicio)
@@ -445,18 +473,20 @@ class OrdenRepository(private val context: Context) {
                                 put(DatabaseHelper.COL_SYNCED, 1)
                             }
 
-                            val count = db.update(
-                                DatabaseHelper.TABLE_ORDENES, values,
-                                "${DatabaseHelper.COL_ORDEN_NUM}=?", arrayOf(orden.numero)
-                            )
-
-                            if (count == 0) {
+                            // INSERT OR REPLACE basado en el número de orden único
+                            val rows = db.update(DatabaseHelper.TABLE_ORDENES, values, 
+                                "${DatabaseHelper.COL_ORDEN_NUM}=?", arrayOf(orden.numero))
+                            
+                            if (rows == 0) {
                                 db.insert(DatabaseHelper.TABLE_ORDENES, null, values)
                             }
                         }
                     }
+                    db.setTransactionSuccessful()
+                } finally {
+                    db.endTransaction()
+                    onComplete()
                 }
-                onComplete()
             }
             .addOnFailureListener { onComplete() }
     }
@@ -479,7 +509,9 @@ class OrdenRepository(private val context: Context) {
             latitudCliente = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LAT)),
             longitudCliente = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LON)),
             direccionExacta = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_DIR_EXACTA)),
-            firmaBase64 = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_FIRMA))
+            firmaBase64 = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_FIRMA)),
+            precioMantenimiento = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_PRECIO_MANT)),
+            observacionCliente = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_OBS_CLI))
         )
     }
 }

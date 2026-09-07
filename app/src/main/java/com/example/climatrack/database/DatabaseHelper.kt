@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 22
+        private const val DATABASE_VERSION = 31
 
         // Columna común para soporte offline/sincronización
         const val COL_SYNCED = "is_synced"
@@ -84,6 +84,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_ORDEN_COMENTARIO = "comentario"
         const val COL_ORDEN_TECH_LAT = "tecnico_lat"
         const val COL_ORDEN_TECH_LON = "tecnico_lon"
+        const val COL_ORDEN_PRECIO_MANT = "precio_mantenimiento"
+        const val COL_ORDEN_OBS_CLI = "observacion_cliente"
 
         // Tabla Mantenimientos
         const val TABLE_MANTENIMIENTOS = "mantenimientos"
@@ -113,6 +115,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_DET_CANT = "cantidad"
         const val COL_DET_OBS = "observacion"
         const val COL_DET_PRECIO = "precio_historico"
+        const val COL_DET_PRECIO_UNIT = "precio_unitario"
 
         // Tabla Evidencias
         const val TABLE_EVIDENCIAS = "evidencias"
@@ -207,6 +210,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_ORDEN_COMENTARIO TEXT, " +
                 "$COL_ORDEN_TECH_LAT REAL, " +
                 "$COL_ORDEN_TECH_LON REAL, " +
+                "$COL_ORDEN_PRECIO_MANT REAL DEFAULT 0.0, " +
+                "$COL_ORDEN_OBS_CLI TEXT, " +
                 "FOREIGN KEY($COL_ORDEN_CLIENTE_ID) REFERENCES $TABLE_CLIENTES($COL_CLIENTE_ID), " +
                 "FOREIGN KEY($COL_ORDEN_EQUIPO_ID) REFERENCES $TABLE_EQUIPOS($COL_EQUIPO_ID), " +
                 "FOREIGN KEY($COL_ORDEN_TECNICO_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"
@@ -238,6 +243,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 "$COL_DET_CANT INTEGER, " +
                 "$COL_DET_OBS TEXT, " +
                 "$COL_DET_PRECIO REAL DEFAULT 0, " +
+                "$COL_DET_PRECIO_UNIT REAL DEFAULT 0.0, " +
                 "$COL_SYNCED INTEGER DEFAULT 0, " +
                 "FOREIGN KEY($COL_DET_MANT_ID) REFERENCES $TABLE_MANTENIMIENTOS($COL_MANT_ID), " +
                 "FOREIGN KEY($COL_DET_REP_ID) REFERENCES $TABLE_REPUESTOS($COL_REP_ID))"
@@ -319,6 +325,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     private fun insertInitialData(db: SQLiteDatabase?) {
+        android.util.Log.d("DB_HELPER", "Insertando datos iniciales...")
         // Usuarios
         val admin = ContentValues().apply {
             put(COL_USUARIO_USER, "admin")
@@ -327,7 +334,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COL_USUARIO_ROL, "Administrador")
             put(COL_USUARIO_EMAIL, "admin@climatrack.com")
         }
-        db?.insert(TABLE_USUARIOS, null, admin)
+        db?.insertWithOnConflict(TABLE_USUARIOS, null, admin, SQLiteDatabase.CONFLICT_REPLACE)
 
         val tecnico1 = ContentValues().apply {
             put(COL_USUARIO_USER, "tecnico01")
@@ -336,16 +343,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COL_USUARIO_ROL, "Técnico")
             put(COL_USUARIO_EMAIL, "tecnico01@climatrack.com")
         }
-        db?.insert(TABLE_USUARIOS, null, tecnico1)
+        db?.insertWithOnConflict(TABLE_USUARIOS, null, tecnico1, SQLiteDatabase.CONFLICT_REPLACE)
         
-        // Obtener el ID real del técnico
-        val cursorUser = db?.query(TABLE_USUARIOS, arrayOf(COL_USUARIO_ID), "$COL_USUARIO_USER=?", arrayOf("tecnico01"), null, null, null)
-        var idUser1: Long = 1
-        if (cursorUser?.moveToFirst() == true) {
-            idUser1 = cursorUser.getLong(0)
-        }
-        cursorUser?.close()
-
         val tecnico2 = ContentValues().apply {
             put(COL_USUARIO_USER, "tecnico02")
             put(COL_USUARIO_PASS, "123456")
@@ -353,7 +352,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COL_USUARIO_ROL, "Técnico")
             put(COL_USUARIO_EMAIL, "tecnico02@climatrack.com")
         }
-        db?.insert(TABLE_USUARIOS, null, tecnico2)
+        db?.insertWithOnConflict(TABLE_USUARIOS, null, tecnico2, SQLiteDatabase.CONFLICT_REPLACE)
 
         val clienteUser = ContentValues().apply {
             put(COL_USUARIO_USER, "cliente01")
@@ -362,7 +361,13 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COL_USUARIO_ROL, "Cliente")
             put(COL_USUARIO_EMAIL, "cliente01@gmail.com")
         }
-        db?.insert(TABLE_USUARIOS, null, clienteUser)
+        db?.insertWithOnConflict(TABLE_USUARIOS, null, clienteUser, SQLiteDatabase.CONFLICT_REPLACE)
+        
+        // Obtener IDs de forma segura
+        val idUser1 = queryUserId(db, "tecnico01")
+        val idCli1 = queryUserId(db, "cliente01")
+
+        android.util.Log.d("DB_HELPER", "IDs recuperados: Tech=$idUser1, Cli=$idCli1")
 
         // Clientes
         val clientes = listOf(
@@ -419,7 +424,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             val cvOrder = ContentValues().apply {
                 put(COL_ORDEN_NUM, data[0])
                 put(COL_ORDEN_FECHA, data[1])
-                put(COL_ORDEN_CLIENTE_ID, 999) // ID Inexistente para evitar colisión con nuevos usuarios
+                put(COL_ORDEN_CLIENTE_ID, idCli1) 
                 put(COL_ORDEN_EQUIPO_ID, equipoIds[data[2]])
                 put(COL_ORDEN_TECNICO_ID, idUser1)
                 put(COL_ORDEN_TIPO, data[3])
@@ -455,5 +460,12 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             }
             db?.insert(TABLE_REPUESTOS, null, cv)
         }
+    }
+
+    private fun queryUserId(db: SQLiteDatabase?, username: String): Long {
+        val cursor = db?.query(TABLE_USUARIOS, arrayOf(COL_USUARIO_ID), "$COL_USUARIO_USER=?", arrayOf(username), null, null, null)
+        val id = if (cursor?.moveToFirst() == true) cursor.getLong(0) else -1L
+        cursor?.close()
+        return id
     }
 }

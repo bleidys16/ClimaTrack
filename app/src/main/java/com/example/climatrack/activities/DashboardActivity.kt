@@ -13,6 +13,7 @@ import com.example.climatrack.R
 import com.example.climatrack.databinding.ActivityDashboardBinding
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.repositories.UsuarioRepository
+import com.example.climatrack.services.LocationTrackingService
 import com.example.climatrack.utils.SessionManager
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -114,6 +115,7 @@ class DashboardActivity : BaseActivity() {
             if (checkLocationPermissions()) {
                 binding.layoutLocationInfo.visibility = View.VISIBLE
                 fetchCurrentLocation(userId, isActive, workStart, workEnd)
+                startLocationService()
             } else {
                 requestPermissionLauncher.launch(arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
@@ -123,8 +125,29 @@ class DashboardActivity : BaseActivity() {
         } else {
             binding.layoutLocationInfo.visibility = View.GONE
             usuarioRepository.updateStatus(userId, isActive, workStart, workEnd, null, null)
+            stopLocationService()
             Toast.makeText(this, "Jornada finalizada", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun startLocationService() {
+        android.util.Log.d("DASHBOARD_LOCATION", "Iniciando servicio de seguimiento")
+        val serviceIntent = Intent(this, LocationTrackingService::class.java).apply {
+            action = LocationTrackingService.ACTION_START
+            putExtra(LocationTrackingService.EXTRA_USER_ID, sessionManager.getUserId())
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
+    }
+
+    private fun stopLocationService() {
+        val serviceIntent = Intent(this, LocationTrackingService::class.java).apply {
+            action = LocationTrackingService.ACTION_STOP_SERVICE
+        }
+        startService(serviceIntent)
     }
 
     private fun checkLocationPermissions(): Boolean {
@@ -223,11 +246,14 @@ class DashboardActivity : BaseActivity() {
             }
         }
 
-        binding.btnLogout.setOnClickListener {
+        val logoutAction = {
             sessionManager.logout()
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
+
+        binding.btnLogout.setOnClickListener { logoutAction() }
+        binding.btnToolbarLogout.setOnClickListener { logoutAction() }
     }
 
     private fun setupBottomNavigation() {

@@ -2,11 +2,9 @@ package com.example.climatrack.repositories
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import com.example.climatrack.database.DatabaseHelper
-import com.example.climatrack.models.Aprobacion
-import com.example.climatrack.models.DetalleRepuesto
-import com.example.climatrack.models.Evidencia
-import com.example.climatrack.models.Ubicacion
+import com.example.climatrack.models.*
 import com.example.climatrack.utils.SyncManager
 
 class ServicioRepository(private val context: Context) {
@@ -20,6 +18,7 @@ class ServicioRepository(private val context: Context) {
             put(DatabaseHelper.COL_DET_CANT, detalle.cantidad)
             put(DatabaseHelper.COL_DET_OBS, detalle.observacion)
             put(DatabaseHelper.COL_DET_PRECIO, detalle.precioHistorico)
+            put(DatabaseHelper.COL_DET_PRECIO_UNIT, detalle.precioUnitario)
             put(DatabaseHelper.COL_SYNCED, 0)
         }
         val result = db.insert(DatabaseHelper.TABLE_DETALLE_REPUESTOS, null, values)
@@ -27,12 +26,12 @@ class ServicioRepository(private val context: Context) {
         return result
     }
 
-    fun getRepuestosByMantenimiento(mantenimientoId: Int): List<com.example.climatrack.models.DetalleRepuestoInfo> {
-        val list = mutableListOf<com.example.climatrack.models.DetalleRepuestoInfo>()
+    fun getRepuestosByMantenimiento(mantenimientoId: Int): List<DetalleRepuestoInfo> {
+        val list = mutableListOf<DetalleRepuestoInfo>()
         val db = dbHelper.readableDatabase
         val query = "SELECT d.${DatabaseHelper.COL_DET_ID}, r.${DatabaseHelper.COL_REP_NOMBRE}, " +
                 "r.${DatabaseHelper.COL_REP_COD}, r.${DatabaseHelper.COL_REP_UNIDAD}, " +
-                "d.${DatabaseHelper.COL_DET_CANT}, d.${DatabaseHelper.COL_DET_PRECIO}, d.${DatabaseHelper.COL_DET_OBS} " +
+                "d.${DatabaseHelper.COL_DET_CANT}, d.${DatabaseHelper.COL_DET_PRECIO_UNIT}, d.${DatabaseHelper.COL_DET_OBS} " +
                 "FROM ${DatabaseHelper.TABLE_DETALLE_REPUESTOS} d " +
                 "JOIN ${DatabaseHelper.TABLE_REPUESTOS} r ON d.${DatabaseHelper.COL_DET_REP_ID} = r.${DatabaseHelper.COL_REP_ID} " +
                 "WHERE d.${DatabaseHelper.COL_DET_MANT_ID} = ?"
@@ -40,7 +39,7 @@ class ServicioRepository(private val context: Context) {
         val cursor = db.rawQuery(query, arrayOf(mantenimientoId.toString()))
         if (cursor.moveToFirst()) {
             do {
-                list.add(com.example.climatrack.models.DetalleRepuestoInfo(
+                list.add(DetalleRepuestoInfo(
                     id = cursor.getInt(0),
                     repuestoNombre = cursor.getString(1),
                     repuestoCodigo = cursor.getString(2),
@@ -55,9 +54,9 @@ class ServicioRepository(private val context: Context) {
         return list
     }
 
-    fun deleteRepuesto(detalleId: Int): Int {
-        val db = dbHelper.writableDatabase
-        return db.delete(DatabaseHelper.TABLE_DETALLE_REPUESTOS, "${DatabaseHelper.COL_DET_ID}=?", arrayOf(detalleId.toString()))
+    fun deleteRepuesto(id: Int): Int {
+        return dbHelper.writableDatabase.delete(DatabaseHelper.TABLE_DETALLE_REPUESTOS, 
+            "${DatabaseHelper.COL_DET_ID}=?", arrayOf(id.toString()))
     }
 
     fun addEvidencia(evidencia: Evidencia): Long {
@@ -85,19 +84,14 @@ class ServicioRepository(private val context: Context) {
         return db.insert(DatabaseHelper.TABLE_UBICACIONES, null, values)
     }
 
-    fun getUbicacionByOrden(ordenId: Int): Ubicacion? {
+    fun getUbicacionByOrden(orderId: Int): Ubicacion? {
         val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            DatabaseHelper.TABLE_UBICACIONES,
-            null,
-            "${DatabaseHelper.COL_UBI_ORDEN_ID}=?",
-            arrayOf(ordenId.toString()),
-            null, null, "${DatabaseHelper.COL_UBI_FECHA} DESC", "1"
-        )
-
-        var ubicacion: Ubicacion? = null
+        val cursor = db.query(DatabaseHelper.TABLE_UBICACIONES, null, 
+            "${DatabaseHelper.COL_UBI_ORDEN_ID}=?", arrayOf(orderId.toString()), null, null, null)
+        
+        var ubi: Ubicacion? = null
         if (cursor.moveToFirst()) {
-            ubicacion = Ubicacion(
+            ubi = Ubicacion(
                 id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_ID)),
                 ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_ORDEN_ID)),
                 latitud = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_UBI_LAT)),
@@ -107,7 +101,7 @@ class ServicioRepository(private val context: Context) {
             )
         }
         cursor.close()
-        return ubicacion
+        return ubi
     }
 
     fun addAprobacion(aprobacion: Aprobacion): Long {
@@ -121,41 +115,29 @@ class ServicioRepository(private val context: Context) {
         return db.insert(DatabaseHelper.TABLE_APROBACIONES, null, values)
     }
 
-    fun getEvidenciasByOrden(ordenId: Int): List<Evidencia> {
-        val evidencias = mutableListOf<Evidencia>()
+    fun getEvidenciasByOrden(orderId: Int): List<Evidencia> {
+        val list = mutableListOf<Evidencia>()
         val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            DatabaseHelper.TABLE_EVIDENCIAS,
-            null,
-            "${DatabaseHelper.COL_EVI_ORDEN_ID}=?",
-            arrayOf(ordenId.toString()),
-            null, null, "${DatabaseHelper.COL_EVI_FECHA} DESC"
-        )
-
+        val cursor = db.query(DatabaseHelper.TABLE_EVIDENCIAS, null, 
+            "${DatabaseHelper.COL_EVI_ORDEN_ID}=?", arrayOf(orderId.toString()), null, null, null)
+        
         if (cursor.moveToFirst()) {
             do {
-                evidencias.add(
-                    Evidencia(
-                        id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ID)),
-                        ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ORDEN_ID)),
-                        rutaFoto = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_RUTA)),
-                        fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_FECHA)),
-                        isSynced = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_SYNCED))
-                    )
-                )
+                list.add(Evidencia(
+                    id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ID)),
+                    ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ORDEN_ID)),
+                    rutaFoto = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_RUTA)),
+                    fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_FECHA))
+                ))
             } while (cursor.moveToNext())
         }
         cursor.close()
-        return evidencias
+        return list
     }
 
     fun deleteEvidencia(id: Int): Int {
-        val db = dbHelper.writableDatabase
-        return db.delete(
-            DatabaseHelper.TABLE_EVIDENCIAS,
-            "${DatabaseHelper.COL_EVI_ID}=?",
-            arrayOf(id.toString())
-        )
+        return dbHelper.writableDatabase.delete(DatabaseHelper.TABLE_EVIDENCIAS, 
+            "${DatabaseHelper.COL_EVI_ID}=?", arrayOf(id.toString()))
     }
 
     fun getTopPartsStats(): List<com.example.climatrack.adapters.StatItem> {
@@ -164,9 +146,7 @@ class ServicioRepository(private val context: Context) {
         val query = "SELECT r.${DatabaseHelper.COL_REP_NOMBRE}, SUM(d.${DatabaseHelper.COL_DET_CANT}) as total " +
                 "FROM ${DatabaseHelper.TABLE_DETALLE_REPUESTOS} d " +
                 "JOIN ${DatabaseHelper.TABLE_REPUESTOS} r ON d.${DatabaseHelper.COL_DET_REP_ID} = r.${DatabaseHelper.COL_REP_ID} " +
-                "GROUP BY d.${DatabaseHelper.COL_DET_REP_ID} " +
-                "ORDER BY total DESC LIMIT 5"
-        
+                "GROUP BY r.${DatabaseHelper.COL_REP_ID} ORDER BY total DESC LIMIT 5"
         val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {

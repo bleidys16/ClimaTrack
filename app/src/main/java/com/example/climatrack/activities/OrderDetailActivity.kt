@@ -22,6 +22,8 @@ import com.example.climatrack.repositories.MantenimientoRepository
 import com.example.climatrack.repositories.OrdenRepository
 import com.example.climatrack.utils.PdfGenerator
 import com.google.android.gms.location.LocationServices
+import com.example.climatrack.services.LocationTrackingService
+import com.example.climatrack.utils.SessionManager
 
 class OrderDetailActivity : BaseActivity() {
 
@@ -29,6 +31,7 @@ class OrderDetailActivity : BaseActivity() {
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private lateinit var servicioRepository: com.example.climatrack.repositories.ServicioRepository
+    private lateinit var sessionManager: SessionManager
     private var orderId: Int = -1
     private val handler = Handler(Looper.getMainLooper())
     private var isTracking = false
@@ -51,6 +54,7 @@ class OrderDetailActivity : BaseActivity() {
         ordenRepository = OrdenRepository(this)
         mantenimientoRepository = MantenimientoRepository(this)
         servicioRepository = com.example.climatrack.repositories.ServicioRepository(this)
+        sessionManager = SessionManager(this)
         orderId = intent.getIntExtra("ORDER_ID", -1)
 
         if (orderId == -1) {
@@ -73,14 +77,6 @@ class OrderDetailActivity : BaseActivity() {
     private fun loadOrderData() {
         val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
         info?.let {
-            binding.tvOrderNum.text = getString(R.string.order_num_label, it.numero)
-            binding.tvStatus.text = it.estado
-            binding.tvClientInfo.text = "Cliente: ${it.clienteNombre}"
-            binding.tvEquipInfo.text = "Equipo: ${it.equipoNombre}"
-            binding.tvServiceType.text = "Servicio: ${it.tipoServicio}"
-            binding.tvAddressInfo.text = "Dirección: ${it.direccion ?: "No especificada"}"
-            binding.tvProblemInfo.text = "Problema: ${it.descripcion ?: "Sin descripción"}"
-
             val (containerColor, textColor) = when (it.estado) {
                 "PENDIENTE" -> R.color.status_pending_container to R.color.status_pending
                 "EN DIAGNÓSTICO" -> R.color.status_in_progress_container to R.color.status_in_progress
@@ -106,7 +102,7 @@ class OrderDetailActivity : BaseActivity() {
         binding.btnRegisterMaint.isEnabled = false
         binding.btnSpareParts.isEnabled = false
         binding.btnEvidence.isEnabled = false
-        binding.btnLocation.isEnabled = false
+        binding.btnUbicacion.isEnabled = false
         binding.btnFinishOrder.isEnabled = false
         binding.llFinishContainer.alpha = 0.5f
 
@@ -121,7 +117,7 @@ class OrderDetailActivity : BaseActivity() {
                 binding.btnRegisterMaint.isEnabled = true
                 binding.btnSpareParts.isEnabled = true
                 binding.btnEvidence.isEnabled = true
-                binding.btnLocation.isEnabled = true
+                binding.btnUbicacion.isEnabled = true
             }
             "APROBADA" -> {
                 binding.btnStartService.visibility = View.VISIBLE
@@ -130,18 +126,36 @@ class OrderDetailActivity : BaseActivity() {
                 binding.btnRegisterMaint.isEnabled = true
                 binding.btnSpareParts.isEnabled = true
                 binding.btnEvidence.isEnabled = true
-                binding.btnLocation.isEnabled = true
+                binding.btnUbicacion.isEnabled = true
                 binding.btnFinishOrder.isEnabled = true
                 binding.llFinishContainer.alpha = 1.0f
                 binding.tvFinishLabel.text = "Finalizar"
                 startTracking()
+                startLocationService()
             }
             "FINALIZADA" -> {
                 binding.tvFinishLabel.text = "ORDEN FINALIZADA"
                 binding.btnDownloadPdf.visibility = View.VISIBLE
                 stopTracking()
+                stopLocationService()
             }
         }
+    }
+
+    private fun startLocationService() {
+        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val serviceIntent = Intent(this, LocationTrackingService::class.java).apply {
+            action = LocationTrackingService.ACTION_UPDATE_ORDER
+            putExtra(LocationTrackingService.EXTRA_ORDER_NUM, info?.numero)
+        }
+        startService(serviceIntent)
+    }
+
+    private fun stopLocationService() {
+        val serviceIntent = Intent(this, LocationTrackingService::class.java).apply {
+            action = LocationTrackingService.ACTION_STOP_ORDER
+        }
+        startService(serviceIntent)
     }
 
     private fun loadEvidences() {
@@ -236,8 +250,8 @@ class OrderDetailActivity : BaseActivity() {
             }
         }
         
-        binding.btnLocation.setOnClickListener {
-            Intent(this, LocationActivity::class.java).also {
+        binding.btnUbicacion.setOnClickListener {
+            Intent(this, TrackingMapActivity::class.java).also {
                 it.putExtra("ORDER_ID", orderId)
                 startActivity(it)
             }
