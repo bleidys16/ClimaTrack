@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:isScrollContainer="true"
-    android:fitsSystemWindows="true"
     android:background="@color/chinese_black">
 
     <androidx.constraintlayout.widget.ConstraintLayout

@@ -13,8 +13,13 @@
         <item name="android:windowBackground">@color/chinese_black</item>
         <item name="colorSurface">@color/chinese_black</item>
         <item name="colorOnSurface">@color/white</item>
-        <item name="colorSurfaceVariant">@color/chinese_black</item>
-        <item name="colorOnSurfaceVariant">@color/cadet_grey</item>
+        <item name="colorSurfaceVariant">@color/american_blue</item>
+        <item name="colorOnSurfaceVariant">@color/white</item>
+        <item name="colorSurfaceInverse">@color/white</item>
+        <item name="colorOnSurfaceInverse">@color/chinese_black</item>
+
+        <item name="colorContainer">@color/american_blue</item>
+        <item name="colorOnContainer">@color/white</item>
 
         <!-- Official Typography -->
         <item name="fontFamily">@font/geist</item>

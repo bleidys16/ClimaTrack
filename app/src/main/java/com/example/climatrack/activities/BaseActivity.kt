@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import android.widget.ImageView
@@ -111,14 +112,28 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     protected fun setupEdgeToEdge(rootView: View, topView: View? = null, bottomNavContainer: View? = null) {
+        // Configuramos la ventana para que sea totalmente oscura desde el inicio
+        window.statusBarColor = getColor(R.color.chinese_black)
+        window.navigationBarColor = getColor(R.color.chinese_black)
+        window.setBackgroundDrawableResource(R.color.chinese_black)
+        
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.isAppearanceLightStatusBars = false // Iconos blancos
+        controller.isAppearanceLightNavigationBars = false
+
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
             
-            // Aplicamos un margen superior al contenedor del Toolbar para que baje
-            // lo suficiente y no sea tapado por el notch o la barra de estado.
-            topView?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                topMargin = systemBars.top
+            // Forzamos el fondo negro en el contenedor raíz
+            v.setBackgroundColor(getColor(R.color.chinese_black))
+
+            // Si hay un encabezado, le damos padding y aseguramos su color
+            if (topView != null) {
+                topView.setBackgroundColor(getColor(R.color.chinese_black))
+                topView.updatePadding(top = systemBars.top)
+            } else {
+                v.updatePadding(top = systemBars.top)
             }
             
             val bottomInset = if (ime.bottom > 0) ime.bottom else systemBars.bottom
