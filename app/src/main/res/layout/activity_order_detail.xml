@@ -107,6 +107,26 @@
                         android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/tvDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/geist"
+                        android:text="Fecha: 2026-08-31"
+                        android:textColor="@color/cadet_grey"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvProblemInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:fontFamily="@font/geist"
+                        android:text="Problema: Fuga de refrigerante detectada."
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                    <TextView
                         android:id="@+id/tvServiceType"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

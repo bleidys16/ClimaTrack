@@ -77,6 +77,14 @@ class OrderDetailActivity : BaseActivity() {
     private fun loadOrderData() {
         val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
         info?.let {
+            binding.tvOrderNum.text = "Orden: ${it.numero}"
+            binding.tvStatus.text = it.estado
+            binding.tvClientInfo.text = "Cliente: ${it.clienteNombre}"
+            binding.tvEquipInfo.text = "Equipo: ${it.equipoNombre}"
+            binding.tvDate.text = "Fecha: ${it.fecha}"
+            binding.tvProblemInfo.text = "Problema: ${it.descripcion}"
+            binding.tvServiceType.text = "Servicio: ${it.tipoServicio}"
+
             val (containerColor, textColor) = when (it.estado) {
                 "PENDIENTE" -> R.color.status_pending_container to R.color.status_pending
                 "EN DIAGNÓSTICO" -> R.color.status_in_progress_container to R.color.status_in_progress

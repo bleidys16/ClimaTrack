@@ -94,7 +94,12 @@ class OrdersActivity : BaseActivity() {
 
     private fun setupRecyclerView() {
         adapter = OrdersAdapter(emptyList()) { order ->
-            val intent = Intent(this, OrderDetailActivity::class.java)
+            val userRol = sessionManager.getUserRol()?.uppercase() ?: ""
+            val intent = if (userRol == "CLIENTE") {
+                Intent(this, ClientOrderDetailActivity::class.java)
+            } else {
+                Intent(this, OrderDetailActivity::class.java)
+            }
             intent.putExtra("ORDER_ID", order.id)
             startActivity(intent)
         }
