@@ -9,7 +9,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 31
+        private const val DATABASE_VERSION = 32
 
         // Columna común para soporte offline/sincronización
         const val COL_SYNCED = "is_synced"
@@ -325,8 +325,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     private fun insertInitialData(db: SQLiteDatabase?) {
-        android.util.Log.d("DB_HELPER", "Insertando datos iniciales...")
-        // Usuarios
+        // Usuarios base
         val admin = ContentValues().apply {
             put(COL_USUARIO_USER, "admin")
             put(COL_USUARIO_PASS, "admin123")
@@ -334,7 +333,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COL_USUARIO_ROL, "Administrador")
             put(COL_USUARIO_EMAIL, "admin@climatrack.com")
         }
-        db?.insertWithOnConflict(TABLE_USUARIOS, null, admin, SQLiteDatabase.CONFLICT_REPLACE)
+        db?.insert(TABLE_USUARIOS, null, admin)
 
         val tecnico1 = ContentValues().apply {
             put(COL_USUARIO_USER, "tecnico01")
@@ -343,16 +342,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COL_USUARIO_ROL, "Técnico")
             put(COL_USUARIO_EMAIL, "tecnico01@climatrack.com")
         }
-        db?.insertWithOnConflict(TABLE_USUARIOS, null, tecnico1, SQLiteDatabase.CONFLICT_REPLACE)
-        
-        val tecnico2 = ContentValues().apply {
-            put(COL_USUARIO_USER, "tecnico02")
-            put(COL_USUARIO_PASS, "123456")
-            put(COL_USUARIO_NOMBRE, "Técnico 02")
-            put(COL_USUARIO_ROL, "Técnico")
-            put(COL_USUARIO_EMAIL, "tecnico02@climatrack.com")
-        }
-        db?.insertWithOnConflict(TABLE_USUARIOS, null, tecnico2, SQLiteDatabase.CONFLICT_REPLACE)
+        db?.insert(TABLE_USUARIOS, null, tecnico1)
 
         val clienteUser = ContentValues().apply {
             put(COL_USUARIO_USER, "cliente01")
@@ -361,95 +351,14 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             put(COL_USUARIO_ROL, "Cliente")
             put(COL_USUARIO_EMAIL, "cliente01@gmail.com")
         }
-        db?.insertWithOnConflict(TABLE_USUARIOS, null, clienteUser, SQLiteDatabase.CONFLICT_REPLACE)
+        db?.insert(TABLE_USUARIOS, null, clienteUser)
         
-        // Obtener IDs de forma segura
-        val idUser1 = queryUserId(db, "tecnico01")
-        val idCli1 = queryUserId(db, "cliente01")
-
-        android.util.Log.d("DB_HELPER", "IDs recuperados: Tech=$idUser1, Cli=$idCli1")
-
-        // Clientes
-        val clientes = listOf(
-            Triple("Hotel del Mar", "555-0101", "Av. Playa 123"),
-            Triple("ACME S.A.S", "555-0202", "Calle 10 #45-20"),
-            Triple("Frio Total Ltda.", "555-0303", "Carrera 50 #12-30"),
-            Triple("Hotel Caribe", "555-0404", "Via del Mar Km 5"),
-            Triple("Oficinas Plaza", "555-0505", "Av. Central #100"),
-            Triple("Clinica del Norte", "555-0606", "Calle 80 #20-10")
-        )
-        val clienteIds = mutableMapOf<String, Long>()
-        clientes.forEach { (nombre, tel, dir) ->
-            val cv = ContentValues().apply {
-                put(COL_CLIENTE_NOMBRE, nombre)
-                put(COL_CLIENTE_TEL, tel)
-                put(COL_CLIENTE_DIR, dir)
-            }
-            clienteIds[nombre] = db?.insert(TABLE_CLIENTES, null, cv) ?: 0
-        }
-
-        // Equipos
-        val eqs = listOf(
-            listOf("EQ-001", "Aire Acondicionado Central", "York", "YXC-48", "SN-987654", "48.000 BTU", "Azotea Bloque A", "Hotel del Mar", "OPERATIVO"),
-            listOf("EQ-00015", "Split Pared", "LG", "Dual Inverter 24K", "LG24TI2022015", "24.000 BTU", "Oficina Gerencia", "ACME S.A.S", "OPERATIVO"),
-            listOf("EQ-00016", "Cassette", "Samsung", "360 Cassette 36K", "SAM36C2021120", "36.000 BTU", "Sala de Juntas", "Frio Total Ltda.", "EN MANTENIMIENTO"),
-            listOf("EQ-00017", "Mini Split", "Midea", "MS-18K", "MIDEA18K3344", "18.000 BTU", "Habitación 101", "Hotel Caribe", "FUERA DE SERVICIO"),
-            listOf("EQ-00018", "Chiller", "York", "YK-50TR", "YORK50TR7788", "50 TR", "Planta Baja", "Clinica del Norte", "OPERATIVO")
-        )
-        val equipoIds = mutableMapOf<String, Long>()
-        eqs.forEach { data ->
-            val cv = ContentValues().apply {
-                put(COL_EQUIPO_COD, data[0])
-                put(COL_EQUIPO_TIPO, data[1])
-                put(COL_EQUIPO_MARCA, data[2])
-                put(COL_EQUIPO_MODELO, data[3])
-                put(COL_EQUIPO_SERIAL, data[4])
-                put(COL_EQUIPO_CAPACIDAD, data[5])
-                put(COL_EQUIPO_UBICACION, data[6])
-                put(COL_EQUIPO_CLIENTE_ID, clienteIds[data[7]])
-                put(COL_EQUIPO_ESTADO, data[8])
-            }
-            equipoIds[data[0]] = db?.insert(TABLE_EQUIPOS, null, cv) ?: 0
-        }
-
-        // Historial (Mantenimientos Finalizados)
-        val historial = listOf(
-            listOf("OT-00007", "2026-05-05", "EQ-00018", "CORRECTIVO", "Fuga de refrigerante, sellado y carga.", "Técnico 03"),
-            listOf("OT-00012", "2026-06-10", "EQ-00015", "PREVENTIVO", "Mantenimiento preventivo general.", "Técnico 01"),
-            listOf("OT-00018", "2026-07-12", "EQ-00016", "CORRECTIVO", "Cambio de capacitor y limpieza de serpentín.", "Técnico 02"),
-            listOf("OT-00030", "2026-08-20", "EQ-00015", "INSPECCION", "Inspección de rutina y validación de parámetros.", "Técnico 01")
-        )
-        historial.forEach { data ->
-            // Primero creamos la orden como FINALIZADA
-            val cvOrder = ContentValues().apply {
-                put(COL_ORDEN_NUM, data[0])
-                put(COL_ORDEN_FECHA, data[1])
-                put(COL_ORDEN_CLIENTE_ID, idCli1) 
-                put(COL_ORDEN_EQUIPO_ID, equipoIds[data[2]])
-                put(COL_ORDEN_TECNICO_ID, idUser1)
-                put(COL_ORDEN_TIPO, data[3])
-                put(COL_ORDEN_ESTADO, "FINALIZADA")
-            }
-            val oId = db?.insert(TABLE_ORDENES, null, cvOrder) ?: 0
-            
-            // Luego el mantenimiento
-            val cvMant = ContentValues().apply {
-                put(COL_MANT_ORDEN_ID, oId)
-                put(COL_MANT_FECHA, data[1])
-                put(COL_MANT_DIAG, "Mantenimiento realizado según reporte.")
-                put(COL_MANT_TRABAJO, data[4])
-                put(COL_MANT_ESTADO_EQ, "OPERATIVO")
-                put(COL_MANT_TIEMPO, "1h 30m")
-            }
-            db?.insert(TABLE_MANTENIMIENTOS, null, cvMant)
-        }
-
-        // Repuestos
+        // Repuestos base
         val parts = listOf(
             listOf("Filtro de aire lavable", "RPT-0007", "Unidad", "25000"),
             listOf("Capacitor 35 + 5 uF", "RPT-0012", "Unidad", "18000"),
             listOf("Contactor 24V 40A", "RPT-0021", "Unidad", "45000"),
-            listOf("Gas Refrigerante R410A", "RPT-0030", "Gramos", "120") // 120 por gramo aprox
+            listOf("Gas Refrigerante R410A", "RPT-0030", "Gramos", "120")
         )
         parts.forEach { data ->
             val cv = ContentValues().apply {

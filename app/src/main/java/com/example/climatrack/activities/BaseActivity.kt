@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -22,6 +23,8 @@ import com.example.climatrack.utils.SessionManager
 open class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Forzamos el modo oscuro en toda la aplicación
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         applyFadeTransition()
@@ -113,7 +116,7 @@ open class BaseActivity : AppCompatActivity() {
 
     protected fun setupEdgeToEdge(rootView: View, topView: View? = null, bottomNavContainer: View? = null) {
         // Configuramos la ventana para que sea totalmente oscura desde el inicio
-        window.statusBarColor = getColor(R.color.chinese_black)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
         window.navigationBarColor = getColor(R.color.chinese_black)
         window.setBackgroundDrawableResource(R.color.chinese_black)
         
@@ -123,20 +126,21 @@ open class BaseActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
             
             // Forzamos el fondo negro en el contenedor raíz
             v.setBackgroundColor(getColor(R.color.chinese_black))
 
-            // Si hay un encabezado, le damos padding y aseguramos su color
-            if (topView != null) {
-                topView.setBackgroundColor(getColor(R.color.chinese_black))
-                topView.updatePadding(top = systemBars.top)
-            } else {
+            // Aplicamos padding superior solo al elemento de cabecera
+            topView?.updatePadding(top = systemBars.top)
+            
+            // Si el rootView no es el topView, le quitamos el padding superior para evitar duplicados
+            if (topView != null && topView != v) {
+                v.updatePadding(top = 0)
+            } else if (topView == null) {
                 v.updatePadding(top = systemBars.top)
             }
             
-            val bottomInset = if (ime.bottom > 0) ime.bottom else systemBars.bottom
+            val bottomInset = systemBars.bottom
 
             if (bottomNavContainer != null) {
                 val params = bottomNavContainer.layoutParams
