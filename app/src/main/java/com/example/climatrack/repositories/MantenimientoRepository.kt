@@ -10,9 +10,11 @@ import com.example.climatrack.utils.SyncManager
 class MantenimientoRepository(private val context: Context) {
     private val dbHelper = DatabaseHelper(context)
 
-    fun create(mantenimiento: Mantenimiento): Long {
+    fun create(mantenimiento: Mantenimiento): String {
         val db = dbHelper.writableDatabase
+        val id = if (mantenimiento.id.isEmpty()) java.util.UUID.randomUUID().toString() else mantenimiento.id
         val values = ContentValues().apply {
+            put(DatabaseHelper.COL_MANT_ID, id)
             put(DatabaseHelper.COL_MANT_ORDEN_ID, mantenimiento.ordenId)
             put(DatabaseHelper.COL_MANT_FECHA, mantenimiento.fecha)
             put(DatabaseHelper.COL_MANT_DIAG, mantenimiento.diagnostico)
@@ -25,7 +27,7 @@ class MantenimientoRepository(private val context: Context) {
         }
         val result = db.insert(DatabaseHelper.TABLE_MANTENIMIENTOS, null, values)
         if (result > 0) SyncManager.startImmediateSync(context)
-        return result
+        return id
     }
 
     fun update(mantenimiento: Mantenimiento): Int {
@@ -41,18 +43,18 @@ class MantenimientoRepository(private val context: Context) {
             put(DatabaseHelper.COL_MANT_TIEMPO, mantenimiento.tiempoEmpleado)
             put(DatabaseHelper.COL_SYNCED, 0)
         }
-        val result = db.update(DatabaseHelper.TABLE_MANTENIMIENTOS, values, "${DatabaseHelper.COL_MANT_ORDEN_ID}=?", arrayOf(mantenimiento.ordenId.toString()))
+        val result = db.update(DatabaseHelper.TABLE_MANTENIMIENTOS, values, "${DatabaseHelper.COL_MANT_ID}=?", arrayOf(mantenimiento.id))
         if (result > 0) SyncManager.startImmediateSync(context)
         return result
     }
 
-    fun getByOrdenId(ordenId: Int): Mantenimiento? {
+    fun getByOrdenId(ordenId: String): Mantenimiento? {
         val db = dbHelper.readableDatabase
         val cursor = db.query(
             DatabaseHelper.TABLE_MANTENIMIENTOS,
             null,
             "${DatabaseHelper.COL_MANT_ORDEN_ID}=?",
-            arrayOf(ordenId.toString()),
+            arrayOf(ordenId),
             null, null, null
         )
         var mant: Mantenimiento? = null
@@ -63,7 +65,7 @@ class MantenimientoRepository(private val context: Context) {
         return mant
     }
 
-    fun getHistorialInfo(tecnicoId: Int): List<com.example.climatrack.models.MantenimientoInfo> {
+    fun getHistorialInfo(tecnicoId: String): List<com.example.climatrack.models.MantenimientoInfo> {
         val list = mutableListOf<com.example.climatrack.models.MantenimientoInfo>()
         val db = dbHelper.readableDatabase
         val query = "SELECT m.${DatabaseHelper.COL_MANT_ID}, o.${DatabaseHelper.COL_ORDEN_NUM}, " +
@@ -74,11 +76,11 @@ class MantenimientoRepository(private val context: Context) {
                 "JOIN ${DatabaseHelper.TABLE_USUARIOS} u ON o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} " +
                 "WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = ?"
         
-        val cursor = db.rawQuery(query, arrayOf(tecnicoId.toString()))
+        val cursor = db.rawQuery(query, arrayOf(tecnicoId))
         if (cursor.moveToFirst()) {
             do {
                 list.add(com.example.climatrack.models.MantenimientoInfo(
-                    id = cursor.getInt(0),
+                    id = cursor.getString(0),
                     ordenNumero = cursor.getString(1),
                     fecha = cursor.getString(2),
                     diagnostico = cursor.getString(3),
@@ -92,14 +94,14 @@ class MantenimientoRepository(private val context: Context) {
         return list
     }
 
-    fun getHistorial(tecnicoId: Int): List<Mantenimiento> {
+    fun getHistorial(tecnicoId: String): List<Mantenimiento> {
         val list = mutableListOf<Mantenimiento>()
         val db = dbHelper.readableDatabase
         val query = "SELECT m.* FROM ${DatabaseHelper.TABLE_MANTENIMIENTOS} m " +
                     "JOIN ${DatabaseHelper.TABLE_ORDENES} o ON m.${DatabaseHelper.COL_MANT_ORDEN_ID} = o.${DatabaseHelper.COL_ORDEN_ID} " +
                     "WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = ?"
         
-        val cursor = db.rawQuery(query, arrayOf(tecnicoId.toString()))
+        val cursor = db.rawQuery(query, arrayOf(tecnicoId))
         if (cursor.moveToFirst()) {
             do {
                 list.add(cursorToMantenimiento(cursor))
@@ -111,8 +113,8 @@ class MantenimientoRepository(private val context: Context) {
 
     private fun cursorToMantenimiento(cursor: Cursor): Mantenimiento {
         return Mantenimiento(
-            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ID)),
-            ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ORDEN_ID)),
+            id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ID)),
+            ordenId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ORDEN_ID)),
             fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_FECHA)),
             diagnostico = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_DIAG)),
             trabajoRealizado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_TRABAJO)),

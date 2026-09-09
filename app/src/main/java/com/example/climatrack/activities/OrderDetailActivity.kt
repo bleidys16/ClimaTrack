@@ -32,7 +32,7 @@ class OrderDetailActivity : BaseActivity() {
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private lateinit var servicioRepository: com.example.climatrack.repositories.ServicioRepository
     private lateinit var sessionManager: SessionManager
-    private var orderId: Int = -1
+    private var orderId: String = ""
     private val handler = Handler(Looper.getMainLooper())
     private var isTracking = false
 
@@ -55,9 +55,9 @@ class OrderDetailActivity : BaseActivity() {
         mantenimientoRepository = MantenimientoRepository(this)
         servicioRepository = com.example.climatrack.repositories.ServicioRepository(this)
         sessionManager = SessionManager(this)
-        orderId = intent.getIntExtra("ORDER_ID", -1)
+        orderId = intent.getStringExtra("ORDER_ID") ?: ""
 
-        if (orderId == -1) {
+        if (orderId.isEmpty()) {
             finish()
             return
         }
@@ -75,7 +75,7 @@ class OrderDetailActivity : BaseActivity() {
     }
 
     private fun loadOrderData() {
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         info?.let {
             binding.tvOrderNum.text = "Orden: ${it.numero}"
             binding.tvStatus.text = it.estado
@@ -151,7 +151,7 @@ class OrderDetailActivity : BaseActivity() {
     }
 
     private fun startLocationService() {
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         val serviceIntent = Intent(this, LocationTrackingService::class.java).apply {
             action = LocationTrackingService.ACTION_UPDATE_ORDER
             putExtra(LocationTrackingService.EXTRA_ORDER_NUM, info?.numero)
@@ -232,7 +232,7 @@ class OrderDetailActivity : BaseActivity() {
         binding.btnChat.setOnClickListener {
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("ORDER_ID", orderId)
-            val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+            val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
             intent.putExtra("ORDER_NUM", info?.numero)
             startActivity(intent)
         }
@@ -343,7 +343,7 @@ class OrderDetailActivity : BaseActivity() {
     }
 
     private fun generateAndOpenPdf() {
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         val mant = mantenimientoRepository.getByOrdenId(orderId)
         
         info?.let {

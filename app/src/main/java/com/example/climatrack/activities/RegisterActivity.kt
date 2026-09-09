@@ -98,7 +98,7 @@ class RegisterActivity : BaseActivity() {
                     binding.progressBar.visibility = android.view.View.GONE
                     
                     if (task.isSuccessful) {
-                        usuarioRepository.syncUserToCloud(newUser.copy(id = localId.toInt()))
+                        usuarioRepository.syncUserToCloud(newUser.copy(id = localId))
                         Toast.makeText(this, "Registro exitoso y sincronizado", Toast.LENGTH_SHORT).show()
                         finish()
                     } else {

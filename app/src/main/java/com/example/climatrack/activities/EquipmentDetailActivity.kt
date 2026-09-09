@@ -15,7 +15,7 @@ class EquipmentDetailActivity : BaseActivity() {
     private lateinit var equipoRepository: EquipoRepository
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var adapter: OrdersAdapter
-    private var equipmentId: Int = -1
+    private var equipmentId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,9 +25,9 @@ class EquipmentDetailActivity : BaseActivity() {
 
         equipoRepository = EquipoRepository(this)
         ordenRepository = OrdenRepository(this)
-        equipmentId = intent.getIntExtra("EQUIPMENT_ID", -1)
+        equipmentId = intent.getStringExtra("EQUIPMENT_ID") ?: ""
 
-        if (equipmentId == -1) {
+        if (equipmentId.isEmpty()) {
             finish()
             return
         }

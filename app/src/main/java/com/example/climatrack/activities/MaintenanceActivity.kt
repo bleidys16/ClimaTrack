@@ -19,7 +19,7 @@ class MaintenanceActivity : BaseActivity() {
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var sessionManager: SessionManager
-    private var orderId: Int = -1
+    private var orderId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,9 +29,9 @@ class MaintenanceActivity : BaseActivity() {
         mantenimientoRepository = MantenimientoRepository(this)
         ordenRepository = OrdenRepository(this)
         sessionManager = SessionManager(this)
-        orderId = intent.getIntExtra("ORDER_ID", -1)
+        orderId = intent.getStringExtra("ORDER_ID") ?: ""
 
-        if (orderId == -1) {
+        if (orderId.isEmpty()) {
             finish()
             return
         }
@@ -51,7 +51,7 @@ class MaintenanceActivity : BaseActivity() {
     }
 
     private fun loadOrderInfo() {
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         info?.let {
             binding.tvOrderNumDisplay.text = "Orden: ${it.numero}"
             binding.tvClientDisplay.text = "Cliente: ${it.clienteNombre}"
@@ -130,7 +130,7 @@ class MaintenanceActivity : BaseActivity() {
         val result = if (existing != null) {
             mantenimientoRepository.update(maintenance)
         } else {
-            mantenimientoRepository.create(maintenance).toInt()
+            mantenimientoRepository.create(maintenance).let { if (it.isNotEmpty()) 1 else 0 }
         }
 
         if (result > 0) {
@@ -146,7 +146,7 @@ class MaintenanceActivity : BaseActivity() {
             put(com.example.climatrack.database.DatabaseHelper.COL_ORDEN_PRECIO_MANT, price)
         }
         val rows = db.update(com.example.climatrack.database.DatabaseHelper.TABLE_ORDENES, values,
-            "${com.example.climatrack.database.DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId.toString()))
+            "${com.example.climatrack.database.DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId))
         
         if (rows > 0) {
             Toast.makeText(this, "Mantenimiento guardado correctamente", Toast.LENGTH_SHORT).show()

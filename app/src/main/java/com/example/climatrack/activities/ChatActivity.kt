@@ -12,7 +12,7 @@ class ChatActivity : BaseActivity() {
     private lateinit var binding: ActivityChatBinding
     private lateinit var chatRepository: ChatRepository
     private lateinit var sessionManager: SessionManager
-    private var orderId: Int = -1
+    private var orderId: String = ""
     private lateinit var adapter: ChatAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +22,7 @@ class ChatActivity : BaseActivity() {
 
         chatRepository = ChatRepository(this)
         sessionManager = SessionManager(this)
-        orderId = intent.getIntExtra("ORDER_ID", -1)
+        orderId = intent.getStringExtra("ORDER_ID") ?: ""
         val orderNum = intent.getStringExtra("ORDER_NUM")
 
         setupToolbar()

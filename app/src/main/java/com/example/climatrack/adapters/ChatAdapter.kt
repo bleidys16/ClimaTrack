@@ -10,7 +10,7 @@ import com.example.climatrack.R
 import com.example.climatrack.databinding.ItemMessageBinding
 import com.example.climatrack.models.Mensaje
 
-class ChatAdapter(private val currentUserId: Int) : RecyclerView.Adapter<ChatAdapter.MessageViewHolder>() {
+class ChatAdapter(private val currentUserId: String) : RecyclerView.Adapter<ChatAdapter.MessageViewHolder>() {
 
     private var messages: List<Mensaje> = emptyList()
 

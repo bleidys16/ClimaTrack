@@ -24,8 +24,8 @@ class SparePartsActivity : BaseActivity() {
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private lateinit var adapter: SparePartsAdapter
 
-    private var orderId: Int = -1
-    private var mantenimientoId: Int = -1
+    private var orderId: String = ""
+    private var mantenimientoId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,10 +36,10 @@ class SparePartsActivity : BaseActivity() {
         servicioRepository = ServicioRepository(this)
         mantenimientoRepository = MantenimientoRepository(this)
         
-        orderId = intent.getIntExtra("ORDER_ID", -1)
-        mantenimientoId = mantenimientoRepository.getByOrdenId(orderId)?.id ?: -1
+        orderId = intent.getStringExtra("ORDER_ID") ?: ""
+        mantenimientoId = mantenimientoRepository.getByOrdenId(orderId)?.id ?: ""
 
-        if (mantenimientoId == -1) {
+        if (mantenimientoId.isEmpty()) {
             Toast.makeText(this, "Debe registrar primero el mantenimiento", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -67,7 +67,7 @@ class SparePartsActivity : BaseActivity() {
 
     private fun loadOrderInfo() {
         val ordenRepository = com.example.climatrack.repositories.OrdenRepository(this)
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         info?.let {
             binding.tvOrderNumDisplay.text = "Orden: ${it.numero}"
             binding.tvEquipDisplay.text = "Equipo: ${it.equipoNombre}"
@@ -127,7 +127,7 @@ class SparePartsActivity : BaseActivity() {
             .show()
     }
 
-    private fun confirmDelete(partId: Int) {
+    private fun confirmDelete(partId: String) {
         AlertDialog.Builder(this)
             .setTitle("Eliminar repuesto")
             .setMessage("¿Desea quitar este repuesto de la lista?")

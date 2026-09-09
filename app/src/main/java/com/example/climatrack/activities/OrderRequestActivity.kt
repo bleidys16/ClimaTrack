@@ -35,7 +35,7 @@ class OrderRequestActivity : BaseActivity() {
     
     private var lat: Double? = null
     private var lon: Double? = null
-    private var selectedEquipmentId: Int = 1 // Default dummy
+    private var selectedEquipmentId: String = "1" // Default dummy
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -87,7 +87,7 @@ class OrderRequestActivity : BaseActivity() {
                 selectedEquipmentId = myEquip[position].id
                 binding.tilManualModel.visibility = View.GONE
             } else {
-                selectedEquipmentId = 1 // Or handle better
+                selectedEquipmentId = "1" // Or handle better
                 val text = baseModels[position]
                 if (text.contains("Otro")) {
                     binding.tilManualModel.visibility = View.VISIBLE
@@ -183,7 +183,7 @@ class OrderRequestActivity : BaseActivity() {
                 estado = "OPERATIVO",
                 ubicacion = addr
             )
-            equipmentIdToUse = equipoRepository.create(newEquip).toInt()
+            equipmentIdToUse = equipoRepository.create(newEquip)
         }
 
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -207,7 +207,7 @@ class OrderRequestActivity : BaseActivity() {
         )
 
         val result = ordenRepository.create(newOrder)
-        if (result > 0) {
+        if (result.isNotEmpty()) {
             Toast.makeText(this, "Solicitud enviada correctamente", Toast.LENGTH_SHORT).show()
             finish()
         } else {

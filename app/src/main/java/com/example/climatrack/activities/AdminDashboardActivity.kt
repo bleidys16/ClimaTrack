@@ -132,7 +132,7 @@ class AdminDashboardActivity : BaseActivity() {
         binding.rvAssignedOrders.adapter = assignedOrdersAdapter
     }
 
-    private fun showAssignDialog(orderId: Int) {
+    private fun showAssignDialog(orderId: String) {
         val technicians = usuarioRepository.getAllTecnicos()
         val techNames = technicians.map { it.nombre }.toTypedArray()
 
@@ -208,7 +208,7 @@ class AdminDashboardActivity : BaseActivity() {
                 var assignedCount = 0
                 for (order in unassigned) {
                     val techId = ordenRepository.getTechnicianWithLeastWork()
-                    if (techId != -1) {
+                    if (techId.isNotEmpty()) {
                         ordenRepository.assignTechnician(order.id, techId)
                         assignedCount++
                     } else {

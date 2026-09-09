@@ -23,7 +23,7 @@ class RepuestoRepository(context: Context) {
 
     private fun cursorToRepuesto(cursor: Cursor): Repuesto {
         return Repuesto(
-            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_ID)),
+            id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_ID)),
             nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_NOMBRE)),
             codigo = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_COD)),
             unidad = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_REP_UNIDAD)),

@@ -39,7 +39,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var googleMap: GoogleMap? = null
-    private var orderId: Int = -1
+    private var orderId: String = ""
     private var currentLat: Double = 0.0
     private var currentLon: Double = 0.0
     private var currentAddress: String? = null
@@ -66,9 +66,9 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         servicioRepository = ServicioRepository(this)
         ordenRepository = OrdenRepository(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        orderId = intent.getIntExtra("ORDER_ID", -1)
+        orderId = intent.getStringExtra("ORDER_ID") ?: ""
 
-        if (orderId == -1) {
+        if (orderId.isEmpty()) {
             Toast.makeText(this, "Error: No se recibió el ID de la orden", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -125,7 +125,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             clientLat = it.latitudCliente
             clientLon = it.longitudCliente
             
-            val info = ordenRepository.getAllInfoByTecnico(-1).find { item -> item.id == orderId }
+            val info = ordenRepository.getAllInfoByTecnico("-1").find { item -> item.id == orderId }
             binding.tvClientDisplay.text = "Cliente: ${info?.clienteNombre ?: "Cargando..."}"
             
             updateMapWithClientLocation()
@@ -253,7 +253,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         )
         
         val result = servicioRepository.addUbicacion(ubicacion)
-        if (result > 0) {
+        if (result.isNotEmpty()) {
             Toast.makeText(this, "Ubicación registrada", Toast.LENGTH_SHORT).show()
             finish()
         }

@@ -22,7 +22,7 @@ class TrackingMapActivity : BaseActivity() {
     private lateinit var binding: ActivityTrackingMapBinding
     private lateinit var ordenRepository: OrdenRepository
     private var clientMarker: Marker? = null
-    private var orderId: Int = -1
+    private var orderId: String = ""
     private var myLocationOverlay: MyLocationNewOverlay? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,9 +37,9 @@ class TrackingMapActivity : BaseActivity() {
         setupEdgeToEdge(binding.root, binding.appBarLayout)
 
         ordenRepository = OrdenRepository(this)
-        orderId = intent.getIntExtra("ORDER_ID", -1)
+        orderId = intent.getStringExtra("ORDER_ID") ?: ""
 
-        if (orderId == -1) {
+        if (orderId.isEmpty()) {
             finish()
             return
         }
@@ -65,7 +65,7 @@ class TrackingMapActivity : BaseActivity() {
     }
 
     private fun loadOrderInfo() {
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         info?.let {
             binding.tvClientName.text = it.clienteNombre
             binding.tvClientAddress.text = it.direccion ?: "Sin dirección exacta"

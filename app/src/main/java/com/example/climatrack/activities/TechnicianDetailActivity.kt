@@ -14,7 +14,7 @@ class TechnicianDetailActivity : BaseActivity() {
 
     private lateinit var binding: ActivityTechnicianDetailBinding
     private lateinit var usuarioRepository: UsuarioRepository
-    private var techId: Int = -1
+    private var techId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,11 +23,11 @@ class TechnicianDetailActivity : BaseActivity() {
         setupEdgeToEdge(binding.root)
 
         usuarioRepository = UsuarioRepository(this)
-        techId = intent.getIntExtra("TECH_ID", -1)
+        techId = intent.getStringExtra("TECH_ID") ?: ""
 
         binding.toolbar.setNavigationOnClickListener { finish() }
 
-        if (techId != -1) {
+        if (techId.isNotEmpty()) {
             loadTechnicianInfo()
         } else {
             finish()

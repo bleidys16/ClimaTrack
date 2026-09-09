@@ -4,19 +4,19 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import java.util.UUID
 
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         private const val DATABASE_NAME = "climatrack.db"
-        private const val DATABASE_VERSION = 32
+        private const val DATABASE_VERSION = 33
 
-        // Columna común para soporte offline/sincronización
         const val COL_SYNCED = "is_synced"
 
         // Tabla Usuarios
         const val TABLE_USUARIOS = "usuarios"
-        const val COL_USUARIO_ID = "id"
+        const val COL_USUARIO_ID = "id" // TEXT UUID
         const val COL_USUARIO_USER = "usuario"
         const val COL_USUARIO_PASS = "password"
         const val COL_USUARIO_NOMBRE = "nombre"
@@ -31,7 +31,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COL_USUARIO_IMAGEN = "imagen_perfil"
         const val COL_USUARIO_FCM = "fcm_token"
 
-        // Tabla Actividad Técnico (Historial)
+        // Tabla Actividad Técnico
         const val TABLE_ACTIVIDAD = "actividad_tecnico"
         const val COL_ACT_ID = "id"
         const val COL_ACT_TECH_ID = "tecnico_id"
@@ -152,158 +152,18 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
-        val createUsuarios = "CREATE TABLE IF NOT EXISTS $TABLE_USUARIOS (" +
-                "$COL_USUARIO_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_USUARIO_USER TEXT NOT NULL UNIQUE, " +
-                "$COL_USUARIO_PASS TEXT NOT NULL, " +
-                "$COL_USUARIO_NOMBRE TEXT NOT NULL, " +
-                "$COL_USUARIO_ROL TEXT NOT NULL, " +
-                "$COL_USUARIO_EMAIL TEXT, " +
-                "$COL_USUARIO_TEL TEXT, " +
-                "$COL_USUARIO_ACTIVE INTEGER DEFAULT 0, " +
-                "$COL_USUARIO_WORK_START TEXT, " +
-                "$COL_USUARIO_WORK_END TEXT, " +
-                "$COL_USUARIO_LAT REAL, " +
-                "$COL_USUARIO_LON REAL, " +
-                "$COL_USUARIO_IMAGEN TEXT, " +
-                "$COL_USUARIO_FCM TEXT)"
-
-        val createClientes = "CREATE TABLE IF NOT EXISTS $TABLE_CLIENTES (" +
-                "$COL_CLIENTE_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_CLIENTE_NOMBRE TEXT NOT NULL, " +
-                "$COL_CLIENTE_TEL TEXT, " +
-                "$COL_CLIENTE_DIR TEXT, " +
-                "$COL_CLIENTE_EMAIL TEXT)"
-
-        val createEquipos = "CREATE TABLE IF NOT EXISTS $TABLE_EQUIPOS (" +
-                "$COL_EQUIPO_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_EQUIPO_COD TEXT NOT NULL UNIQUE, " +
-                "$COL_EQUIPO_NOMBRE TEXT, " +
-                "$COL_EQUIPO_TIPO TEXT NOT NULL, " +
-                "$COL_EQUIPO_MARCA TEXT NOT NULL, " +
-                "$COL_EQUIPO_MODELO TEXT NOT NULL, " +
-                "$COL_EQUIPO_SERIAL TEXT, " +
-                "$COL_EQUIPO_CAPACIDAD TEXT, " +
-                "$COL_EQUIPO_UBICACION TEXT, " +
-                "$COL_EQUIPO_CLIENTE_ID INTEGER, " +
-                "$COL_EQUIPO_ESTADO TEXT NOT NULL DEFAULT 'PENDIENTE', " +
-                "$COL_EQUIPO_IMAGEN TEXT, " +
-                "FOREIGN KEY($COL_EQUIPO_CLIENTE_ID) REFERENCES $TABLE_CLIENTES($COL_CLIENTE_ID))"
-
-        val createOrdenes = "CREATE TABLE IF NOT EXISTS $TABLE_ORDENES (" +
-                "$COL_ORDEN_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_ORDEN_NUM TEXT NOT NULL UNIQUE, " +
-                "$COL_ORDEN_FECHA TEXT NOT NULL, " +
-                "$COL_ORDEN_CLIENTE_ID INTEGER, " +
-                "$COL_ORDEN_EQUIPO_ID INTEGER, " +
-                "$COL_ORDEN_TECNICO_ID INTEGER, " +
-                "$COL_ORDEN_TIPO TEXT, " +
-                "$COL_ORDEN_DESC TEXT, " +
-                "$COL_ORDEN_ESTADO TEXT, " +
-                "$COL_ORDEN_PRECIO REAL DEFAULT 0.0, " +
-                "$COL_ORDEN_LAT REAL, " +
-                "$COL_ORDEN_LON REAL, " +
-                "$COL_ORDEN_DIR_EXACTA TEXT, " +
-                "$COL_ORDEN_FIRMA TEXT, " +
-                "$COL_SYNCED INTEGER DEFAULT 0, " +
-                "$COL_ORDEN_CALIFICACION INTEGER DEFAULT 0, " +
-                "$COL_ORDEN_COMENTARIO TEXT, " +
-                "$COL_ORDEN_TECH_LAT REAL, " +
-                "$COL_ORDEN_TECH_LON REAL, " +
-                "$COL_ORDEN_PRECIO_MANT REAL DEFAULT 0.0, " +
-                "$COL_ORDEN_OBS_CLI TEXT, " +
-                "FOREIGN KEY($COL_ORDEN_CLIENTE_ID) REFERENCES $TABLE_CLIENTES($COL_CLIENTE_ID), " +
-                "FOREIGN KEY($COL_ORDEN_EQUIPO_ID) REFERENCES $TABLE_EQUIPOS($COL_EQUIPO_ID), " +
-                "FOREIGN KEY($COL_ORDEN_TECNICO_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"
-
-        val createMantenimientos = "CREATE TABLE IF NOT EXISTS $TABLE_MANTENIMIENTOS (" +
-                "$COL_MANT_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_MANT_ORDEN_ID INTEGER, " +
-                "$COL_MANT_FECHA TEXT NOT NULL, " +
-                "$COL_MANT_DIAG TEXT NOT NULL, " +
-                "$COL_MANT_TRABAJO TEXT NOT NULL, " +
-                "$COL_MANT_OBS TEXT, " +
-                "$COL_MANT_RECOM TEXT, " +
-                "$COL_MANT_ESTADO_EQ TEXT, " +
-                "$COL_MANT_TIEMPO TEXT, " +
-                "$COL_SYNCED INTEGER DEFAULT 0, " +
-                "FOREIGN KEY($COL_MANT_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
-
-        val createRepuestos = "CREATE TABLE IF NOT EXISTS $TABLE_REPUESTOS (" +
-                "$COL_REP_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_REP_NOMBRE TEXT NOT NULL, " +
-                "$COL_REP_COD TEXT NOT NULL UNIQUE, " +
-                "$COL_REP_UNIDAD TEXT, " +
-                "$COL_REP_PRECIO REAL DEFAULT 0)"
-
-        val createDetalleRepuestos = "CREATE TABLE IF NOT EXISTS $TABLE_DETALLE_REPUESTOS (" +
-                "$COL_DET_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_DET_MANT_ID INTEGER, " +
-                "$COL_DET_REP_ID INTEGER, " +
-                "$COL_DET_CANT INTEGER, " +
-                "$COL_DET_OBS TEXT, " +
-                "$COL_DET_PRECIO REAL DEFAULT 0, " +
-                "$COL_DET_PRECIO_UNIT REAL DEFAULT 0.0, " +
-                "$COL_SYNCED INTEGER DEFAULT 0, " +
-                "FOREIGN KEY($COL_DET_MANT_ID) REFERENCES $TABLE_MANTENIMIENTOS($COL_MANT_ID), " +
-                "FOREIGN KEY($COL_DET_REP_ID) REFERENCES $TABLE_REPUESTOS($COL_REP_ID))"
-
-        val createEvidencias = "CREATE TABLE IF NOT EXISTS $TABLE_EVIDENCIAS (" +
-                "$COL_EVI_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_EVI_ORDEN_ID INTEGER, " +
-                "$COL_EVI_RUTA TEXT, " +
-                "$COL_EVI_FECHA TEXT, " +
-                "$COL_SYNCED INTEGER DEFAULT 0, " +
-                "FOREIGN KEY($COL_EVI_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
-
-        val createAprobaciones = "CREATE TABLE IF NOT EXISTS $TABLE_APROBACIONES (" +
-                "$COL_APROB_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_APROB_ORDEN_ID INTEGER, " +
-                "$COL_APROB_CLIENTE TEXT, " +
-                "$COL_APROB_ACEPTADO INTEGER, " +
-                "$COL_APROB_FECHA TEXT, " +
-                "FOREIGN KEY($COL_APROB_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
-
-        val createUbicaciones = "CREATE TABLE IF NOT EXISTS $TABLE_UBICACIONES (" +
-                "$COL_UBI_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_UBI_ORDEN_ID INTEGER, " +
-                "$COL_UBI_LAT REAL, " +
-                "$COL_UBI_LON REAL, " +
-                "$COL_UBI_DIR TEXT, " +
-                "$COL_UBI_FECHA TEXT, " +
-                "FOREIGN KEY($COL_UBI_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
-
-        val createActividad = "CREATE TABLE IF NOT EXISTS $TABLE_ACTIVIDAD (" +
-                "$COL_ACT_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_ACT_TECH_ID INTEGER, " +
-                "$COL_ACT_FECHA TEXT NOT NULL, " +
-                "$COL_ACT_INICIO TEXT, " +
-                "$COL_ACT_FIN TEXT, " +
-                "$COL_ACT_LAT REAL, " +
-                "$COL_ACT_LON REAL, " +
-                "FOREIGN KEY($COL_ACT_TECH_ID) REFERENCES $TABLE_USUARIOS($COL_USUARIO_ID))"
-
-        val createMensajes = "CREATE TABLE IF NOT EXISTS $TABLE_MENSAJES (" +
-                "$COL_MSG_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "$COL_MSG_ORDEN_ID INTEGER, " +
-                "$COL_MSG_REMITENTE_ID INTEGER, " +
-                "$COL_MSG_REMITENTE_NOMBRE TEXT, " +
-                "$COL_MSG_TEXTO TEXT, " +
-                "$COL_MSG_FECHA TEXT, " +
-                "FOREIGN KEY($COL_MSG_ORDEN_ID) REFERENCES $TABLE_ORDENES($COL_ORDEN_ID))"
-
-        db?.execSQL(createUsuarios)
-        db?.execSQL(createClientes)
-        db?.execSQL(createEquipos)
-        db?.execSQL(createOrdenes)
-        db?.execSQL(createMantenimientos)
-        db?.execSQL(createRepuestos)
-        db?.execSQL(createDetalleRepuestos)
-        db?.execSQL(createEvidencias)
-        db?.execSQL(createAprobaciones)
-        db?.execSQL(createUbicaciones)
-        db?.execSQL(createActividad)
-        db?.execSQL(createMensajes)
+        db?.execSQL("CREATE TABLE $TABLE_USUARIOS ($COL_USUARIO_ID TEXT PRIMARY KEY, $COL_USUARIO_USER TEXT UNIQUE, $COL_USUARIO_PASS TEXT, $COL_USUARIO_NOMBRE TEXT, $COL_USUARIO_ROL TEXT, $COL_USUARIO_EMAIL TEXT, $COL_USUARIO_TEL TEXT, $COL_USUARIO_ACTIVE INTEGER, $COL_USUARIO_WORK_START TEXT, $COL_USUARIO_WORK_END TEXT, $COL_USUARIO_LAT REAL, $COL_USUARIO_LON REAL, $COL_USUARIO_IMAGEN TEXT, $COL_USUARIO_FCM TEXT)")
+        db?.execSQL("CREATE TABLE $TABLE_CLIENTES ($COL_CLIENTE_ID TEXT PRIMARY KEY, $COL_CLIENTE_NOMBRE TEXT, $COL_CLIENTE_TEL TEXT, $COL_CLIENTE_DIR TEXT, $COL_CLIENTE_EMAIL TEXT)")
+        db?.execSQL("CREATE TABLE $TABLE_EQUIPOS ($COL_EQUIPO_ID TEXT PRIMARY KEY, $COL_EQUIPO_COD TEXT UNIQUE, $COL_EQUIPO_NOMBRE TEXT, $COL_EQUIPO_TIPO TEXT, $COL_EQUIPO_MARCA TEXT, $COL_EQUIPO_MODELO TEXT, $COL_EQUIPO_SERIAL TEXT, $COL_EQUIPO_CAPACIDAD TEXT, $COL_EQUIPO_UBICACION TEXT, $COL_EQUIPO_CLIENTE_ID TEXT, $COL_EQUIPO_ESTADO TEXT, $COL_EQUIPO_IMAGEN TEXT)")
+        db?.execSQL("CREATE TABLE $TABLE_ORDENES ($COL_ORDEN_ID TEXT PRIMARY KEY, $COL_ORDEN_NUM TEXT UNIQUE, $COL_ORDEN_FECHA TEXT, $COL_ORDEN_CLIENTE_ID TEXT, $COL_ORDEN_EQUIPO_ID TEXT, $COL_ORDEN_TECNICO_ID TEXT, $COL_ORDEN_TIPO TEXT, $COL_ORDEN_DESC TEXT, $COL_ORDEN_ESTADO TEXT, $COL_ORDEN_PRECIO REAL, $COL_ORDEN_LAT REAL, $COL_ORDEN_LON REAL, $COL_ORDEN_DIR_EXACTA TEXT, $COL_ORDEN_FIRMA TEXT, $COL_ORDEN_CALIFICACION INTEGER, $COL_ORDEN_COMENTARIO TEXT, $COL_ORDEN_TECH_LAT REAL, $COL_ORDEN_TECH_LON REAL, $COL_ORDEN_PRECIO_MANT REAL, $COL_ORDEN_OBS_CLI TEXT, $COL_SYNCED INTEGER)")
+        db?.execSQL("CREATE TABLE $TABLE_MANTENIMIENTOS ($COL_MANT_ID TEXT PRIMARY KEY, $COL_MANT_ORDEN_ID TEXT, $COL_MANT_FECHA TEXT, $COL_MANT_DIAG TEXT, $COL_MANT_TRABAJO TEXT, $COL_MANT_OBS TEXT, $COL_MANT_RECOM TEXT, $COL_MANT_ESTADO_EQ TEXT, $COL_MANT_TIEMPO TEXT, $COL_SYNCED INTEGER)")
+        db?.execSQL("CREATE TABLE $TABLE_REPUESTOS ($COL_REP_ID TEXT PRIMARY KEY, $COL_REP_NOMBRE TEXT, $COL_REP_COD TEXT UNIQUE, $COL_REP_UNIDAD TEXT, $COL_REP_PRECIO REAL)")
+        db?.execSQL("CREATE TABLE $TABLE_DETALLE_REPUESTOS ($COL_DET_ID TEXT PRIMARY KEY, $COL_DET_MANT_ID TEXT, $COL_DET_REP_ID TEXT, $COL_DET_CANT INTEGER, $COL_DET_OBS TEXT, $COL_DET_PRECIO REAL, $COL_DET_PRECIO_UNIT REAL, $COL_SYNCED INTEGER)")
+        db?.execSQL("CREATE TABLE $TABLE_EVIDENCIAS ($COL_EVI_ID TEXT PRIMARY KEY, $COL_EVI_ORDEN_ID TEXT, $COL_EVI_RUTA TEXT, $COL_EVI_FECHA TEXT, $COL_SYNCED INTEGER)")
+        db?.execSQL("CREATE TABLE $TABLE_APROBACIONES ($COL_APROB_ID TEXT PRIMARY KEY, $COL_APROB_ORDEN_ID TEXT, $COL_APROB_CLIENTE TEXT, $COL_APROB_ACEPTADO INTEGER, $COL_APROB_FECHA TEXT)")
+        db?.execSQL("CREATE TABLE $TABLE_UBICACIONES ($COL_UBI_ID TEXT PRIMARY KEY, $COL_UBI_ORDEN_ID TEXT, $COL_UBI_LAT REAL, $COL_UBI_LON REAL, $COL_UBI_DIR TEXT, $COL_UBI_FECHA TEXT)")
+        db?.execSQL("CREATE TABLE $TABLE_ACTIVIDAD ($COL_ACT_ID TEXT PRIMARY KEY, $COL_ACT_TECH_ID TEXT, $COL_ACT_FECHA TEXT, $COL_ACT_INICIO TEXT, $COL_ACT_FIN TEXT, $COL_ACT_LAT REAL, $COL_ACT_LON REAL)")
+        db?.execSQL("CREATE TABLE $TABLE_MENSAJES ($COL_MSG_ID TEXT PRIMARY KEY, $COL_MSG_ORDEN_ID TEXT, $COL_MSG_REMITENTE_ID TEXT, $COL_MSG_REMITENTE_NOMBRE TEXT, $COL_MSG_TEXTO TEXT, $COL_MSG_FECHA TEXT)")
 
         insertInitialData(db)
     }
@@ -325,8 +185,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     private fun insertInitialData(db: SQLiteDatabase?) {
-        // Usuarios base
         val admin = ContentValues().apply {
+            put(COL_USUARIO_ID, "user_admin_001")
             put(COL_USUARIO_USER, "admin")
             put(COL_USUARIO_PASS, "admin123")
             put(COL_USUARIO_NOMBRE, "Administrador Sistema")
@@ -336,6 +196,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db?.insert(TABLE_USUARIOS, null, admin)
 
         val tecnico1 = ContentValues().apply {
+            put(COL_USUARIO_ID, "user_tech_001")
             put(COL_USUARIO_USER, "tecnico01")
             put(COL_USUARIO_PASS, "123456")
             put(COL_USUARIO_NOMBRE, "Técnico 01")
@@ -345,6 +206,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db?.insert(TABLE_USUARIOS, null, tecnico1)
 
         val clienteUser = ContentValues().apply {
+            put(COL_USUARIO_ID, "user_cli_001")
             put(COL_USUARIO_USER, "cliente01")
             put(COL_USUARIO_PASS, "123456")
             put(COL_USUARIO_NOMBRE, "Cliente de Prueba")
@@ -353,7 +215,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         }
         db?.insert(TABLE_USUARIOS, null, clienteUser)
         
-        // Repuestos base
         val parts = listOf(
             listOf("Filtro de aire lavable", "RPT-0007", "Unidad", "25000"),
             listOf("Capacitor 35 + 5 uF", "RPT-0012", "Unidad", "18000"),
@@ -362,6 +223,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         )
         parts.forEach { data ->
             val cv = ContentValues().apply {
+                put(COL_REP_ID, UUID.randomUUID().toString())
                 put(COL_REP_NOMBRE, data[0])
                 put(COL_REP_COD, data[1])
                 put(COL_REP_UNIDAD, data[2])
@@ -369,12 +231,5 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             }
             db?.insert(TABLE_REPUESTOS, null, cv)
         }
-    }
-
-    private fun queryUserId(db: SQLiteDatabase?, username: String): Long {
-        val cursor = db?.query(TABLE_USUARIOS, arrayOf(COL_USUARIO_ID), "$COL_USUARIO_USER=?", arrayOf(username), null, null, null)
-        val id = if (cursor?.moveToFirst() == true) cursor.getLong(0) else -1L
-        cursor?.close()
-        return id
     }
 }

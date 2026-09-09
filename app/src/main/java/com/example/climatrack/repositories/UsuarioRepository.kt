@@ -11,8 +11,9 @@ import com.example.climatrack.utils.FirebaseHelper
 import com.google.firebase.firestore.SetOptions
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.UUID
 
-class UsuarioRepository(context: Context) {
+class UsuarioRepository(private val context: Context) {
     private val dbHelper = DatabaseHelper(context)
     private val firestore = FirebaseHelper.db
 
@@ -20,6 +21,7 @@ class UsuarioRepository(context: Context) {
         val userMap = hashMapOf(
             "id" to usuario.id,
             "usuario" to usuario.usuario,
+            "password" to usuario.password,
             "nombre" to usuario.nombre,
             "rol" to usuario.rol,
             "email" to usuario.email,
@@ -32,22 +34,23 @@ class UsuarioRepository(context: Context) {
             "workStartTime" to usuario.workStartTime,
             "workEndTime" to usuario.workEndTime
         )
-        firestore.collection("usuarios").document(usuario.id.toString())
+        firestore.collection("usuarios").document(usuario.id)
             .set(userMap, SetOptions.merge())
     }
 
-    fun fetchTechniciansFromCloud(onComplete: () -> Unit) {
+    fun fetchUsersFromCloud(onComplete: () -> Unit) {
         firestore.collection("usuarios")
-            .get() // Fetch ALL users to ensure cross-device consistency for names
+            .get()
             .addOnSuccessListener { documents ->
                 val db = dbHelper.writableDatabase
                 for (doc in documents) {
-                    val id = doc.getLong("id")?.toInt() ?: continue
+                    val id = doc.getString("id") ?: continue
                     val values = ContentValues().apply {
                         put(DatabaseHelper.COL_USUARIO_ID, id)
-                        put(DatabaseHelper.COL_USUARIO_USER, doc.getString("usuario") ?: "user_$id")
-                        put(DatabaseHelper.COL_USUARIO_NOMBRE, doc.getString("nombre") ?: "Usuario $id")
-                        put(DatabaseHelper.COL_USUARIO_ROL, doc.getString("rol") ?: "Cliente")
+                        put(DatabaseHelper.COL_USUARIO_USER, doc.getString("usuario"))
+                        put(DatabaseHelper.COL_USUARIO_PASS, doc.getString("password"))
+                        put(DatabaseHelper.COL_USUARIO_NOMBRE, doc.getString("nombre"))
+                        put(DatabaseHelper.COL_USUARIO_ROL, doc.getString("rol"))
                         put(DatabaseHelper.COL_USUARIO_EMAIL, doc.getString("email"))
                         put(DatabaseHelper.COL_USUARIO_TEL, doc.getString("telefono"))
                         put(DatabaseHelper.COL_USUARIO_ACTIVE, doc.getLong("isActive")?.toInt() ?: 0)
@@ -57,15 +60,12 @@ class UsuarioRepository(context: Context) {
                         put(DatabaseHelper.COL_USUARIO_LON, doc.getDouble("lastLon"))
                         put(DatabaseHelper.COL_USUARIO_WORK_START, doc.getString("workStartTime"))
                         put(DatabaseHelper.COL_USUARIO_WORK_END, doc.getString("workEndTime"))
-                        // NO sobreescribir la contraseña local con asteriscos si el usuario ya existe
                     }
                     
-                    // Solo incluimos la contraseña si es un usuario NUEVO
                     val count = db.update(DatabaseHelper.TABLE_USUARIOS, values, 
-                        "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(id.toString()))
+                        "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(id))
                     
                     if (count == 0) {
-                        values.put(DatabaseHelper.COL_USUARIO_PASS, "123456") // Password por defecto para nuevos
                         db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
                     }
                 }
@@ -74,22 +74,21 @@ class UsuarioRepository(context: Context) {
             .addOnFailureListener { onComplete() }
     }
 
-    fun updateFCMToken(userId: Int, token: String) {
+    fun updateFCMToken(userId: String, token: String) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseHelper.COL_USUARIO_FCM, token)
         }
-        val result = db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()))
+        val result = db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId))
         
         if (result > 0) {
-            firestore.collection("usuarios").document(userId.toString())
+            firestore.collection("usuarios").document(userId)
                 .update("fcmToken", token)
         }
     }
 
-    fun login(identifier: String, password: String): Usuario? {
+    fun login(identifier: String, password: String, onResult: (Usuario?) -> Unit) {
         val db = dbHelper.readableDatabase
-        // Allow login with either username OR email
         val cursor: Cursor = db.query(
             DatabaseHelper.TABLE_USUARIOS,
             null,
@@ -98,67 +97,97 @@ class UsuarioRepository(context: Context) {
             null, null, null
         )
 
-        var user: Usuario? = null
         if (cursor.moveToFirst()) {
-            user = cursorToUsuario(cursor)
+            val user = cursorToUsuario(cursor)
+            cursor.close()
+            onResult(user)
+        } else {
+            cursor.close()
+            // Cloud fallback (Hybrid Login)
+            firestore.collection("usuarios")
+                .whereEqualTo("usuario", identifier)
+                .whereEqualTo("password", password)
+                .get()
+                .addOnSuccessListener { docs ->
+                    if (!docs.isEmpty) {
+                        val doc = docs.documents[0]
+                        val user = doc.toObject(Usuario::class.java)
+                        if (user != null) {
+                            registerLocal(user)
+                            onResult(user)
+                        } else onResult(null)
+                    } else {
+                        // Try email
+                        firestore.collection("usuarios")
+                            .whereEqualTo("email", identifier)
+                            .whereEqualTo("password", password)
+                            .get()
+                            .addOnSuccessListener { docsEmail ->
+                                if (!docsEmail.isEmpty) {
+                                    val doc = docsEmail.documents[0]
+                                    val user = doc.toObject(Usuario::class.java)
+                                    if (user != null) {
+                                        registerLocal(user)
+                                        onResult(user)
+                                    } else onResult(null)
+                                } else onResult(null)
+                            }
+                    }
+                }
+                .addOnFailureListener { onResult(null) }
         }
-        cursor.close()
-        return user
     }
 
-    fun register(usuario: Usuario): Long {
+    fun fetchTechniciansFromCloud(onComplete: () -> Unit) {
+        fetchUsersFromCloud(onComplete)
+    }
+
+    private fun registerLocal(usuario: Usuario) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
-            if (usuario.id != 0 && usuario.id != -1) {
-                put(DatabaseHelper.COL_USUARIO_ID, usuario.id)
-            }
+            put(DatabaseHelper.COL_USUARIO_ID, usuario.id)
             put(DatabaseHelper.COL_USUARIO_USER, usuario.usuario)
             put(DatabaseHelper.COL_USUARIO_PASS, usuario.password)
             put(DatabaseHelper.COL_USUARIO_NOMBRE, usuario.nombre)
             put(DatabaseHelper.COL_USUARIO_ROL, usuario.rol)
             put(DatabaseHelper.COL_USUARIO_EMAIL, usuario.email)
             put(DatabaseHelper.COL_USUARIO_TEL, usuario.telefono)
-            put(DatabaseHelper.COL_USUARIO_ACTIVE, usuario.isActive)
-            put(DatabaseHelper.COL_USUARIO_WORK_START, usuario.workStartTime)
-            put(DatabaseHelper.COL_USUARIO_WORK_END, usuario.workEndTime)
-            put(DatabaseHelper.COL_USUARIO_IMAGEN, usuario.imagenPerfil)
-            put(DatabaseHelper.COL_USUARIO_FCM, usuario.fcmToken)
-            put(DatabaseHelper.COL_USUARIO_LAT, usuario.lastLat)
-            put(DatabaseHelper.COL_USUARIO_LON, usuario.lastLon)
         }
-        
-        // Try update first if id is known
-        val rows = if (usuario.id != 0 && usuario.id != -1) {
-            db.update(DatabaseHelper.TABLE_USUARIOS, values, 
-                "${DatabaseHelper.COL_USUARIO_ID}=?", 
-                arrayOf(usuario.id.toString()))
-        } else {
-            db.update(DatabaseHelper.TABLE_USUARIOS, values,
-                "${DatabaseHelper.COL_USUARIO_USER}=?",
-                arrayOf(usuario.usuario))
-        }
-        
-        return if (rows == 0) {
-            db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
-        } else {
-            if (usuario.id != 0 && usuario.id != -1) usuario.id.toLong() else {
-                // Get the ID of the updated user
-                val cursor = db.query(DatabaseHelper.TABLE_USUARIOS, arrayOf(DatabaseHelper.COL_USUARIO_ID),
-                    "${DatabaseHelper.COL_USUARIO_USER}=?", arrayOf(usuario.usuario), null, null, null)
-                val id = if (cursor.moveToFirst()) cursor.getLong(0) else -1L
-                cursor.close()
-                id
-            }
-        }
+        db.insertWithOnConflict(DatabaseHelper.TABLE_USUARIOS, null, values, android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE)
     }
 
-    fun getById(id: Int): Usuario? {
+    fun register(usuario: Usuario): String {
+        val db = dbHelper.writableDatabase
+        val id = if (usuario.id.isEmpty()) UUID.randomUUID().toString() else usuario.id
+        val values = ContentValues().apply {
+            put(DatabaseHelper.COL_USUARIO_ID, id)
+            put(DatabaseHelper.COL_USUARIO_USER, usuario.usuario)
+            put(DatabaseHelper.COL_USUARIO_PASS, usuario.password)
+            put(DatabaseHelper.COL_USUARIO_NOMBRE, usuario.nombre)
+            put(DatabaseHelper.COL_USUARIO_ROL, usuario.rol)
+            put(DatabaseHelper.COL_USUARIO_EMAIL, usuario.email)
+            put(DatabaseHelper.COL_USUARIO_TEL, usuario.telefono)
+        }
+        
+        val rows = db.update(DatabaseHelper.TABLE_USUARIOS, values,
+            "${DatabaseHelper.COL_USUARIO_USER}=?", arrayOf(usuario.usuario))
+        
+        if (rows == 0) {
+            db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
+        }
+        
+        val finalUser = usuario.copy(id = id)
+        syncUserToCloud(finalUser)
+        return id
+    }
+
+    fun getById(id: String): Usuario? {
         val db = dbHelper.readableDatabase
         val cursor: Cursor = db.query(
             DatabaseHelper.TABLE_USUARIOS,
             null,
             "${DatabaseHelper.COL_USUARIO_ID}=?",
-            arrayOf(id.toString()),
+            arrayOf(id),
             null, null, null
         )
         var user: Usuario? = null
@@ -172,7 +201,6 @@ class UsuarioRepository(context: Context) {
     fun getAllTecnicos(): List<Usuario> {
         val list = mutableListOf<Usuario>()
         val db = dbHelper.readableDatabase
-        // Most robust role check for all technician variants
         val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE ${DatabaseHelper.COL_USUARIO_ROL} LIKE 'T%cnico%'"
         val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
@@ -187,7 +215,7 @@ class UsuarioRepository(context: Context) {
     fun getAllClientes(): List<Usuario> {
         val list = mutableListOf<Usuario>()
         val db = dbHelper.readableDatabase
-        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE ${DatabaseHelper.COL_USUARIO_ROL} LIKE 'Cliente%'"
+        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE ${DatabaseHelper.COL_USUARIO_ROL} = 'Cliente'"
         val cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {
@@ -198,21 +226,7 @@ class UsuarioRepository(context: Context) {
         return list
     }
 
-    fun getActiveTechnicians(): List<Usuario> {
-        val list = mutableListOf<Usuario>()
-        val db = dbHelper.readableDatabase
-        val query = "SELECT * FROM ${DatabaseHelper.TABLE_USUARIOS} WHERE ${DatabaseHelper.COL_USUARIO_ROL} LIKE 'T%cnico%' AND ${DatabaseHelper.COL_USUARIO_ACTIVE}=1"
-        val cursor = db.rawQuery(query, null)
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(cursorToUsuario(cursor))
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        return list
-    }
-
-    fun updateStatus(userId: Int, isActive: Int, workStart: String?, workEnd: String?, lat: Double?, lon: Double?): Int {
+    fun updateStatus(userId: String, isActive: Int, workStart: String?, workEnd: String?, lat: Double?, lon: Double?): Int {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseHelper.COL_USUARIO_ACTIVE, isActive)
@@ -222,27 +236,19 @@ class UsuarioRepository(context: Context) {
             put(DatabaseHelper.COL_USUARIO_LON, lon)
         }
         
-        val result = db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()))
+        val result = db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId))
         
         if (result > 0) {
             logActivity(userId, isActive, workStart, workEnd, lat, lon)
-            // Sync to cloud
-            val user = getById(userId)
-            if (user != null) syncUserToCloud(user)
+            getById(userId)?.let { syncUserToCloud(it) }
         }
-        
         return result
     }
 
-    private fun logActivity(userId: Int, isActive: Int, start: String?, end: String?, lat: Double?, lon: Double?) {
+    private fun logActivity(userId: String, isActive: Int, start: String?, end: String?, lat: Double?, lon: Double?) {
         val db = dbHelper.writableDatabase
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        sdf.timeZone = TimeZone.getTimeZone("America/Bogota")
         val fecha = sdf.format(Date())
-        
-        val cursor = db.query(DatabaseHelper.TABLE_ACTIVIDAD, arrayOf(DatabaseHelper.COL_ACT_ID),
-            "${DatabaseHelper.COL_ACT_TECH_ID}=? AND ${DatabaseHelper.COL_ACT_FECHA}=?",
-            arrayOf(userId.toString(), fecha), null, null, null)
         
         val values = ContentValues().apply {
             if (isActive == 1) {
@@ -254,21 +260,25 @@ class UsuarioRepository(context: Context) {
             }
         }
 
-        if (cursor.moveToFirst()) {
-            val id = cursor.getInt(0)
-            db.update(DatabaseHelper.TABLE_ACTIVIDAD, values, "${DatabaseHelper.COL_ACT_ID}=?", arrayOf(id.toString()))
-        } else {
-            values.put(DatabaseHelper.COL_ACT_TECH_ID, userId)
-            values.put(DatabaseHelper.COL_ACT_FECHA, fecha)
-            db.insert(DatabaseHelper.TABLE_ACTIVIDAD, null, values)
+        val rows = db.update(DatabaseHelper.TABLE_ACTIVIDAD, values, 
+            "${DatabaseHelper.COL_ACT_TECH_ID}=? AND ${DatabaseHelper.COL_ACT_FECHA}=?", arrayOf(userId, fecha))
+        
+        if (rows == 0 && isActive == 1) {
+            val cvNew = ContentValues().apply {
+                put(DatabaseHelper.COL_ACT_ID, UUID.randomUUID().toString())
+                put(DatabaseHelper.COL_ACT_TECH_ID, userId)
+                put(DatabaseHelper.COL_ACT_FECHA, fecha)
+                put(DatabaseHelper.COL_ACT_INICIO, start)
+                put(DatabaseHelper.COL_ACT_LAT, lat)
+                put(DatabaseHelper.COL_ACT_LON, lon)
+            }
+            db.insert(DatabaseHelper.TABLE_ACTIVIDAD, null, cvNew)
         }
-        cursor.close()
     }
 
     fun getTechnicianStats(): List<TecnicoStats> {
         val list = mutableListOf<TecnicoStats>()
         val db = dbHelper.readableDatabase
-        // Flexible role matching
         val query = "SELECT u.${DatabaseHelper.COL_USUARIO_ID}, u.${DatabaseHelper.COL_USUARIO_NOMBRE}, " +
                 "u.${DatabaseHelper.COL_USUARIO_ACTIVE}, u.${DatabaseHelper.COL_USUARIO_EMAIL}, u.${DatabaseHelper.COL_USUARIO_TEL}, " +
                 "(SELECT COUNT(*) FROM ${DatabaseHelper.TABLE_ORDENES} o WHERE o.${DatabaseHelper.COL_ORDEN_TECNICO_ID} = u.${DatabaseHelper.COL_USUARIO_ID} AND o.${DatabaseHelper.COL_ORDEN_ESTADO} = 'FINALIZADA') as count, " +
@@ -280,7 +290,7 @@ class UsuarioRepository(context: Context) {
         if (cursor.moveToFirst()) {
             do {
                 list.add(TecnicoStats(
-                    id = cursor.getInt(0),
+                    id = cursor.getString(0),
                     nombre = cursor.getString(1),
                     isActive = cursor.getInt(2),
                     email = cursor.getString(3),
@@ -294,18 +304,18 @@ class UsuarioRepository(context: Context) {
         return list
     }
 
-    fun getTechnicianHistory(techId: Int): List<ActividadTecnico> {
+    fun getTechnicianHistory(techId: String): List<ActividadTecnico> {
         val list = mutableListOf<ActividadTecnico>()
         val db = dbHelper.readableDatabase
         val cursor = db.query(DatabaseHelper.TABLE_ACTIVIDAD, null,
-            "${DatabaseHelper.COL_ACT_TECH_ID}=?", arrayOf(techId.toString()),
+            "${DatabaseHelper.COL_ACT_TECH_ID}=?", arrayOf(techId),
             null, null, "${DatabaseHelper.COL_ACT_FECHA} DESC")
         
         if (cursor.moveToFirst()) {
             do {
                 list.add(ActividadTecnico(
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_ID)),
-                    tecnicoId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_TECH_ID)),
+                    id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_ID)),
+                    tecnicoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_TECH_ID)),
                     fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_FECHA)),
                     horaInicio = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_INICIO)),
                     horaFin = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ACT_FIN)),
@@ -318,7 +328,7 @@ class UsuarioRepository(context: Context) {
         return list
     }
 
-    fun updateProfile(userId: Int, nombre: String, email: String?, telefono: String?, imagePath: String?): Int {
+    fun updateProfile(userId: String, nombre: String, email: String?, telefono: String?, imagePath: String?): Int {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseHelper.COL_USUARIO_NOMBRE, nombre)
@@ -326,17 +336,16 @@ class UsuarioRepository(context: Context) {
             put(DatabaseHelper.COL_USUARIO_TEL, telefono)
             put(DatabaseHelper.COL_USUARIO_IMAGEN, imagePath)
         }
-        val result = db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()))
+        val result = db.update(DatabaseHelper.TABLE_USUARIOS, values, "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId))
         if (result > 0) {
-            val user = getById(userId)
-            if (user != null) syncUserToCloud(user)
+            getById(userId)?.let { syncUserToCloud(it) }
         }
         return result
     }
 
     private fun cursorToUsuario(cursor: Cursor): Usuario {
         return Usuario(
-            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
+            id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
             usuario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USER)),
             password = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASS)),
             nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE)),

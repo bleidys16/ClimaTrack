@@ -15,7 +15,7 @@ class ProfileActivity : BaseActivity() {
     private lateinit var binding: ActivityProfileBinding
     private lateinit var usuarioRepository: UsuarioRepository
     private lateinit var sessionManager: SessionManager
-    private var currentUserId: Int = -1
+    private var currentUserId: String = ""
     private var selectedImageUri: Uri? = null
     private var profilePhotoPath: String? = null
 

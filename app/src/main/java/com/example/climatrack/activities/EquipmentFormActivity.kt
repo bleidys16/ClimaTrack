@@ -23,8 +23,8 @@ class EquipmentFormActivity : BaseActivity() {
     private lateinit var binding: ActivityEquipmentFormBinding
     private lateinit var equipoRepository: EquipoRepository
     private lateinit var usuarioRepository: com.example.climatrack.repositories.UsuarioRepository
-    private var equipmentId: Int = -1
-    private var clientId: Int = -1
+    private var equipmentId: String = ""
+    private var clientId: String = ""
     private var clientsList: List<com.example.climatrack.models.Usuario> = emptyList()
     private var photoUri: Uri? = null
     private var photoFile: File? = null
@@ -49,10 +49,10 @@ class EquipmentFormActivity : BaseActivity() {
 
         equipoRepository = EquipoRepository(this)
         usuarioRepository = com.example.climatrack.repositories.UsuarioRepository(this)
-        equipmentId = intent.getIntExtra("EQUIPMENT_ID", -1)
-        clientId = intent.getIntExtra("CLIENT_ID", -1)
+        equipmentId = intent.getStringExtra("EQUIPMENT_ID") ?: ""
+        clientId = intent.getStringExtra("CLIENT_ID") ?: ""
 
-        if (clientId == -1) {
+        if (clientId.isEmpty()) {
             val session = com.example.climatrack.utils.SessionManager(this)
             if (session.getUserRol() == "Cliente") {
                 clientId = session.getUserId()
@@ -70,7 +70,7 @@ class EquipmentFormActivity : BaseActivity() {
             loadClients()
         }
         
-        if (equipmentId != -1) {
+        if (equipmentId.isNotEmpty()) {
             loadEquipmentData()
             binding.toolbar.title = "Editar Equipo"
             binding.btnDelete.visibility = View.VISIBLE
@@ -119,7 +119,7 @@ class EquipmentFormActivity : BaseActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spnClient.adapter = adapter
 
-        if (clientId != -1) {
+        if (clientId.isNotEmpty()) {
             val pos = clientsList.indexOfFirst { it.id == clientId }
             if (pos >= 0) binding.spnClient.setSelection(pos)
         }
@@ -183,7 +183,7 @@ class EquipmentFormActivity : BaseActivity() {
         }
 
         val equipo = Equipo(
-            id = if (equipmentId == -1) 0 else equipmentId,
+            id = equipmentId,
             codigo = code,
             nombre = if (customName.isEmpty()) null else customName,
             tipo = type,
@@ -192,13 +192,13 @@ class EquipmentFormActivity : BaseActivity() {
             serial = serial,
             capacidad = capacity,
             ubicacion = location,
-            clienteId = if (finalClientId != -1) finalClientId else 1,
+            clienteId = if (finalClientId.isNotEmpty()) finalClientId else "user_cli_001",
             estado = status,
             imagenPath = currentPhotoPath
         )
 
-        val result = if (equipmentId == -1) {
-            equipoRepository.create(equipo)
+        val result = if (equipmentId.isEmpty()) {
+            equipoRepository.create(equipo).let { if (it.isNotEmpty()) 1L else 0L }
         } else {
             equipoRepository.update(equipo).toLong()
         }

@@ -155,7 +155,7 @@ class DashboardActivity : BaseActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun fetchCurrentLocation(userId: Int, isActive: Int, workStart: String, workEnd: String) {
+    private fun fetchCurrentLocation(userId: String, isActive: Int, workStart: String, workEnd: String) {
         val fusedLocation = LocationServices.getFusedLocationProviderClient(this)
         
         // Guardado inicial sin ubicación por si falla el GPS

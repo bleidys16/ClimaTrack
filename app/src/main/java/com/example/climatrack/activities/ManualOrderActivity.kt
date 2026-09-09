@@ -19,9 +19,9 @@ class ManualOrderActivity : BaseActivity() {
     private lateinit var usuarioRepository: UsuarioRepository
     private lateinit var equipoRepository: EquipoRepository
 
-    private var selectedClientId: Int = -1
-    private var selectedEquipmentId: Int = -1
-    private var selectedTechId: Int? = null
+    private var selectedClientId: String = ""
+    private var selectedEquipmentId: String = ""
+    private var selectedTechId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,7 +82,7 @@ class ManualOrderActivity : BaseActivity() {
         val type = binding.spinnerServiceType.text.toString()
         val desc = binding.etDescription.text.toString().trim()
 
-        if (selectedClientId == -1 || selectedEquipmentId == -1 || type.isEmpty()) {
+        if (selectedClientId.isEmpty() || selectedEquipmentId.isEmpty() || type.isEmpty()) {
             Toast.makeText(this, "Por favor seleccione cliente, equipo y tipo", Toast.LENGTH_SHORT).show()
             return
         }
@@ -104,7 +104,7 @@ class ManualOrderActivity : BaseActivity() {
         )
 
         val result = ordenRepository.create(newOrder)
-        if (result > 0) {
+        if (result.isNotEmpty()) {
             Toast.makeText(this, "Orden creada exitosamente", Toast.LENGTH_SHORT).show()
             finish()
         } else {

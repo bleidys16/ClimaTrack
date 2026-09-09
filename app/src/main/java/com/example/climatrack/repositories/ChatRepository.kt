@@ -14,11 +14,11 @@ class ChatRepository(context: Context) {
     private val dbHelper = DatabaseHelper(context)
     private val firestore: FirebaseFirestore = FirebaseHelper.db
 
-    fun getMessagesLocal(ordenId: Int): List<Mensaje> {
+    fun getMessagesLocal(ordenId: String): List<Mensaje> {
         val list = mutableListOf<Mensaje>()
         val db = dbHelper.readableDatabase
         val cursor = db.query(DatabaseHelper.TABLE_MENSAJES, null,
-            "${DatabaseHelper.COL_MSG_ORDEN_ID}=?", arrayOf(ordenId.toString()),
+            "${DatabaseHelper.COL_MSG_ORDEN_ID}=?", arrayOf(ordenId),
             null, null, "${DatabaseHelper.COL_MSG_FECHA} ASC")
         
         if (cursor.moveToFirst()) {
@@ -41,12 +41,12 @@ class ChatRepository(context: Context) {
         }
         db.insert(DatabaseHelper.TABLE_MENSAJES, null, values)
 
-        firestore.collection("ordenes").document(mensaje.ordenId.toString())
+        firestore.collection("ordenes").document(mensaje.ordenId)
             .collection("mensajes").add(mensaje)
     }
 
-    fun listenToMessages(ordenId: Int, onNewMessages: (List<Mensaje>) -> Unit) {
-        firestore.collection("ordenes").document(ordenId.toString())
+    fun listenToMessages(ordenId: String, onNewMessages: (List<Mensaje>) -> Unit) {
+        firestore.collection("ordenes").document(ordenId)
             .collection("mensajes")
             .orderBy("fecha", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, e ->
@@ -58,7 +58,7 @@ class ChatRepository(context: Context) {
             }
     }
 
-    private fun syncLocalMessages(ordenId: Int, cloudMessages: List<Mensaje>) {
+    private fun syncLocalMessages(ordenId: String, cloudMessages: List<Mensaje>) {
         val db = dbHelper.writableDatabase
         cloudMessages.forEach { msg ->
             val cursor = db.query(DatabaseHelper.TABLE_MENSAJES, null, 
@@ -81,9 +81,9 @@ class ChatRepository(context: Context) {
 
     private fun cursorToMensaje(cursor: Cursor): Mensaje {
         return Mensaje(
-            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MSG_ID)),
-            ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MSG_ORDEN_ID)),
-            remitenteId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MSG_REMITENTE_ID)),
+            id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MSG_ID)),
+            ordenId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MSG_ORDEN_ID)),
+            remitenteId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MSG_REMITENTE_ID)),
             nombreRemitente = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MSG_REMITENTE_NOMBRE)),
             texto = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MSG_TEXTO)),
             fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MSG_FECHA))

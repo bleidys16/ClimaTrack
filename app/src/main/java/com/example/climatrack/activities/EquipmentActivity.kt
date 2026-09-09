@@ -19,7 +19,7 @@ class EquipmentActivity : BaseActivity() {
     private lateinit var equipoRepository: EquipoRepository
     private lateinit var sessionManager: SessionManager
     private lateinit var adapter: EquipmentAdapter
-    private var filterClientId: Int = -1
+    private var filterClientId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +28,7 @@ class EquipmentActivity : BaseActivity() {
 
         equipoRepository = EquipoRepository(this)
         sessionManager = com.example.climatrack.utils.SessionManager(this)
-        filterClientId = intent.getIntExtra("CLIENT_ID", -1)
+        filterClientId = intent.getStringExtra("CLIENT_ID") ?: ""
 
         setupEdgeToEdge(binding.root, binding.toolbar, binding.navContainer)
         setupToolbar()
@@ -36,9 +36,9 @@ class EquipmentActivity : BaseActivity() {
         setupSearch()
         
         val userRol = sessionManager.getUserRol()?.uppercase() ?: ""
-        if (filterClientId != -1 || userRol == "ADMINISTRADOR") {
+        if (filterClientId.isNotEmpty() || userRol == "ADMINISTRADOR") {
             binding.navContainer.visibility = android.view.View.GONE
-            if (filterClientId != -1) binding.toolbar.title = "Mis Equipos"
+            if (filterClientId.isNotEmpty()) binding.toolbar.title = "Mis Equipos"
         } else if (userRol == "TÉCNICO" || userRol == "TECNICO") {
             setupBottomNavigation()
         } else {
@@ -50,7 +50,7 @@ class EquipmentActivity : BaseActivity() {
 
         binding.fabAddEquipment.setOnClickListener {
             val intent = Intent(this, EquipmentFormActivity::class.java)
-            if (filterClientId != -1) intent.putExtra("CLIENT_ID", filterClientId)
+            if (filterClientId.isNotEmpty()) intent.putExtra("CLIENT_ID", filterClientId)
             startActivity(intent)
         }
     }
@@ -72,7 +72,7 @@ class EquipmentActivity : BaseActivity() {
     private fun searchByQR(code: String) {
         val equipment = equipoRepository.getAll().find { it.codigo.equals(code, true) }
         if (equipment != null) {
-            val intent = if (filterClientId != -1) {
+            val intent = if (filterClientId.isNotEmpty()) {
                 Intent(this, EquipmentDetailActivity::class.java)
             } else {
                 Intent(this, EquipmentFormActivity::class.java)
@@ -105,7 +105,7 @@ class EquipmentActivity : BaseActivity() {
     }
 
     private fun filterByStatus(status: String) {
-        val fullList = if (filterClientId != -1) equipoRepository.getByCliente(filterClientId) else equipoRepository.getAll()
+        val fullList = if (filterClientId.isNotEmpty()) equipoRepository.getByCliente(filterClientId) else equipoRepository.getAll()
         val filtered = fullList.filter { it.estado == status }
         adapter.updateList(filtered)
     }
@@ -142,7 +142,7 @@ class EquipmentActivity : BaseActivity() {
 
     private fun setupRecyclerView() {
         adapter = EquipmentAdapter(emptyList()) { equipment ->
-            if (filterClientId != -1) {
+            if (filterClientId.isNotEmpty()) {
                 // Client view -> History
                 val intent = Intent(this, EquipmentDetailActivity::class.java)
                 intent.putExtra("EQUIPMENT_ID", equipment.id)
@@ -169,12 +169,12 @@ class EquipmentActivity : BaseActivity() {
     }
 
     private fun loadEquipment() {
-        val equipment = if (filterClientId != -1) equipoRepository.getByCliente(filterClientId) else equipoRepository.getAll()
+        val equipment = if (filterClientId.isNotEmpty()) equipoRepository.getByCliente(filterClientId) else equipoRepository.getAll()
         adapter.updateList(equipment)
     }
 
     private fun filterList(query: String) {
-        val fullList = if (filterClientId != -1) equipoRepository.getByCliente(filterClientId) else equipoRepository.getAll()
+        val fullList = if (filterClientId.isNotEmpty()) equipoRepository.getByCliente(filterClientId) else equipoRepository.getAll()
         val filtered = fullList.filter {
             it.codigo.contains(query, true) ||
             it.marca.contains(query, true) ||

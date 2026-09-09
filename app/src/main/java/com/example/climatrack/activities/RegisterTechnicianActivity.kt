@@ -47,7 +47,7 @@ class RegisterTechnicianActivity : BaseActivity() {
 
         val result = usuarioRepository.register(newTech)
 
-        if (result > 0) {
+        if (result.isNotEmpty()) {
             Toast.makeText(this, "Técnico registrado correctamente", Toast.LENGTH_SHORT).show()
             finish()
         } else {

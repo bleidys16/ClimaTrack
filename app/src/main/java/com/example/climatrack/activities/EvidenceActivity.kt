@@ -26,7 +26,7 @@ class EvidenceActivity : BaseActivity() {
     private lateinit var binding: ActivityEvidenceBinding
     private lateinit var servicioRepository: ServicioRepository
     private lateinit var adapter: EvidenceAdapter
-    private var orderId: Int = -1
+    private var orderId: String = ""
     private var photoUri: Uri? = null
     private var photoFile: File? = null
 
@@ -52,7 +52,7 @@ class EvidenceActivity : BaseActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt("ORDER_ID", orderId)
+        outState.putString("ORDER_ID", orderId)
         photoFile?.let { outState.putString("PHOTO_PATH", it.absolutePath) }
     }
 
@@ -64,11 +64,11 @@ class EvidenceActivity : BaseActivity() {
 
         servicioRepository = ServicioRepository(this)
         
-        orderId = savedInstanceState?.getInt("ORDER_ID", -1) ?: intent.getIntExtra("ORDER_ID", -1)
+        orderId = savedInstanceState?.getString("ORDER_ID") ?: intent.getStringExtra("ORDER_ID") ?: ""
         val savedPath = savedInstanceState?.getString("PHOTO_PATH")
         if (savedPath != null) photoFile = File(savedPath)
 
-        if (orderId == -1) {
+        if (orderId.isEmpty()) {
             Toast.makeText(this, "Error: Orden no identificada", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -130,7 +130,7 @@ class EvidenceActivity : BaseActivity() {
 
     private fun loadOrderInfo() {
         val ordenRepository = com.example.climatrack.repositories.OrdenRepository(this)
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         info?.let {
             binding.tvOrderNumDisplay.text = "Orden: ${it.numero}"
             binding.tvClientDisplay.text = "Cliente: ${it.clienteNombre}"
@@ -185,7 +185,7 @@ class EvidenceActivity : BaseActivity() {
         )
         
         val result = servicioRepository.addEvidencia(evidencia)
-        if (result > 0) {
+        if (result.isNotEmpty()) {
             Toast.makeText(this, "Evidencia guardada correctamente", Toast.LENGTH_SHORT).show()
             loadEvidences()
         }

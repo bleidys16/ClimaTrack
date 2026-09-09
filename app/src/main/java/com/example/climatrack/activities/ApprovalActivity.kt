@@ -21,7 +21,7 @@ class ApprovalActivity : BaseActivity() {
     private lateinit var mantenimientoRepository: MantenimientoRepository
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var sessionManager: SessionManager
-    private var orderId: Int = -1
+    private var orderId: String = ""
     private var isAccepted: Boolean? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,9 +34,9 @@ class ApprovalActivity : BaseActivity() {
         ordenRepository = OrdenRepository(this)
         sessionManager = SessionManager(this)
         
-        orderId = intent.getIntExtra("ORDER_ID", -1)
+        orderId = intent.getStringExtra("ORDER_ID") ?: ""
 
-        if (orderId == -1) {
+        if (orderId.isEmpty()) {
             finish()
             return
         }
@@ -70,7 +70,7 @@ class ApprovalActivity : BaseActivity() {
     }
 
     private fun loadOrderInfo() {
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         info?.let {
             binding.tvOrderNumDisplay.text = "Orden: ${it.numero}"
             binding.tvClientDisplay.text = "Cliente: ${it.clienteNombre}"
@@ -136,7 +136,7 @@ class ApprovalActivity : BaseActivity() {
                 put(com.example.climatrack.database.DatabaseHelper.COL_ORDEN_OBS_CLI, obs)
             }
             db.update(com.example.climatrack.database.DatabaseHelper.TABLE_ORDENES, values, 
-                "${com.example.climatrack.database.DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId.toString()))
+                "${com.example.climatrack.database.DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId))
 
             // Generar Comprobante
             generateFinalReport()
@@ -152,7 +152,7 @@ class ApprovalActivity : BaseActivity() {
     }
 
     private fun generateFinalReport() {
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         val mant = mantenimientoRepository.getByOrdenId(orderId)
         info?.let {
             val pdfFile = PdfGenerator(this).generateTechnicalReport(it, mant)

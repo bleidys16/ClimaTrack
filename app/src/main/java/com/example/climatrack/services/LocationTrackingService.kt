@@ -19,7 +19,7 @@ class LocationTrackingService : Service() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
-    private var userId: Int = -1
+    private var userId: String = ""
     private var activeOrderNum: String? = null
 
     companion object {
@@ -50,7 +50,7 @@ class LocationTrackingService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
-                userId = intent.getIntExtra(EXTRA_USER_ID, userId)
+                userId = intent.getStringExtra(EXTRA_USER_ID) ?: ""
                 val newOrderNum = intent.getStringExtra(EXTRA_ORDER_NUM)
                 if (newOrderNum != null) activeOrderNum = newOrderNum
                 startTracking()
@@ -83,14 +83,14 @@ class LocationTrackingService : Service() {
 
     private fun updateLocationInFirestore(lat: Double, lon: Double) {
         android.util.Log.d("TRACKING_SVC", "Actualizando ubicación: $lat, $lon para usuario: $userId")
-        if (userId != -1) {
+        if (userId.isNotEmpty()) {
             val userUpdate = mapOf(
                 "lastLat" to lat,
                 "lastLon" to lon,
                 "isActive" to 1,
                 "timestamp" to System.currentTimeMillis()
             )
-            FirebaseHelper.db.collection("usuarios").document(userId.toString())
+            FirebaseHelper.db.collection("usuarios").document(userId)
                 .set(userUpdate, SetOptions.merge())
                 .addOnSuccessListener { android.util.Log.d("TRACKING_SVC", "Firestore Usuario OK") }
                 .addOnFailureListener { e -> android.util.Log.e("TRACKING_SVC", "Firestore Usuario Error: ${e.message}") }

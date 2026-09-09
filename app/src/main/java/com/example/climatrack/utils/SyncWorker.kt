@@ -63,12 +63,12 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
             do {
                 val orderNum = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_NUM))
                 val order = Orden(
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_ID)),
+                    id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_ID)),
                     numero = orderNum,
                     fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_FECHA)),
-                    clienteId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)),
-                    equipoId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_EQUIPO_ID)),
-                    tecnicoId = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECNICO_ID))) null else cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECNICO_ID)),
+                    clienteId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)),
+                    equipoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_EQUIPO_ID)),
+                    tecnicoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECNICO_ID)),
                     tipoServicio = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TIPO)),
                     descripcion = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_DESC)),
                     estado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_ESTADO)),
@@ -82,7 +82,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
                     comentario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_COMENTARIO)),
                     tecnicoLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LAT)),
                     tecnicoLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON)),
-                    clienteEmail = getEmailForUser(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)))
+                    clienteEmail = getEmailForUser(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)))
                 )
 
                 firestore.collection("ordenes").document(orderNum).set(order, SetOptions.merge()).await()
@@ -103,10 +103,10 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
         
         if (cursor.moveToFirst()) {
             do {
-                val id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ID))
+                val id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ID))
                 val mant = Mantenimiento(
                     id = id,
-                    ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ORDEN_ID)),
+                    ordenId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ORDEN_ID)),
                     fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_FECHA)),
                     diagnostico = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_DIAG)),
                     trabajoRealizado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_TRABAJO)),
@@ -117,11 +117,11 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
                     isSynced = 1
                 )
 
-                firestore.collection("mantenimientos").document(id.toString()).set(mant, SetOptions.merge()).await()
+                firestore.collection("mantenimientos").document(id).set(mant, SetOptions.merge()).await()
                 
                 val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
                 dbHelper.writableDatabase.update(DatabaseHelper.TABLE_MANTENIMIENTOS, values, 
-                    "${DatabaseHelper.COL_MANT_ID} = ?", arrayOf(id.toString()))
+                    "${DatabaseHelper.COL_MANT_ID} = ?", arrayOf(id))
                 
             } while (cursor.moveToNext())
         }
@@ -135,7 +135,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
         
         if (cursor.moveToFirst()) {
             do {
-                val id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ID))
+                val id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ID))
                 val localPath = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_RUTA))
                 val file = File(localPath)
                 
@@ -146,28 +146,28 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
                     
                     val evidence = Evidencia(
                         id = id,
-                        ordenId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ORDEN_ID)),
+                        ordenId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ORDEN_ID)),
                         rutaFoto = downloadUrl,
                         fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_FECHA)),
                         isSynced = 1,
                     )
 
-                    firestore.collection("evidencias").document(id.toString()).set(evidence, SetOptions.merge()).await()
+                    firestore.collection("evidencias").document(id).set(evidence, SetOptions.merge()).await()
                 }
 
                 val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
                 dbHelper.writableDatabase.update(DatabaseHelper.TABLE_EVIDENCIAS, values, 
-                    "${DatabaseHelper.COL_EVI_ID} = ?", arrayOf(id.toString()))
+                    "${DatabaseHelper.COL_EVI_ID} = ?", arrayOf(id))
                 
             } while (cursor.moveToNext())
         }
         cursor.close()
     }
 
-    private fun getEmailForUser(userId: Int): String? {
+    private fun getEmailForUser(userId: String): String? {
         val db = dbHelper.readableDatabase
         val cursor = db.query(DatabaseHelper.TABLE_USUARIOS, arrayOf(DatabaseHelper.COL_USUARIO_EMAIL),
-            "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId.toString()), null, null, null)
+            "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId), null, null, null)
         val email = if (cursor.moveToFirst()) cursor.getString(0) else null
         cursor.close()
         return email

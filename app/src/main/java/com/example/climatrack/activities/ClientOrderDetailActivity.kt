@@ -28,7 +28,7 @@ class ClientOrderDetailActivity : BaseActivity() {
     private lateinit var binding: ActivityClientOrderDetailBinding
     private lateinit var ordenRepository: OrdenRepository
     private lateinit var mantenimientoRepository: MantenimientoRepository
-    private var orderId: Int = -1
+    private var orderId: String = ""
     private var techMarker: Marker? = null
     private var firestoreListener: ListenerRegistration? = null
     private lateinit var servicioRepository: com.example.climatrack.repositories.ServicioRepository
@@ -51,9 +51,9 @@ class ClientOrderDetailActivity : BaseActivity() {
         ordenRepository = OrdenRepository(this)
         mantenimientoRepository = MantenimientoRepository(this)
         servicioRepository = com.example.climatrack.repositories.ServicioRepository(this)
-        orderId = intent.getIntExtra("ORDER_ID", -1)
+        orderId = intent.getStringExtra("ORDER_ID") ?: ""
 
-        if (orderId == -1) {
+        if (orderId.isEmpty()) {
             finish()
             return
         }
@@ -72,7 +72,7 @@ class ClientOrderDetailActivity : BaseActivity() {
         }
         
         binding.btnChat.setOnClickListener {
-            val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+            val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("ORDER_ID", orderId)
             intent.putExtra("ORDER_NUM", info?.numero)
@@ -141,7 +141,7 @@ class ClientOrderDetailActivity : BaseActivity() {
     }
 
     private fun loadOrderDetails() {
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         val mant = mantenimientoRepository.getByOrdenId(orderId)
 
         info?.let {
@@ -282,7 +282,7 @@ class ClientOrderDetailActivity : BaseActivity() {
     }
 
     private fun generateAndOpenReceipt() {
-        val info = ordenRepository.getAllInfoByTecnico(-1).find { it.id == orderId }
+        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         val mant = mantenimientoRepository.getByOrdenId(orderId)
         
         info?.let {
