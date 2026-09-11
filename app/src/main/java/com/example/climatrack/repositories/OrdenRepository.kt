@@ -296,6 +296,7 @@ class OrdenRepository(private val context: Context) {
         val values = ContentValues().apply {
             put(DatabaseHelper.COL_ORDEN_TECNICO_ID, tecnicoId)
             put(DatabaseHelper.COL_ORDEN_ESTADO, "PENDIENTE")
+            put(DatabaseHelper.COL_SYNCED, 0)
         }
         val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId))
         if (result > 0) syncOrderToCloud()
@@ -375,12 +376,23 @@ class OrdenRepository(private val context: Context) {
                             put(DatabaseHelper.COL_ORDEN_FIRMA, doc.getString("firmaBase64"))
                             put(DatabaseHelper.COL_SYNCED, 1)
                         }
-                        val count = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id))
+                        // ONLY update if local version is already synced (prevent overwriting local pending edits)
+                        val count = db.update(DatabaseHelper.TABLE_ORDENES, values, 
+                            "${DatabaseHelper.COL_ORDEN_ID}=? AND ${DatabaseHelper.COL_SYNCED}=1", arrayOf(id))
+                        
                         if (count == 0) {
-                            val num = doc.getString("numero")
-                            val countByNum = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_NUM}=?", arrayOf(num))
-                            if (countByNum == 0) {
-                                db.insertWithOnConflict(DatabaseHelper.TABLE_ORDENES, null, values, android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE)
+                            // Check if it exists at all
+                            val cursorCheck = db.query(DatabaseHelper.TABLE_ORDENES, arrayOf(DatabaseHelper.COL_SYNCED),
+                                "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id), null, null, null)
+                            val exists = cursorCheck.moveToFirst()
+                            cursorCheck.close()
+                            
+                            if (!exists) {
+                                val num = doc.getString("numero")
+                                val countByNum = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_NUM}=?", arrayOf(num))
+                                if (countByNum == 0) {
+                                    db.insertWithOnConflict(DatabaseHelper.TABLE_ORDENES, null, values, android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE)
+                                }
                             }
                         }
                     } catch (e: Exception) {
@@ -412,8 +424,16 @@ class OrdenRepository(private val context: Context) {
                             put(DatabaseHelper.COL_MANT_TIEMPO, doc.getString("tiempoEmpleado"))
                             put(DatabaseHelper.COL_SYNCED, 1)
                         }
-                        val count = db.update(DatabaseHelper.TABLE_MANTENIMIENTOS, values, "${DatabaseHelper.COL_MANT_ID}=?", arrayOf(id))
-                        if (count == 0) db.insert(DatabaseHelper.TABLE_MANTENIMIENTOS, null, values)
+                        val count = db.update(DatabaseHelper.TABLE_MANTENIMIENTOS, values, 
+                            "${DatabaseHelper.COL_MANT_ID}=? AND ${DatabaseHelper.COL_SYNCED}=1", arrayOf(id))
+                        
+                        if (count == 0) {
+                            val cursorCheck = db.query(DatabaseHelper.TABLE_MANTENIMIENTOS, arrayOf(DatabaseHelper.COL_SYNCED),
+                                "${DatabaseHelper.COL_MANT_ID}=?", arrayOf(id), null, null, null)
+                            val exists = cursorCheck.moveToFirst()
+                            cursorCheck.close()
+                            if (!exists) db.insert(DatabaseHelper.TABLE_MANTENIMIENTOS, null, values)
+                        }
                     } catch (e: Exception) {
                         android.util.Log.e("SYNC_ERROR", "Error fetching maintenance doc: ${doc.id}", e)
                     }
@@ -441,8 +461,16 @@ class OrdenRepository(private val context: Context) {
                             put(DatabaseHelper.COL_DET_PRECIO_UNIT, doc.getDouble("precioUnitario") ?: 0.0)
                             put(DatabaseHelper.COL_SYNCED, 1)
                         }
-                        val count = db.update(DatabaseHelper.TABLE_DETALLE_REPUESTOS, values, "${DatabaseHelper.COL_DET_ID}=?", arrayOf(id))
-                        if (count == 0) db.insert(DatabaseHelper.TABLE_DETALLE_REPUESTOS, null, values)
+                        val count = db.update(DatabaseHelper.TABLE_DETALLE_REPUESTOS, values, 
+                            "${DatabaseHelper.COL_DET_ID}=? AND ${DatabaseHelper.COL_SYNCED}=1", arrayOf(id))
+                        
+                        if (count == 0) {
+                            val cursorCheck = db.query(DatabaseHelper.TABLE_DETALLE_REPUESTOS, arrayOf(DatabaseHelper.COL_SYNCED),
+                                "${DatabaseHelper.COL_DET_ID}=?", arrayOf(id), null, null, null)
+                            val exists = cursorCheck.moveToFirst()
+                            cursorCheck.close()
+                            if (!exists) db.insert(DatabaseHelper.TABLE_DETALLE_REPUESTOS, null, values)
+                        }
                     } catch (e: Exception) {
                         android.util.Log.e("SYNC_ERROR", "Error fetching part detail doc: ${doc.id}", e)
                     }

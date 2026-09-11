@@ -1,47 +1,40 @@
-# Plan de Mejoras de Experiencia de Usuario (UX) y Estabilidad
+# Plan de Corrección: Asignación de Órdenes y Sincronización Robusta
 
-Este plan se enfoca en pulir la interfaz, mejorar el feedback visual al usuario y optimizar la carga de datos para que la aplicación se sienta más profesional y fluida.
+Este plan corrige el problema donde la asignación de técnicos parece no funcionar (debido a colisiones de sincronización) y refuerza la estabilidad para evitar cierres inesperados.
 
 ## User Review Required
 
-> [!NOTE]
-> Se añadirán gestos táctiles (Swipe-to-Refresh) que permitirán a los usuarios actualizar los datos manualmente sin tener que cerrar y abrir la pantalla.
+> [!IMPORTANT]
+> **Conflicto de Sincronización Detectado**: El problema de "no hace nada" ocurre porque al asignar un técnico localmente, la descarga automática de la nube (que ocurre casi al mismo tiempo) sobreescribe el cambio local con los datos viejos antes de que el celular logre subir el cambio.
 
 ## Proposed Changes
 
-### [UI/UX] Feedback Visual y Gestos
-
-#### [MODIFY] [activity_orders.xml](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/layout/activity_orders.xml) y [activity_admin_dashboard.xml](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/layout/activity_admin_dashboard.xml)
-- Implementar `SwipeRefreshLayout` envolviendo las listas principales. Esto permite que el usuario "hale" hacia abajo para sincronizar con la nube.
-
-#### [MODIFY] [OrdersActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/OrdersActivity.kt)
-- Integrar la lógica del `SwipeRefreshLayout` para disparar `fetchOrdersFromCloud` y mostrar el indicador de carga correctamente.
-
-#### [MODIFY] [AdminDashboardActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/AdminDashboardActivity.kt)
-- Añadir soporte para actualización gestual en el panel de administrador.
-
----
-
-### [Performance] Optimización de Carga
+### [Core] Repositorios (Sincronización Inteligente)
 
 #### [MODIFY] [OrdenRepository.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/repositories/OrdenRepository.kt)
-- Añadir logs detallados de sincronización para facilitar la depuración futura.
-- Asegurar que las consultas pesadas no bloqueen el hilo principal (UI Thread).
+- **Blindaje de Descarga**: Modificar `fetchOrdersFromCloud`, `fetchMaintenanceFromCloud` y `fetchPartsFromCloud` para que NO actualicen registros locales que tengan `is_synced = 0`. Esto garantiza que los cambios locales "ganen" hasta que se suban con éxito.
+- **Estado de Sincronización**: Asegurar que `assignTechnician` y `updateFinalApproval` marquen la orden con `is_synced = 0`.
 
 ---
 
-### [Polished UI] Detalles de Diseño
+### [UI] Admin Dashboard (Flujo de Asignación)
 
-#### [MODIFY] [item_order.xml](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/res/layout/item_order.xml)
-- Mejorar el contraste de los textos secundarios.
-- Ajustar márgenes para un look más "Material 3".
+#### [MODIFY] [AdminDashboardActivity.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/activities/AdminDashboardActivity.kt)
+- **Validación de Técnicos**: Verificar si la lista de técnicos está vacía antes de mostrar el diálogo de asignación para evitar confusión o cierres.
+- **Feedback Inmediato**: Mostrar un mensaje claro de "Sincronizando..." al realizar cambios importantes.
+
+---
+
+### [Bugfix] Estabilidad
+
+#### [MODIFY] [UsuarioRepository.kt](file:///C:/Users/Aprendiz/Downloads/ClimaTrack/app/src/main/java/com/example/climatrack/repositories/UsuarioRepository.kt)
+- Seguir reforzando `cursorToUsuario` para manejar casos de inconsistencia de datos que puedan venir de instalaciones antiguas.
 
 ## Verification Plan
 
 ### Automated Tests
-- `gradlew assembleDebug`: Confirmar que las nuevas dependencias (SwipeRefreshLayout) se resuelven bien.
+- `gradlew assembleDebug`: Confirmar compilación.
 
 ### Manual Verification
-1.  **Gesto de Actualización**: Ir a la lista de órdenes y deslizar hacia abajo. Verificar que el círculo de carga aparece y los datos se refrescan.
-2.  **Dashboard Admin**: Verificar que el botón de auto-asignación y la actualización manual funcionan sincronizadamente.
-3.  **Look & Feel**: Abrir la app en modo oscuro/claro para asegurar consistencia visual en las tarjetas.
+1.  **Asignación**: Abrir el Panel Admin, asignar una orden a un técnico y verificar que la orden se mueva de "Sin Asignar" a "En Proceso/Asignada" y que NO regrese a su estado anterior después de unos segundos.
+2.  **Modo Offline**: Desactivar internet, asignar un técnico (el cambio debe quedar local), reactivar internet y verificar que se suba correctamente.

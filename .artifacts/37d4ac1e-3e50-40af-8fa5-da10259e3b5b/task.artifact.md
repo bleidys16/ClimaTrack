@@ -1,12 +1,10 @@
-# Tareas: Mejoras de UX y Estabilidad
+# Tareas: Reparación de Asignación y Estabilidad de Sincronización
 
-- `[x]` Añadir dependencia `SwipeRefreshLayout` en `libs.versions.toml` y `build.gradle.kts`.
-- `[x]` Sincronizar Gradle.
-- `[x]` Implementar `SwipeRefreshLayout` en:
-    - `[x]` `activity_orders.xml`.
-    - `[x]` `activity_admin_dashboard.xml`.
-- `[x]` Actualizar lógica de actualización en:
-    - `[x]` `OrdersActivity.kt`.
-    - `[x]` `AdminDashboardActivity.kt`.
-- `[x]` Refinar diseño de `item_order.xml`.
-- `[x]` Verificar compilación y funcionamiento.
+- `[x]` Modificar `OrdenRepository.kt`:
+    - `[x]` Proteger `fetchOrdersFromCloud` contra sobreescritura de cambios locales.
+    - `[x]` Proteger `fetchMaintenanceFromCloud` contra sobreescritura.
+    - `[x]` Proteger `fetchPartsFromCloud` contra sobreescritura.
+    - `[x]` Asegurar `is_synced = 0` en `assignTechnician`.
+- `[x]` Modificar `AdminDashboardActivity.kt`:
+    - `[x]` Validar lista de técnicos antes de mostrar diálogo.
+- `[x]` Verificar compilación.

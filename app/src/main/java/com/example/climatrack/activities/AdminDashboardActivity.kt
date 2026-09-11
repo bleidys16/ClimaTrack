@@ -153,6 +153,10 @@ class AdminDashboardActivity : BaseActivity() {
 
     private fun showAssignDialog(orderId: String) {
         val technicians = usuarioRepository.getAllTecnicos()
+        if (technicians.isEmpty()) {
+            Toast.makeText(this, "No hay técnicos registrados o activos", Toast.LENGTH_SHORT).show()
+            return
+        }
         val techNames = technicians.map { it.nombre }.toTypedArray()
 
         AlertDialog.Builder(this)
