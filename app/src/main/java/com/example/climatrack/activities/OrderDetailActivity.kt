@@ -151,10 +151,9 @@ class OrderDetailActivity : BaseActivity() {
     }
 
     private fun startLocationService() {
-        val info = ordenRepository.getAllInfoByTecnico("-1").find { it.id == orderId }
         val serviceIntent = Intent(this, LocationTrackingService::class.java).apply {
             action = LocationTrackingService.ACTION_UPDATE_ORDER
-            putExtra(LocationTrackingService.EXTRA_ORDER_NUM, info?.numero)
+            putExtra(LocationTrackingService.EXTRA_ORDER_NUM, orderId)
         }
         startService(serviceIntent)
     }

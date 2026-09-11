@@ -23,6 +23,7 @@ class AdminDashboardActivity : BaseActivity() {
     private lateinit var assignedOrdersAdapter: OrdersAdapter
     private var allUnassignedOrders: List<com.example.climatrack.models.OrdenInfo> = emptyList()
     private var allAssignedOrders: List<com.example.climatrack.models.OrdenInfo> = emptyList()
+    private var ordersListener: com.google.firebase.firestore.ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,9 +82,27 @@ class AdminDashboardActivity : BaseActivity() {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
 
+        setupRefreshLayout()
         setupSearch()
         
         loadData()
+        startRealtimeSync()
+    }
+
+    private fun startRealtimeSync() {
+        ordersListener?.remove()
+        ordersListener = ordenRepository.listenToOrders {
+            runOnUiThread {
+                refreshLocalUI()
+            }
+        }
+    }
+
+    private fun setupRefreshLayout() {
+        binding.swipeRefresh.setColorSchemeResources(com.example.climatrack.R.color.ube, com.example.climatrack.R.color.status_finished)
+        binding.swipeRefresh.setOnRefreshListener {
+            loadData()
+        }
     }
 
     private fun setupSearch() {
@@ -169,6 +188,7 @@ class AdminDashboardActivity : BaseActivity() {
             ordenRepository.fetchOrdersFromCloud {
                 runOnUiThread {
                     refreshLocalUI()
+                    binding.swipeRefresh.isRefreshing = false
                 }
             }
         }
@@ -224,5 +244,10 @@ class AdminDashboardActivity : BaseActivity() {
                 loadData()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ordersListener?.remove()
     }
 }

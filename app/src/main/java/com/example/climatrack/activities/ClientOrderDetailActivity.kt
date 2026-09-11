@@ -176,7 +176,7 @@ class ClientOrderDetailActivity : BaseActivity() {
             }
 
             if (it.estado == "EN PROCESO") {
-                startLiveTracking(it.numero)
+                startLiveTracking(it.id)
             }
 
             setupFeedbackUI(it)

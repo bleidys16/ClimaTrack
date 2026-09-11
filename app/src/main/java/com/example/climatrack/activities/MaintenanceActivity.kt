@@ -134,25 +134,13 @@ class MaintenanceActivity : BaseActivity() {
         }
 
         if (result > 0) {
-            updateOrderPrice(price)
+            ordenRepository.updateMaintenanceCost(orderId, price)
+            Toast.makeText(this, "Mantenimiento guardado correctamente", Toast.LENGTH_SHORT).show()
+            finish()
         } else {
             Toast.makeText(this, "Error al guardar mantenimiento", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun updateOrderPrice(price: Double) {
-        val db = com.example.climatrack.database.DatabaseHelper(this).writableDatabase
-        val values = android.content.ContentValues().apply {
-            put(com.example.climatrack.database.DatabaseHelper.COL_ORDEN_PRECIO_MANT, price)
-        }
-        val rows = db.update(com.example.climatrack.database.DatabaseHelper.TABLE_ORDENES, values,
-            "${com.example.climatrack.database.DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId))
-        
-        if (rows > 0) {
-            Toast.makeText(this, "Mantenimiento guardado correctamente", Toast.LENGTH_SHORT).show()
-            finish()
-        } else {
-            Toast.makeText(this, "Error al actualizar costo del servicio", Toast.LENGTH_SHORT).show()
-        }
-    }
+
 }

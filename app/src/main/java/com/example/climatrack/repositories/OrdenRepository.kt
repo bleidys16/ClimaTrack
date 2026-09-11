@@ -95,7 +95,7 @@ class OrdenRepository(private val context: Context) {
         val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId))
         if (result > 0) {
             getById(orderId)?.let { orden ->
-                firestore.collection("ordenes").document(orden.numero).update(
+                firestore.collection("ordenes").document(orden.id).update(
                     "tecnicoLat", lat,
                     "tecnicoLon", lon
                 )
@@ -109,6 +109,30 @@ class OrdenRepository(private val context: Context) {
         val values = ContentValues().apply {
             put(DatabaseHelper.COL_ORDEN_PRECIO, precio)
             put(DatabaseHelper.COL_ORDEN_ESTADO, "PENDIENTE APROBACIÓN")
+            put(DatabaseHelper.COL_SYNCED, 0)
+        }
+        val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId))
+        if (result > 0) syncOrderToCloud()
+        return result
+    }
+
+    fun updateMaintenanceCost(orderId: String, price: Double): Int {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DatabaseHelper.COL_ORDEN_PRECIO_MANT, price)
+            put(DatabaseHelper.COL_SYNCED, 0)
+        }
+        val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId))
+        if (result > 0) syncOrderToCloud()
+        return result
+    }
+
+    fun updateFinalApproval(orderId: String, signatureBase64: String, observation: String): Int {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DatabaseHelper.COL_ORDEN_ESTADO, "EN PROCESO")
+            put(DatabaseHelper.COL_ORDEN_FIRMA, signatureBase64)
+            put(DatabaseHelper.COL_ORDEN_OBS_CLI, observation)
             put(DatabaseHelper.COL_SYNCED, 0)
         }
         val result = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId))
@@ -295,6 +319,16 @@ class OrdenRepository(private val context: Context) {
         return techId
     }
 
+    fun listenToOrders(onUpdate: () -> Unit): com.google.firebase.firestore.ListenerRegistration {
+        return firestore.collection("ordenes")
+            .addSnapshotListener { _, e ->
+                if (e != null) return@addSnapshotListener
+                fetchOrdersFromCloud {
+                    onUpdate()
+                }
+            }
+    }
+
     fun getTopBrandsStats(): List<com.example.climatrack.adapters.StatItem> {
         val list = mutableListOf<com.example.climatrack.adapters.StatItem>()
         val db = dbHelper.readableDatabase
@@ -319,22 +353,99 @@ class OrdenRepository(private val context: Context) {
             .addOnSuccessListener { documents ->
                 val db = dbHelper.writableDatabase
                 for (doc in documents) {
-                    val id = doc.id
-                    val values = ContentValues().apply {
-                        put(DatabaseHelper.COL_ORDEN_ID, id)
-                        put(DatabaseHelper.COL_ORDEN_NUM, doc.getString("numero"))
-                        put(DatabaseHelper.COL_ORDEN_FECHA, doc.getString("fecha"))
-                        put(DatabaseHelper.COL_ORDEN_CLIENTE_ID, doc.getString("clienteId"))
-                        put(DatabaseHelper.COL_ORDEN_EQUIPO_ID, doc.getString("equipoId"))
-                        put(DatabaseHelper.COL_ORDEN_TECNICO_ID, doc.getString("tecnicoId"))
-                        put(DatabaseHelper.COL_ORDEN_TIPO, doc.getString("tipoServicio"))
-                        put(DatabaseHelper.COL_ORDEN_DESC, doc.getString("descripcion"))
-                        put(DatabaseHelper.COL_ORDEN_ESTADO, doc.getString("estado"))
-                        put(DatabaseHelper.COL_ORDEN_PRECIO, doc.getDouble("precioServicio"))
-                        put(DatabaseHelper.COL_SYNCED, 1)
+                    try {
+                        val id = doc.id
+                        val values = ContentValues().apply {
+                            put(DatabaseHelper.COL_ORDEN_ID, id)
+                            put(DatabaseHelper.COL_ORDEN_NUM, doc.getString("numero"))
+                            put(DatabaseHelper.COL_ORDEN_FECHA, doc.getString("fecha"))
+                            put(DatabaseHelper.COL_ORDEN_CLIENTE_ID, doc.getString("clienteId"))
+                            put(DatabaseHelper.COL_ORDEN_EQUIPO_ID, doc.getString("equipoId"))
+                            put(DatabaseHelper.COL_ORDEN_TECNICO_ID, doc.getString("tecnicoId"))
+                            put(DatabaseHelper.COL_ORDEN_TIPO, doc.getString("tipoServicio"))
+                            put(DatabaseHelper.COL_ORDEN_DESC, doc.getString("descripcion"))
+                            put(DatabaseHelper.COL_ORDEN_ESTADO, doc.getString("estado"))
+                            put(DatabaseHelper.COL_ORDEN_PRECIO, doc.getDouble("precioServicio") ?: 0.0)
+                            put(DatabaseHelper.COL_ORDEN_CALIFICACION, doc.getLong("calificacion")?.toInt() ?: 0)
+                            put(DatabaseHelper.COL_ORDEN_COMENTARIO, doc.getString("comentario"))
+                            put(DatabaseHelper.COL_ORDEN_TECH_LAT, doc.getDouble("tecnicoLat"))
+                            put(DatabaseHelper.COL_ORDEN_TECH_LON, doc.getDouble("tecnicoLon"))
+                            put(DatabaseHelper.COL_ORDEN_PRECIO_MANT, doc.getDouble("precioMantenimiento") ?: 0.0)
+                            put(DatabaseHelper.COL_ORDEN_OBS_CLI, doc.getString("observacionCliente"))
+                            put(DatabaseHelper.COL_ORDEN_FIRMA, doc.getString("firmaBase64"))
+                            put(DatabaseHelper.COL_SYNCED, 1)
+                        }
+                        val count = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id))
+                        if (count == 0) {
+                            val num = doc.getString("numero")
+                            val countByNum = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_NUM}=?", arrayOf(num))
+                            if (countByNum == 0) {
+                                db.insertWithOnConflict(DatabaseHelper.TABLE_ORDENES, null, values, android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("SYNC_ERROR", "Error fetching order doc: ${doc.id}", e)
                     }
-                    val count = db.update(DatabaseHelper.TABLE_ORDENES, values, "${DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(id))
-                    if (count == 0) db.insert(DatabaseHelper.TABLE_ORDENES, null, values)
+                }
+                fetchMaintenanceFromCloud(onComplete)
+            }
+            .addOnFailureListener { onComplete() }
+    }
+
+    private fun fetchMaintenanceFromCloud(onComplete: () -> Unit) {
+        firestore.collection("mantenimientos")
+            .get()
+            .addOnSuccessListener { documents ->
+                val db = dbHelper.writableDatabase
+                for (doc in documents) {
+                    try {
+                        val id = doc.id
+                        val values = ContentValues().apply {
+                            put(DatabaseHelper.COL_MANT_ID, id)
+                            put(DatabaseHelper.COL_MANT_ORDEN_ID, doc.getString("ordenId"))
+                            put(DatabaseHelper.COL_MANT_FECHA, doc.getString("fecha"))
+                            put(DatabaseHelper.COL_MANT_DIAG, doc.getString("diagnostico"))
+                            put(DatabaseHelper.COL_MANT_TRABAJO, doc.getString("trabajoRealizado"))
+                            put(DatabaseHelper.COL_MANT_OBS, doc.getString("observaciones"))
+                            put(DatabaseHelper.COL_MANT_RECOM, doc.getString("recomendaciones"))
+                            put(DatabaseHelper.COL_MANT_ESTADO_EQ, doc.getString("estadoEquipo"))
+                            put(DatabaseHelper.COL_MANT_TIEMPO, doc.getString("tiempoEmpleado"))
+                            put(DatabaseHelper.COL_SYNCED, 1)
+                        }
+                        val count = db.update(DatabaseHelper.TABLE_MANTENIMIENTOS, values, "${DatabaseHelper.COL_MANT_ID}=?", arrayOf(id))
+                        if (count == 0) db.insert(DatabaseHelper.TABLE_MANTENIMIENTOS, null, values)
+                    } catch (e: Exception) {
+                        android.util.Log.e("SYNC_ERROR", "Error fetching maintenance doc: ${doc.id}", e)
+                    }
+                }
+                fetchPartsFromCloud(onComplete)
+            }
+            .addOnFailureListener { onComplete() }
+    }
+
+    private fun fetchPartsFromCloud(onComplete: () -> Unit) {
+        firestore.collection("detalle_repuestos")
+            .get()
+            .addOnSuccessListener { documents ->
+                val db = dbHelper.writableDatabase
+                for (doc in documents) {
+                    try {
+                        val id = doc.id
+                        val values = ContentValues().apply {
+                            put(DatabaseHelper.COL_DET_ID, id)
+                            put(DatabaseHelper.COL_DET_MANT_ID, doc.getString("mantenimientoId"))
+                            put(DatabaseHelper.COL_DET_REP_ID, doc.getString("repuestoId"))
+                            put(DatabaseHelper.COL_DET_CANT, doc.getLong("cantidad")?.toInt() ?: 0)
+                            put(DatabaseHelper.COL_DET_OBS, doc.getString("observacion"))
+                            put(DatabaseHelper.COL_DET_PRECIO, doc.getDouble("precioHistorico") ?: 0.0)
+                            put(DatabaseHelper.COL_DET_PRECIO_UNIT, doc.getDouble("precioUnitario") ?: 0.0)
+                            put(DatabaseHelper.COL_SYNCED, 1)
+                        }
+                        val count = db.update(DatabaseHelper.TABLE_DETALLE_REPUESTOS, values, "${DatabaseHelper.COL_DET_ID}=?", arrayOf(id))
+                        if (count == 0) db.insert(DatabaseHelper.TABLE_DETALLE_REPUESTOS, null, values)
+                    } catch (e: Exception) {
+                        android.util.Log.e("SYNC_ERROR", "Error fetching part detail doc: ${doc.id}", e)
+                    }
                 }
                 onComplete()
             }
@@ -342,31 +453,36 @@ class OrdenRepository(private val context: Context) {
     }
 
     private fun cursorToOrdenInfo(cursor: Cursor): OrdenInfo {
-        return OrdenInfo(
-            id = cursor.getString(0),
-            numero = cursor.getString(1),
-            fecha = cursor.getString(2),
-            clienteNombre = cursor.getString(3),
-            equipoNombre = cursor.getString(4),
-            tipoServicio = cursor.getString(5),
-            estado = cursor.getString(6),
-            tecnicoNombre = cursor.getString(7),
-            precioServicio = cursor.getDouble(8),
-            equipoMarca = cursor.getString(9),
-            equipoModelo = cursor.getString(10),
-            descripcion = cursor.getString(11),
-            direccion = cursor.getString(12),
-            calificacion = cursor.getInt(13),
-            comentario = cursor.getString(14),
-            firmaBase64 = cursor.getString(15),
-            tecnicoLat = if (cursor.isNull(16)) null else cursor.getDouble(16),
-            tecnicoLon = if (cursor.isNull(17)) null else cursor.getDouble(17),
-            latitudCliente = if (cursor.isNull(18)) null else cursor.getDouble(18),
-            longitudCliente = if (cursor.isNull(19)) null else cursor.getDouble(19),
-            clienteEmail = cursor.getString(20),
-            precioMantenimiento = cursor.getDouble(21),
-            observacionCliente = cursor.getString(22)
-        )
+        return try {
+            OrdenInfo(
+                id = cursor.getString(0) ?: "",
+                numero = cursor.getString(1) ?: "",
+                fecha = cursor.getString(2) ?: "",
+                clienteNombre = cursor.getString(3) ?: "Desconocido",
+                equipoNombre = cursor.getString(4) ?: "Equipo no ident.",
+                tipoServicio = cursor.getString(5) ?: "SERVICIO",
+                estado = cursor.getString(6) ?: "PENDIENTE",
+                tecnicoNombre = cursor.getString(7),
+                precioServicio = cursor.getDouble(8),
+                equipoMarca = cursor.getString(9),
+                equipoModelo = cursor.getString(10),
+                descripcion = cursor.getString(11),
+                direccion = cursor.getString(12),
+                calificacion = cursor.getInt(13),
+                comentario = cursor.getString(14),
+                firmaBase64 = cursor.getString(15),
+                tecnicoLat = if (cursor.isNull(16)) null else cursor.getDouble(16),
+                tecnicoLon = if (cursor.isNull(17)) null else cursor.getDouble(17),
+                latitudCliente = if (cursor.isNull(18)) null else cursor.getDouble(18),
+                longitudCliente = if (cursor.isNull(19)) null else cursor.getDouble(19),
+                clienteEmail = cursor.getString(20),
+                precioMantenimiento = cursor.getDouble(21),
+                observacionCliente = cursor.getString(22)
+            )
+        } catch (e: Exception) {
+            android.util.Log.e("DB_ERROR", "Error parsing order info", e)
+            OrdenInfo(id = "error", numero = "ERR")
+        }
     }
 
     private fun cursorToOrden(cursor: Cursor): Orden {

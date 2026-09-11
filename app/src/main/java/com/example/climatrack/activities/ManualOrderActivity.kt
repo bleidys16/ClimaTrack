@@ -90,7 +90,8 @@ class ManualOrderActivity : BaseActivity() {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         sdf.timeZone = TimeZone.getTimeZone("America/Bogota")
         val date = sdf.format(Date())
-        val orderNum = "ADM-" + System.currentTimeMillis().toString().takeLast(6)
+        val suffix = UUID.randomUUID().toString().take(4).uppercase()
+        val orderNum = "ADM-" + SimpleDateFormat("yyMM", Locale.getDefault()).format(Date()) + "-" + suffix
 
         val newOrder = Orden(
             numero = orderNum,

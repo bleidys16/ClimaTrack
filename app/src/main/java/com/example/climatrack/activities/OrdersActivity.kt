@@ -3,6 +3,7 @@ package com.example.climatrack.activities
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.climatrack.R
 import com.example.climatrack.adapters.OrdersAdapter
@@ -43,7 +44,21 @@ class OrdersActivity : BaseActivity() {
         val initialTab = intent.getIntExtra("TAB_INDEX", 0)
         binding.tabs.getTabAt(initialTab)?.select()
         
+        setupRefreshLayout()
         loadOrders()
+    }
+
+    private fun setupRefreshLayout() {
+        binding.swipeRefresh.setColorSchemeResources(R.color.ube, R.color.status_finished)
+        binding.swipeRefresh.setOnRefreshListener {
+            ordenRepository.fetchOrdersFromCloud {
+                runOnUiThread {
+                    loadOrders()
+                    binding.swipeRefresh.isRefreshing = false
+                    Toast.makeText(this, "Datos actualizados", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun setupToolbar() {

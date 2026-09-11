@@ -175,7 +175,7 @@ class OrderRequestActivity : BaseActivity() {
         if (!isExisting || selectedModelText.contains("Otro")) {
             // Create a new equipment record for this user
             val newEquip = com.example.climatrack.models.Equipo(
-                codigo = "TEMP-" + System.currentTimeMillis().toString().takeLast(4),
+                codigo = "EQ-" + UUID.randomUUID().toString().take(6).uppercase(),
                 tipo = "Aire Acondicionado",
                 marca = if (finalModel.contains(" ")) finalModel.split(" ")[0] else "Genérica",
                 modelo = finalModel,
@@ -189,7 +189,8 @@ class OrderRequestActivity : BaseActivity() {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         sdf.timeZone = TimeZone.getTimeZone("America/Bogota")
         val date = sdf.format(Date())
-        val orderNum = "REQ-" + System.currentTimeMillis().toString().takeLast(6)
+        val suffix = UUID.randomUUID().toString().take(4).uppercase()
+        val orderNum = "REQ-" + SimpleDateFormat("yyMM", Locale.getDefault()).format(Date()) + "-" + suffix
 
         val newOrder = Orden(
             numero = orderNum,

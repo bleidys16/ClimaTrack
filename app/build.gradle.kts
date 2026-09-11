@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.play.services.code.scanner)
     implementation(libs.osmdroid.android)
     implementation(libs.coil)
+    implementation(libs.androidx.swiperefreshlayout)
     
     // Firebase
     implementation(platform(libs.firebase.bom))

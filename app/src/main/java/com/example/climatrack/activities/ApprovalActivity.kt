@@ -128,15 +128,8 @@ class ApprovalActivity : BaseActivity() {
             val signatureBase64 = encodeBitmapToBase64(binding.signatureView.getSignatureBitmap())
             val obs = binding.etObservations.text.toString().trim()
 
-            // Update order: Status to "EN PROCESO", save signature, observation
-            val db = com.example.climatrack.database.DatabaseHelper(this).writableDatabase
-            val values = android.content.ContentValues().apply {
-                put(com.example.climatrack.database.DatabaseHelper.COL_ORDEN_ESTADO, "EN PROCESO")
-                put(com.example.climatrack.database.DatabaseHelper.COL_ORDEN_FIRMA, signatureBase64)
-                put(com.example.climatrack.database.DatabaseHelper.COL_ORDEN_OBS_CLI, obs)
-            }
-            db.update(com.example.climatrack.database.DatabaseHelper.TABLE_ORDENES, values, 
-                "${com.example.climatrack.database.DatabaseHelper.COL_ORDEN_ID}=?", arrayOf(orderId))
+            // Update order: Status to "EN PROCESO", save signature, observation via Repository
+            ordenRepository.updateFinalApproval(orderId, signatureBase64, obs)
 
             // Generar Comprobante
             generateFinalReport()

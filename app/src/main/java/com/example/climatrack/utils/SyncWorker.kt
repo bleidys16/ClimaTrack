@@ -44,6 +44,13 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
             hasFailures = true
         }
 
+        try {
+            syncSpareParts()
+        } catch (e: Exception) {
+            android.util.Log.e("SYNC_ERROR", "Spare parts sync failed", e)
+            hasFailures = true
+        }
+
         return if (hasFailures) Result.retry() else Result.success()
     }
 
@@ -61,35 +68,39 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
         
         if (cursor.moveToFirst()) {
             do {
-                val orderNum = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_NUM))
-                val order = Orden(
-                    id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_ID)),
-                    numero = orderNum,
-                    fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_FECHA)),
-                    clienteId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)),
-                    equipoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_EQUIPO_ID)),
-                    tecnicoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECNICO_ID)),
-                    tipoServicio = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TIPO)),
-                    descripcion = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_DESC)),
-                    estado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_ESTADO)),
-                    precioServicio = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_PRECIO)),
-                    latitudCliente = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LAT)),
-                    longitudCliente = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LON)),
-                    direccionExacta = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_DIR_EXACTA)),
-                    firmaBase64 = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_FIRMA)),
-                    isSynced = 1,
-                    calificacion = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CALIFICACION)),
-                    comentario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_COMENTARIO)),
-                    tecnicoLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LAT)),
-                    tecnicoLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON)),
-                    clienteEmail = getEmailForUser(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)))
-                )
+                try {
+                    val orderNum = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_NUM))
+                    val order = Orden(
+                        id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_ID)),
+                        numero = orderNum,
+                        fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_FECHA)),
+                        clienteId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)),
+                        equipoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_EQUIPO_ID)),
+                        tecnicoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECNICO_ID)),
+                        tipoServicio = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TIPO)),
+                        descripcion = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_DESC)),
+                        estado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_ESTADO)),
+                        precioServicio = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_PRECIO)),
+                        latitudCliente = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LAT)),
+                        longitudCliente = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LON)),
+                        direccionExacta = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_DIR_EXACTA)),
+                        firmaBase64 = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_FIRMA)),
+                        isSynced = 1,
+                        calificacion = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CALIFICACION)),
+                        comentario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_COMENTARIO)),
+                        tecnicoLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LAT)),
+                        tecnicoLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON)),
+                        clienteEmail = getEmailForUser(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)))
+                    )
 
-                firestore.collection("ordenes").document(orderNum).set(order, SetOptions.merge()).await()
-                
-                val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
-                dbHelper.writableDatabase.update(DatabaseHelper.TABLE_ORDENES, values, 
-                    "${DatabaseHelper.COL_ORDEN_NUM} = ?", arrayOf(orderNum))
+                    firestore.collection("ordenes").document(order.id).set(order, SetOptions.merge()).await()
+                    
+                    val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
+                    dbHelper.writableDatabase.update(DatabaseHelper.TABLE_ORDENES, values, 
+                        "${DatabaseHelper.COL_ORDEN_ID} = ?", arrayOf(order.id))
+                } catch (e: Exception) {
+                    android.util.Log.e("SYNC_ERROR", "Failed to sync single order", e)
+                }
                 
             } while (cursor.moveToNext())
         }
@@ -139,26 +150,70 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
                 val localPath = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_RUTA))
                 val file = File(localPath)
                 
-                if (file.exists()) {
-                    val storageRef = storage.reference.child("evidencias/${file.name}")
-                    storageRef.putFile(Uri.fromFile(file)).await()
-                    val downloadUrl = storageRef.downloadUrl.await().toString()
-                    
-                    val evidence = Evidencia(
+                if (file.exists() && file.isFile) {
+                    try {
+                        val storageRef = storage.reference.child("evidencias/${file.name}")
+                        storageRef.putFile(Uri.fromFile(file)).await()
+                        val downloadUrl = storageRef.downloadUrl.await().toString()
+                        
+                        val evidence = Evidencia(
+                            id = id,
+                            ordenId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ORDEN_ID)),
+                            rutaFoto = downloadUrl,
+                            fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_FECHA)),
+                            isSynced = 1,
+                        )
+
+                        firestore.collection("evidencias").document(id).set(evidence, SetOptions.merge()).await()
+                        
+                        val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
+                        dbHelper.writableDatabase.update(DatabaseHelper.TABLE_EVIDENCIAS, values, 
+                            "${DatabaseHelper.COL_EVI_ID} = ?", arrayOf(id))
+                    } catch (e: Exception) {
+                        android.util.Log.e("SYNC_ERROR", "Failed to sync single evidence: $id", e)
+                        // If it's a 404 or persistent error, we might want to mark as synced to skip, 
+                        // but for now we just log and continue with others.
+                    }
+                } else {
+                    // Mark as synced if file doesn't exist to avoid retrying non-existent files
+                    val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
+                    dbHelper.writableDatabase.update(DatabaseHelper.TABLE_EVIDENCIAS, values, 
+                        "${DatabaseHelper.COL_EVI_ID} = ?", arrayOf(id))
+                }
+                
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+    }
+
+    private suspend fun syncSpareParts() {
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(DatabaseHelper.TABLE_DETALLE_REPUESTOS, null, 
+            "${DatabaseHelper.COL_SYNCED} = 0", null, null, null, null)
+        
+        if (cursor.moveToFirst()) {
+            do {
+                try {
+                    val id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_ID))
+                    val part = com.example.climatrack.models.DetalleRepuesto(
                         id = id,
-                        ordenId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ORDEN_ID)),
-                        rutaFoto = downloadUrl,
-                        fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_FECHA)),
-                        isSynced = 1,
+                        mantenimientoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_MANT_ID)),
+                        repuestoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_REP_ID)),
+                        cantidad = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_CANT)),
+                        observacion = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_OBS)),
+                        precioHistorico = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_PRECIO)),
+                        precioUnitario = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_PRECIO_UNIT)),
+                        isSynced = 1
                     )
 
-                    firestore.collection("evidencias").document(id).set(evidence, SetOptions.merge()).await()
+                    firestore.collection("detalle_repuestos").document(id).set(part, SetOptions.merge()).await()
+                    
+                    val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
+                    dbHelper.writableDatabase.update(DatabaseHelper.TABLE_DETALLE_REPUESTOS, values, 
+                        "${DatabaseHelper.COL_DET_ID} = ?", arrayOf(id))
+                } catch (e: Exception) {
+                    android.util.Log.e("SYNC_ERROR", "Failed to sync single spare part", e)
                 }
-
-                val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
-                dbHelper.writableDatabase.update(DatabaseHelper.TABLE_EVIDENCIAS, values, 
-                    "${DatabaseHelper.COL_EVI_ID} = ?", arrayOf(id))
-                
             } while (cursor.moveToNext())
         }
         cursor.close()

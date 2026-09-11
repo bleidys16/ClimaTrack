@@ -44,29 +44,33 @@ class UsuarioRepository(private val context: Context) {
             .addOnSuccessListener { documents ->
                 val db = dbHelper.writableDatabase
                 for (doc in documents) {
-                    val id = doc.getString("id") ?: continue
-                    val values = ContentValues().apply {
-                        put(DatabaseHelper.COL_USUARIO_ID, id)
-                        put(DatabaseHelper.COL_USUARIO_USER, doc.getString("usuario"))
-                        put(DatabaseHelper.COL_USUARIO_PASS, doc.getString("password"))
-                        put(DatabaseHelper.COL_USUARIO_NOMBRE, doc.getString("nombre"))
-                        put(DatabaseHelper.COL_USUARIO_ROL, doc.getString("rol"))
-                        put(DatabaseHelper.COL_USUARIO_EMAIL, doc.getString("email"))
-                        put(DatabaseHelper.COL_USUARIO_TEL, doc.getString("telefono"))
-                        put(DatabaseHelper.COL_USUARIO_ACTIVE, doc.getLong("isActive")?.toInt() ?: 0)
-                        put(DatabaseHelper.COL_USUARIO_IMAGEN, doc.getString("imagenPerfil"))
-                        put(DatabaseHelper.COL_USUARIO_FCM, doc.getString("fcmToken"))
-                        put(DatabaseHelper.COL_USUARIO_LAT, doc.getDouble("lastLat"))
-                        put(DatabaseHelper.COL_USUARIO_LON, doc.getDouble("lastLon"))
-                        put(DatabaseHelper.COL_USUARIO_WORK_START, doc.getString("workStartTime"))
-                        put(DatabaseHelper.COL_USUARIO_WORK_END, doc.getString("workEndTime"))
-                    }
-                    
-                    val count = db.update(DatabaseHelper.TABLE_USUARIOS, values, 
-                        "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(id))
-                    
-                    if (count == 0) {
-                        db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
+                    try {
+                        val id = doc.id
+                        val values = ContentValues().apply {
+                            put(DatabaseHelper.COL_USUARIO_ID, id)
+                            put(DatabaseHelper.COL_USUARIO_USER, doc.getString("usuario"))
+                            put(DatabaseHelper.COL_USUARIO_PASS, doc.getString("password"))
+                            put(DatabaseHelper.COL_USUARIO_NOMBRE, doc.getString("nombre"))
+                            put(DatabaseHelper.COL_USUARIO_ROL, doc.getString("rol"))
+                            put(DatabaseHelper.COL_USUARIO_EMAIL, doc.getString("email"))
+                            put(DatabaseHelper.COL_USUARIO_TEL, doc.getString("telefono"))
+                            put(DatabaseHelper.COL_USUARIO_ACTIVE, doc.getLong("isActive")?.toInt() ?: 0)
+                            put(DatabaseHelper.COL_USUARIO_IMAGEN, doc.getString("imagenPerfil"))
+                            put(DatabaseHelper.COL_USUARIO_FCM, doc.getString("fcmToken"))
+                            put(DatabaseHelper.COL_USUARIO_LAT, doc.getDouble("lastLat"))
+                            put(DatabaseHelper.COL_USUARIO_LON, doc.getDouble("lastLon"))
+                            put(DatabaseHelper.COL_USUARIO_WORK_START, doc.getString("workStartTime"))
+                            put(DatabaseHelper.COL_USUARIO_WORK_END, doc.getString("workEndTime"))
+                        }
+                        
+                        val count = db.update(DatabaseHelper.TABLE_USUARIOS, values, 
+                            "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(id))
+                        
+                        if (count == 0) {
+                            db.insert(DatabaseHelper.TABLE_USUARIOS, null, values)
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("SYNC_ERROR", "Error fetching user doc: ${doc.id}", e)
                     }
                 }
                 onComplete()
@@ -344,21 +348,26 @@ class UsuarioRepository(private val context: Context) {
     }
 
     private fun cursorToUsuario(cursor: Cursor): Usuario {
-        return Usuario(
-            id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)),
-            usuario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USER)),
-            password = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASS)),
-            nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE)),
-            rol = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ROL)),
-            email = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_EMAIL)),
-            telefono = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_TEL)),
-            isActive = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ACTIVE)),
-            workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
-            workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END)),
-            lastLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT)),
-            lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON)),
-            imagenPerfil = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_IMAGEN)),
-            fcmToken = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_FCM))
-        )
+        return try {
+            Usuario(
+                id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ID)) ?: "",
+                usuario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_USER)) ?: "",
+                password = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_PASS)) ?: "",
+                nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_NOMBRE)) ?: "Usuario desconocido",
+                rol = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ROL)) ?: "Cliente",
+                email = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_EMAIL)),
+                telefono = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_TEL)),
+                isActive = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_ACTIVE)),
+                workStartTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_START)),
+                workEndTime = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_WORK_END)),
+                lastLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LAT)),
+                lastLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_LON)),
+                imagenPerfil = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_IMAGEN)),
+                fcmToken = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_USUARIO_FCM))
+            )
+        } catch (e: Exception) {
+            android.util.Log.e("DB_ERROR", "Error parsing user from cursor", e)
+            Usuario(id = "error", nombre = "Error de datos")
+        }
     }
 }

@@ -82,10 +82,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:fontFamily="@font/geist_medium"
+            android:fontFamily="@font/geist_bold"
             android:text="Técnico: No asignado"
             android:textColor="@color/ube"
-            android:textSize="12sp"
+            android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvOrderNum"
             app:layout_constraintTop_toBottomOf="@id/tvEquipmentInfo" />
