@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:isScrollContainer="true"
+    android:background="@color/chinese_black">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp">
+
+        <ImageView
+            android:id="@+id/imgLogin"
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:layout_marginTop="48dp"
+            android:src="@drawable/person_profile"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvWelcomeTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:fontFamily="@font/geist_bold"
+            android:text="¡Bienvenido!"
+            android:textColor="@color/white"
+            android:textSize="28sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imgLogin" />
+
+        <TextView
+            android:id="@+id/tvLoginInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/geist_medium"
+            android:text="Ingresa tus credenciales para acceder"
+            android:textColor="@color/cadet_grey"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvWelcomeTitle" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilUser"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:hint="@string/username_hint"
+            app:boxStrokeColor="@color/ube"
+            app:hintTextColor="@color/ube"
+            app:layout_constraintTop_toBottomOf="@id/tvLoginInfo"
+            app:startIconDrawable="@drawable/ic_user_modern"
+            app:startIconTint="@color/cadet_grey">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etUser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/geist"
+                android:inputType="text"
+                android:textColor="@color/white" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPassword"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="@string/password_hint"
+            app:boxStrokeColor="@color/ube"
+            app:endIconMode="password_toggle"
+            app:endIconTint="@color/cadet_grey"
+            app:hintTextColor="@color/ube"
+            app:layout_constraintTop_toBottomOf="@id/tilUser"
+            app:startIconDrawable="@drawable/ic_lock_modern"
+            app:startIconTint="@color/cadet_grey">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/geist"
+                android:inputType="textPassword"
+                android:textColor="@color/white" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="48dp"
+            android:fontFamily="@font/geist_bold"
+            android:text="INICIAR SESIÓN"
+            android:textSize="16sp"
+            app:backgroundTint="@color/ube"
+            app:cornerRadius="16dp"
+            app:layout_constraintTop_toBottomOf="@id/tilPassword" />
+
+        <TextView
+            android:id="@+id/tvRegister"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:fontFamily="@font/geist_medium"
+            android:text="¿No tienes cuenta? Regístrate aquí"
+            android:textColor="@color/ube"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnLogin" />
+
+        <TextView
+            android:id="@+id/tvVersionInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="24dp"
+            android:text="ClimaTrack v1.0 • Desarrollo Seguro"
+            android:textColor="@color/cadet_grey"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvRegister" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

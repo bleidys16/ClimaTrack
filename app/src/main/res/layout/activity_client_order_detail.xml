@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/chinese_black">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/chinese_black"
+        app:elevation="0dp"
+        app:liftOnScroll="false">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_back_modern"
+            app:navigationIconTint="@color/white">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Detalle de mi Servicio"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="18sp" />
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Order Status Header -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/cadet_grey"
+                app:cardBackgroundColor="@color/american_blue">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvOrderNum"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/geist_bold"
+                        android:text="Orden: OT-00000"
+                        android:textColor="@color/white"
+                        android:textSize="22sp" />
+
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_status_chip"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="4dp"
+                        android:text="PENDIENTE"
+                        android:textColor="@color/status_pending"
+                        android:textSize="11sp"
+                        android:fontFamily="@font/geist_bold" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginVertical="12dp"
+                        android:background="@color/cadet_grey"
+                        android:alpha="0.3" />
+
+                    <TextView
+                        android:id="@+id/tvServiceType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/geist_medium"
+                        android:text="Servicio: Mantenimiento Preventivo"
+                        android:textColor="@color/white"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/tvDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/geist"
+                        android:text="Fecha: 2026-08-31"
+                        android:textColor="@color/cadet_grey"
+                        android:textSize="14sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDownloadReceipt"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="16dp"
+                android:text="DESCARGAR CERTIFICADO PDF"
+                android:textColor="@color/status_finished"
+                app:icon="@android:drawable/ic_menu_save"
+                app:iconTint="@color/status_finished"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnApproveNow"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginTop="16dp"
+                android:text="APROBAR Y FIRMAR AHORA"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                app:backgroundTint="@color/status_finished"
+                app:icon="@android:drawable/checkbox_on_background"
+                app:iconTint="@color/white"
+                android:visibility="gone" />
+
+            <!-- Technician & Equipment -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Información General"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/cadet_grey">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvTechnician"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Técnico: Por asignar"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        app:drawableStartCompat="@drawable/ic_user_modern"
+                        android:drawablePadding="12dp"
+                        app:drawableTint="@color/ube" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/cadet_grey"
+                        android:layout_marginVertical="12dp"
+                        android:alpha="0.1" />
+
+                    <TextView
+                        android:id="@+id/tvEquipment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Aire: LG Dual Inverter"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        app:drawableStartCompat="@drawable/ic_nav_equipment"
+                        android:drawablePadding="12dp"
+                        app:drawableTint="@color/ube" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Work Details -->
+            <TextView
+                android:id="@+id/tvWorkTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Detalle del Trabajo Realizado"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardWorkDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/cadet_grey"
+                android:visibility="gone">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:id="@+id/tvDiagnosis"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Diagnóstico: ..."
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvWorkDone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Trabajo: ..."
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Spare Parts -->
+            <TextView
+                android:id="@+id/tvPartsTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Repuestos y Materiales"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSpareParts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/cadet_grey"
+                android:visibility="gone">
+                <LinearLayout
+                    android:id="@+id/llPartsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Technician Evidences -->
+            <TextView
+                android:id="@+id/tvEvidencesTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Evidencias del Técnico"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardEvidences"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/cadet_grey"
+                android:visibility="gone">
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp">
+                    <LinearLayout
+                        android:id="@+id/llEvidencesContainer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Costs -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Resumen de Costos"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTotalCost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/cadet_grey">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvTotalCost"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Costo Total: $0.00"
+                        android:textColor="@color/status_finished"
+                        android:textSize="18sp"
+                        android:fontFamily="@font/geist_bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Live Tracking Map -->
+            <TextView
+                android:id="@+id/tvTrackingTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Sigue a tu técnico en vivo"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTrackingMap"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/ube"
+                android:visibility="gone">
+                <org.osmdroid.views.MapView
+                    android:id="@+id/mapViewTracking"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Feedback Section -->
+            <TextView
+                android:id="@+id/tvFeedbackTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Califica nuestro servicio"
+                android:textColor="@color/white"
+                android:fontFamily="@font/geist_bold"
+                android:textSize="16sp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardFeedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/american_blue"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/ube">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <RatingBar
+                        android:id="@+id/ratingBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:numStars="5"
+                        android:stepSize="1.0"
+                        android:theme="@style/Widget.AppCompat.RatingBar" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilComment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:hint="Deja un comentario (opcional)"
+                        app:hintTextColor="@color/cadet_grey">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etComment"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSubmitFeedback"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="16dp"
+                        android:text="ENVIAR CALIFICACIÓN"
+                        app:backgroundTint="@color/ube" />
+
+                    <TextView
+                        android:id="@+id/tvSavedComment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="@color/cadet_grey"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/geist_medium"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="100dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/btnChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:text="Chat con Técnico"
+        app:icon="@android:drawable/stat_notify_chat"
+        app:backgroundTint="@color/ube"
+        android:textColor="@color/white" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

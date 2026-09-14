@@ -1,0 +1,230 @@
+package com.example.climatrack.utils
+
+import android.content.ContentValues
+import android.content.Context
+import android.net.Uri
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import com.example.climatrack.database.DatabaseHelper
+import com.example.climatrack.models.Evidencia
+import com.example.climatrack.models.Mantenimiento
+import com.example.climatrack.models.Orden
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.tasks.await
+import java.io.File
+
+class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
+    CoroutineWorker(appContext, workerParams) {
+
+    private val dbHelper = DatabaseHelper(appContext)
+    private val firestore = FirebaseHelper.db
+    private val storage = FirebaseHelper.storage
+
+    override suspend fun doWork(): Result {
+        var hasFailures = false
+        
+        try {
+            syncOrders()
+        } catch (e: Exception) {
+            android.util.Log.e("SYNC_ERROR", "Order sync failed", e)
+            hasFailures = true
+        }
+
+        try {
+            syncMaintenance()
+        } catch (e: Exception) {
+            android.util.Log.e("SYNC_ERROR", "Maintenance sync failed", e)
+            hasFailures = true
+        }
+
+        try {
+            syncEvidences()
+        } catch (e: Exception) {
+            android.util.Log.e("SYNC_ERROR", "Evidence sync failed", e)
+            hasFailures = true
+        }
+
+        try {
+            syncSpareParts()
+        } catch (e: Exception) {
+            android.util.Log.e("SYNC_ERROR", "Spare parts sync failed", e)
+            hasFailures = true
+        }
+
+        return if (hasFailures) Result.retry() else Result.success()
+    }
+
+    private suspend fun syncOrders() {
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(
+            DatabaseHelper.TABLE_ORDENES,
+            null,
+            "${DatabaseHelper.COL_SYNCED} = 0",
+            null,
+            null,
+            null,
+            null,
+        )
+        
+        if (cursor.moveToFirst()) {
+            do {
+                try {
+                    val orderNum = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_NUM))
+                    val order = Orden(
+                        id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_ID)),
+                        numero = orderNum,
+                        fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_FECHA)),
+                        clienteId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)),
+                        equipoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_EQUIPO_ID)),
+                        tecnicoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECNICO_ID)),
+                        tipoServicio = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TIPO)),
+                        descripcion = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_DESC)),
+                        estado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_ESTADO)),
+                        precioServicio = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_PRECIO)),
+                        latitudCliente = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LAT)),
+                        longitudCliente = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_LON)),
+                        direccionExacta = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_DIR_EXACTA)),
+                        firmaBase64 = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_FIRMA)),
+                        isSynced = 1,
+                        calificacion = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CALIFICACION)),
+                        comentario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_COMENTARIO)),
+                        tecnicoLat = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LAT))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LAT)),
+                        tecnicoLon = if (cursor.isNull(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON))) null else cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_TECH_LON)),
+                        clienteEmail = getEmailForUser(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_ORDEN_CLIENTE_ID)))
+                    )
+
+                    firestore.collection("ordenes").document(order.id).set(order, SetOptions.merge()).await()
+                    
+                    val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
+                    dbHelper.writableDatabase.update(DatabaseHelper.TABLE_ORDENES, values, 
+                        "${DatabaseHelper.COL_ORDEN_ID} = ?", arrayOf(order.id))
+                } catch (e: Exception) {
+                    android.util.Log.e("SYNC_ERROR", "Failed to sync single order", e)
+                }
+                
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+    }
+
+    private suspend fun syncMaintenance() {
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(DatabaseHelper.TABLE_MANTENIMIENTOS, null, 
+            "${DatabaseHelper.COL_SYNCED} = 0", null, null, null, null)
+        
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ID))
+                val mant = Mantenimiento(
+                    id = id,
+                    ordenId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ORDEN_ID)),
+                    fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_FECHA)),
+                    diagnostico = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_DIAG)),
+                    trabajoRealizado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_TRABAJO)),
+                    observaciones = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_OBS)),
+                    recomendaciones = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_RECOM)),
+                    estadoEquipo = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_ESTADO_EQ)),
+                    tiempoEmpleado = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_MANT_TIEMPO)),
+                    isSynced = 1
+                )
+
+                firestore.collection("mantenimientos").document(id).set(mant, SetOptions.merge()).await()
+                
+                val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
+                dbHelper.writableDatabase.update(DatabaseHelper.TABLE_MANTENIMIENTOS, values, 
+                    "${DatabaseHelper.COL_MANT_ID} = ?", arrayOf(id))
+                
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+    }
+
+    private suspend fun syncEvidences() {
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(DatabaseHelper.TABLE_EVIDENCIAS, null, 
+            "${DatabaseHelper.COL_SYNCED} = 0", null, null, null, null)
+        
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ID))
+                val localPath = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_RUTA))
+                val file = File(localPath)
+                
+                if (file.exists() && file.isFile) {
+                    try {
+                        val storageRef = storage.reference.child("evidencias/${file.name}")
+                        storageRef.putFile(Uri.fromFile(file)).await()
+                        val downloadUrl = storageRef.downloadUrl.await().toString()
+                        
+                        val evidence = Evidencia(
+                            id = id,
+                            ordenId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_ORDEN_ID)),
+                            rutaFoto = downloadUrl,
+                            fecha = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_EVI_FECHA)),
+                            isSynced = 1,
+                        )
+
+                        firestore.collection("evidencias").document(id).set(evidence, SetOptions.merge()).await()
+                        
+                        val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
+                        dbHelper.writableDatabase.update(DatabaseHelper.TABLE_EVIDENCIAS, values, 
+                            "${DatabaseHelper.COL_EVI_ID} = ?", arrayOf(id))
+                    } catch (e: Exception) {
+                        android.util.Log.e("SYNC_ERROR", "Failed to sync single evidence: $id", e)
+                        // If it's a 404 or persistent error, we might want to mark as synced to skip, 
+                        // but for now we just log and continue with others.
+                    }
+                } else {
+                    // Mark as synced if file doesn't exist to avoid retrying non-existent files
+                    val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
+                    dbHelper.writableDatabase.update(DatabaseHelper.TABLE_EVIDENCIAS, values, 
+                        "${DatabaseHelper.COL_EVI_ID} = ?", arrayOf(id))
+                }
+                
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+    }
+
+    private suspend fun syncSpareParts() {
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(DatabaseHelper.TABLE_DETALLE_REPUESTOS, null, 
+            "${DatabaseHelper.COL_SYNCED} = 0", null, null, null, null)
+        
+        if (cursor.moveToFirst()) {
+            do {
+                try {
+                    val id = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_ID))
+                    val part = com.example.climatrack.models.DetalleRepuesto(
+                        id = id,
+                        mantenimientoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_MANT_ID)),
+                        repuestoId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_REP_ID)),
+                        cantidad = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_CANT)),
+                        observacion = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_OBS)),
+                        precioHistorico = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_PRECIO)),
+                        precioUnitario = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COL_DET_PRECIO_UNIT)),
+                        isSynced = 1
+                    )
+
+                    firestore.collection("detalle_repuestos").document(id).set(part, SetOptions.merge()).await()
+                    
+                    val values = ContentValues().apply { put(DatabaseHelper.COL_SYNCED, 1) }
+                    dbHelper.writableDatabase.update(DatabaseHelper.TABLE_DETALLE_REPUESTOS, values, 
+                        "${DatabaseHelper.COL_DET_ID} = ?", arrayOf(id))
+                } catch (e: Exception) {
+                    android.util.Log.e("SYNC_ERROR", "Failed to sync single spare part", e)
+                }
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+    }
+
+    private fun getEmailForUser(userId: String): String? {
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(DatabaseHelper.TABLE_USUARIOS, arrayOf(DatabaseHelper.COL_USUARIO_EMAIL),
+            "${DatabaseHelper.COL_USUARIO_ID}=?", arrayOf(userId), null, null, null)
+        val email = if (cursor.moveToFirst()) cursor.getString(0) else null
+        cursor.close()
+        return email
+    }
+}

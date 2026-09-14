@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,3L2,12H5V21H11V15H13V21H19V12H22L12,3Z"/>
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M11,15H13V17C13,18.1 12.1,19 11,19V15Z"
+        android:visibility="gone"/>
+    <!-- Custom doorway for the rounded look in the image -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M10,21V16C10,14.9 10.9,14 12,14C13.1,14 14,14.9 14,16V21H10Z"/>
+</vector>
